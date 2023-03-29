@@ -1,0 +1,44 @@
+import store from './index'
+import { deepCopy } from '../utils/utils'
+
+export default {
+  state: {
+    snapshotData: [], // 编辑器快照数据
+    snapshotIndex: -1, // 快照索引
+  },
+  mutations: {
+    undo(state) {
+      if (state.snapshotIndex >= 0) {
+        state.snapshotIndex--
+        const canvasComponentData = deepCopy(state.snapshotData[state.snapshotIndex]) || []
+        if (state.curComponent) {
+          // 如果当前组件不在 canvasComponentData 中，则置空
+          const needClean = !canvasComponentData.find(component => state.curComponent.id === component.id)
+          if (needClean) {
+            store.commit('setCurComponent', {
+              component: null,
+              index: null,
+            })
+          }
+        }
+        store.commit('setCanvasComponentData', canvasComponentData)
+      }
+    },
+
+    redo(state) {
+      if (state.snapshotIndex < state.snapshotData.length - 1) {
+        state.snapshotIndex++
+        store.commit('setCanvasComponentData', deepCopy(state.snapshotData[state.snapshotIndex]))
+      }
+    },
+
+    recordSnapshot(state) {
+      // 添加新的快照
+      state.snapshotData[++state.snapshotIndex] = deepCopy(state.canvasComponentData)
+      // 在 undo 过程中，添加新的快照时，要将它后面的快照清理掉
+      if (state.snapshotIndex < state.snapshotData.length - 1) {
+        state.snapshotData = state.snapshotData.slice(0, state.snapshotIndex + 1)
+      }
+    },
+  },
+}

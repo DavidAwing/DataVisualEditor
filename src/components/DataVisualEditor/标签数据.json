@@ -1,0 +1,17 @@
+{
+  "name": "标签设计系统",
+  "max": 100,
+  "data": [
+    {
+      "title": "烨宏科技标签系统-1",
+      "amount": 1,
+      "qrcode-1": "二维码A-1",
+      "qrcode-2": "二维码B-1",
+      "qrcode-3": "二维码C-1",
+      "barrcode-1": "条形码A-1",
+      "barrcode-2": "条形码B-1",
+      "barrcode-2": "条形码C-1",
+      "name": "零件名称-1"
+    }
+  ]
+}

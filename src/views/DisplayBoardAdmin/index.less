@@ -1,0 +1,34 @@
+.container {
+    display: flex;
+    position: relative;
+    flex-flow: column nowrap;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+/deep/ .view-line {
+    display: flex;
+}
+
+
+.container>div:nth-child(2) {
+
+    display: flex;
+    flex-flow: row nowrap;
+    height: 600px;
+
+    & .code-editor {
+        flex: 1;
+        height: 100%;
+        margin: 10px;
+    }
+
+    & .preview {
+        flex: 1;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.1);
+        margin: 10px;
+    }
+
+}

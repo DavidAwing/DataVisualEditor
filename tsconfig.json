@@ -1,21 +1,25 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
+    "target": "es6",
+    "module": "commonjs",
     "strict": true,
     "jsx": "preserve",
     "moduleResolution": "node",
     "experimentalDecorators": true,
+    "noUnusedParameters": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": true,
     "sourceMap": true,
+    "noImplicitAny": true,
     "baseUrl": ".",
     "types": [
       "webpack-env",
-      "jest"
+      "jest",
+      "jquery"
     ],
     "paths": {
       "@/*": [
@@ -34,8 +38,12 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "tests/**/*.ts",
-    "tests/**/*.tsx"
-  ],
+    "tests/**/*.tsx",
+    "src/components/DataVisualEditor/custom-component/VText/index.tsx",
+    "src/components/DataVisualEditor/custom-component/VText/index.tsx",
+    "src/components/DataVisualEditor/custom-component/ComponentBase/index.tsx",
+    "src/components/DataVisualEditor/custom-component/ComponentBase/index.tsx"
+, "src/components/DataVisualEditor/utils/domUtils.js", "src/components/DataVisualEditor/utils/domUtils.js"  ],
   "exclude": [
     "node_modules"
   ]

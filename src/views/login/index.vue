@@ -36,7 +36,7 @@
 
 <script>
   import { validUsername } from "@/utils/validate";
-  import { EMacro } from "emacroh5lib"
+  // import { EMacro } from "emacroh5lib"
 
   export default {
     name: "Login",
@@ -93,7 +93,7 @@
 
 
       this.$nextTick(() => {
-        console.log("EMacro", EMacro);
+        // console.log("EMacro", EMacro);
       });
     },
     watch: {

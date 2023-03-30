@@ -6,7 +6,7 @@ import { Component, Prop, Emit, Watch } from 'vue-property-decorator'
 })
 export default class ComponentBase extends Vue {
 
-  @Prop() element: any;
+  @Prop({ required: true }) element!: any;
 
   // todo: 撑满父组件
 
@@ -27,14 +27,20 @@ export default class ComponentBase extends Vue {
   //     )
   // }
 
-  created() {
+  private created() {
     console.log("基类生命周期", this.element);
 
     this.element.data.p = "父组件挂载的数据"
   }
 
-  mounted() {
+  private mounted() {
     console.log("基类生命周期: mounted");
+
+
+    this.$watch('element', (newValue, oldValue) => {
+      console.log('基类生命周期 element changed:', newValue, oldValue);
+    }, { deep: true });
+
   }
 
 }

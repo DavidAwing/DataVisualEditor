@@ -5,7 +5,7 @@ import router from './router'
 import store from './store'
 // import store from './components/LabelDesigner/store'
 
-import ElementUI from 'element-ui';
+import ElementUI, { Dialog } from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 
 
@@ -19,6 +19,19 @@ import './components/DataVisualEditor/mock';
 
 
 Vue.use(ElementUI, { size: 'small' });
+
+
+const dialogContainer = document.createElement('div');
+document.body.appendChild(dialogContainer);
+
+
+Vue.component('top-el-dialog', {
+  extends: Dialog,
+  mounted() {
+    document.body.appendChild(this.$el);
+  },
+});
+
 
 Vue.config.productionTip = false
 

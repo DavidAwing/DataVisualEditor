@@ -226,6 +226,8 @@ import { toCSS, toJSON } from "cssjson";
 import { strToBase64, isArrayInclude } from "../utils/utils";
 import deepClone from "deep-clone";
 
+import axios from "axios";
+
 export default {
   components: {},
   data() {
@@ -245,206 +247,39 @@ export default {
   computed: {
     ...mapState(["canvasName"]),
     styleList() {
-      const key = this.curComponent.component + ":" + "styleList";
+      const key = "styleList:" + this.curComponent.component;
       let styleList = this.styleMap[key];
 
-      console.log("请求样式数据");
-
       if (styleList != null) return styleList;
-
-      styleList = [
-        {
-          value: "table",
-          label: "表格",
-          children: [
-            {
-              type: "css",
-              value: "row-color",
-              label: "行颜色",
-              css: `
-              color: yellow;
-    height: 100%;
-    background-color: rgba(25, 245, 77, 0.35);
-`,
-              img: "",
-              attrList: [],
-            },
-          ],
-        },
-      ];
-
-      // todo 异步请求服务端的配置
-      setTimeout(() => {
-        // 异步请求的数据
-        const getData = [
-          {
-            value: "text",
-            label: "文本",
-            children: [
-              {
-                type: "css",
-                value: "text2f",
-                label: "表达式",
-                css: `
-if 1 == 1 color: @color-1;
-if 1 != 1 color: #ff0;`,
-                img: "",
-                attrList: [
-                  {
-                    value: "red",
-                    label: "@color-1",
-                    type: "color-picker",
-                    options: {
-                      showAlpha: false,
-                    },
-                  },
-                ],
-              },
-              {
-                type: "css",
-                value: "text21",
-                label: "红色",
-                css: "color: red;",
-                img: "",
-                attrList: [
-                  {
-                    type: "color-picker",
-                    value: "red",
-                    label: "color",
-                    options: {
-                      showAlpha: false,
-                    },
-                  },
-                ],
-              },
-              {
-                type: "css",
-                value: "text1",
-                label: "红色变量1",
-                css: "color: @color;background-color: @bk;",
-                img: "",
-                attrList: [
-                  {
-                    type: "color-picker",
-                    value: "red",
-                    label: "@color",
-                    options: {
-                      showAlpha: false,
-                    },
-                  },
-                  {
-                    type: "color-picker",
-                    value: "red",
-                    label: "@bk",
-                    options: {
-                      showAlpha: false,
-                    },
-                  },
-                ],
-              },
-              {
-                type: "css",
-                value: "text3432",
-                label: "红色变量1",
-                css: "{color: @color; background-color: @bk;}",
-                img: "",
-                attrList: [
-                  {
-                    type: "color-picker",
-                    value: "red",
-                    label: "@color",
-                    options: {
-                      showAlpha: false,
-                    },
-                  },
-                  {
-                    type: "color-picker",
-                    value: "red",
-                    label: "@bk",
-                    options: {
-                      showAlpha: false,
-                    },
-                  },
-                ],
-              },
-              {
-                type: "css",
-                value: "背景图片",
-                label: "背景图片",
-                css: "{background: url('https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fsafe-img.xhscdn.com%2Fbw1%2F3d901398-5fff-4b1b-9b39-e8d37d9ac62c%3FimageView2%2F2%2Fw%2F1080%2Fformat%2Fjpg&refer=http%3A%2F%2Fsafe-img.xhscdn.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1680678141&t=dd9e5587ee3fea5242892386575786c5');}",
-                img: "",
-                attrList: [],
-              },
-              {
-                type: "css",
-                value: "text2",
-                label: "AA测试异常",
-                css: `
-color: #00ffff;
-
-background-image: -webkit-linear-gradient(bottom, @color-1, #b6f4fc, white);
-
--webkit-background-clip: text;
-
-background-clip: text
-
--webkit-text-fill-color: transparent
-`,
-                img: "",
-                attrList: [
-                  {
-                    key: "color-1",
-                    value: "red",
-                    type: "color-picker",
-                    options: {
-                      showAlpha: false,
-                    },
-                  },
-                ],
-              },
-              {
-                type: "css",
-                value: "text3",
-                label: "测试异常的",
-                css: `
-          text-shadow: 1px 0px 3px orange, 2px 1px 3px red, -2px 0px 7px yellow
-
-
-
-font-size: 1.5em;
-`,
-                img: "",
-                attrList: [],
-              },
-            ],
+      axios
+        .get("/BI/Component/GetStyleList", {
+          params: {
+            name: this.curComponent.component,
           },
-        ];
-
-        Vue.set(this.styleMap, key, styleList.concat(getData));
-      }, 500);
+          timeout: 10000,
+        })
+        .then(({ data }) => {
+          Vue.set(this.styleMap, key, data.data);
+        });
 
       return styleList;
     },
     selectorList() {
-      const key = this.curComponent.component + ":" + "selectorList";
+      const key = "selectorList:" + this.curComponent.component;
       let selectorList = this.styleMap[key];
 
       if (selectorList != null) return selectorList;
 
-      selectorList = this.curComponent.selectorList;
-
-      // todo 异步请求服务端的配置
-      setTimeout(() => {
-        // 异步请求的数据
-        const getData = [
-          {
-            label: "奇数行颜色2",
-            value: ".el-table tbody tr:nth-child(odd) .el-table__cell",
+      axios
+        .get("/BI/Component/GetSelectorList", {
+          params: {
+            name: this.curComponent.component,
           },
-        ];
-
-        Vue.set(this.styleMap, key, selectorList.concat(getData));
-      }, 500);
+          timeout: 10000,
+        })
+        .then(({ data }) => {
+          Vue.set(this.styleMap, key, data.data);
+        });
 
       return selectorList;
     },

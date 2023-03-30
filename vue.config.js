@@ -71,6 +71,15 @@ module.exports = defineConfig({
     historyApiFallback: true,
     allowedHosts: 'all',
     proxy: {
+      '/BI': {
+        target: 'http://127.0.0.1:5053',
+        secure: false,
+        changeOrigin: true,
+        ws: true,
+        pathRewrite: {
+          '^/BI': '/'
+        }
+      },
       '/H5': {
         target: 'http://www.emacrosys.cn:8019',
         // target: 'http://127.0.0.1:8019',

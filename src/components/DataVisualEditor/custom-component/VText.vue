@@ -66,16 +66,6 @@ export default {
   },
   created() {
     console.log("txt的组件生命周期created");
-
-    this.element.selectorList = [
-      { label: "文字", value: ".v-text" },
-      ".canEdit",
-      ".preview",
-    ];
-
-    // axios.get("/test2").then((res) => {
-    //   console.log("mockdata",res.data);
-    // });
   },
   mounted() {
     console.log("txt的组件生命周期mounted");

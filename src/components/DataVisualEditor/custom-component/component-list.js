@@ -1354,12 +1354,13 @@ const list = [
     icon: 'wenben',
     name: "",
     data: {
-
+      columns: [],
+      tableData: []
     },
     attrExcludes: [],
     style: {
-      width: 211,
-      height: 22,
+      width: 500,
+      height: 260,
       fontSize: 14,
       fontStyle: 2500,
       fontWeight: 2500,
@@ -1403,28 +1404,16 @@ const list = [
         bind: "style"
       },
       {
+        key: "height",
+        type: "number",
+        label: '高',
+        bind: "style"
+      },
+      {
         key: "rotate",
         type: "number",
         label: '旋转',
         bind: "style"
-      },
-      {
-        key: "color",
-        type: "color-picker",
-        label: '颜色',
-        bind: 'style',
-        options: {
-          showAlpha: false
-        }
-      },
-      {
-        key: "backgroundColor",
-        type: "color-picker",
-        label: '背景色',
-        bind: 'style',
-        options: {
-          showAlpha: false
-        }
       },
       {
         key: "borderRadius",
@@ -1433,68 +1422,15 @@ const list = [
         bind: 'style'
       },
       {
-        key: "fontSize",
-        type: "number",
-        label: '字体大小',
-        bind: 'style'
+        type: "eventbus-button",
+        label: '',
+        bind: {
+          click: "onEditColumns",
+          dblclick: "onEditColumns",
+          label: "编辑表头"
+        }
       },
-      {
-        key: "fontWeight",
-        type: "number",
-        label: '字体粗细',
-        bind: 'style'
-      },
-      {
-        key: "lineHeight",
-        type: "number",
-        label: '行高',
-        bind: 'style'
-      },
-      {
-        key: "letterSpacing",
-        type: "number",
-        label: '字间距',
-        bind: 'style'
-      },
-      {
-        key: "textAlign",
-        type: "select",
-        label: '左右对齐',
-        bind: 'style',
-        options: [
-          {
-            label: '左对齐',
-            value: 'left'
-          },
-          {
-            label: '居中',
-            value: 'center',
-          },
-          {
-            label: '右对齐',
-            value: 'right',
-          }
-        ]
-      },
-      {
-        key: "opacity",
-        type: "number",
-        label: '透明度',
-        bind: 'style'
-      },
-      {
-        key: "fontFamily",
-        type: "select",
-        label: '字体',
-        options: fontFamilyOpts,
-        bind: 'style'
-      },
-      {
-        key: "text",
-        type: "textarea",
-        label: '文本',
-        bind: "data"
-      }
+
     ],
     events: {
 
@@ -1540,14 +1476,11 @@ const list = [
        * @param {*} oldData 旧数据
        */
       onDataChange: (self, caller, newData, oldData) => {
-
         console.log("数据已经改变");
-
       }
     },
     selectorList: [
-      { label: "奇数行颜色", value: ".el-table tbody tr:nth-child(odd) .cell" },
-
+      //  { label: "奇数行颜色", value: ".el-table tbody tr:nth-child(odd) .cell" },
     ],
     styleList: //todo: 已应用的样式列表, 从后台读取组件支持的样式列表
       [

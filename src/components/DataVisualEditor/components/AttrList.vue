@@ -101,6 +101,20 @@
             v-model="curComponent[key] || curComponent[bind][key]"
           ></el-checkbox>
         </div>
+
+        <div v-else-if="type == 'checkbox'">
+          <el-checkbox
+            v-model="curComponent[key] || curComponent[bind][key]"
+          ></el-checkbox>
+        </div>
+
+        <div v-else-if="type == 'eventbus-button'">
+          <el-button
+            @click="eventBus.$emit(bind['click'], curComponent.name, $event)"
+          >
+            {{ bind.label }}</el-button
+          >
+        </div>
       </el-form-item>
     </el-form>
   </div>
@@ -108,6 +122,7 @@
 
 <script>
 import { styleData } from "../utils/style";
+import eventBus from "../utils/eventBus";
 
 export default {
   data() {
@@ -139,6 +154,7 @@ export default {
       ],
       selectKey: ["textAlign", "borderStyle", "verticalAlign"],
       styleData,
+      eventBus,
     };
   },
   computed: {

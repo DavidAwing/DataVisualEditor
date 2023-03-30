@@ -17,6 +17,65 @@
         </el-table-column>
       </template>
     </el-table>
+
+    <top-el-dialog
+      title="表头编辑"
+      :visible.sync="editColumnsDialog"
+      width="30%"
+      style="z-index: 3000"
+      v-el-drag-dialog
+      center
+    >
+      <el-form :inline="true" label-width="60px">
+        <el-form-item label="列" class="full-width">
+          <div>
+            <el-select
+              v-model="column"
+              clearable
+              filterable
+              placeholder=""
+              autocomplete="off"
+              @blur="addColumn"
+              @clear="removeColumn"
+            >
+              <el-option
+                v-for="item in element.data.columns"
+                :key="item.label"
+                :label="item.label"
+                :value="item"
+              >
+              </el-option>
+            </el-select>
+          </div>
+        </el-form-item>
+
+        <el-form-item label="prop" :style="{ width: '100%' }">
+          <el-input
+            v-model="column.prop"
+            autocomplete="off"
+            style="width: 100%"
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="label" :style="{ width: '100%' }">
+          <el-input
+            v-model="column.label"
+            autocomplete="off"
+            style="width: 100%"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="width" :style="{ width: '100%' }">
+          <el-input v-model="column.width" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editColumnsDialog = false">取 消</el-button>
+        <el-button type="primary" @click="editColumnsDialog = false"
+          >确 定</el-button
+        >
+      </span>
+    </top-el-dialog>
   </div>
 </template>
 
@@ -27,6 +86,11 @@ import { keycodes } from "../../utils/shortcutKey";
 import ComponentBase from "../ComponentBase";
 import { getRandStr } from "../../utils/utils";
 import VResize from 'v-resize'
+import eventBus from '../../utils/eventBus'
+import draggable from 'draggable'
+
+import elDragDialog from "../../directive/el-drag-dialog";
+
 
 export default {
   extends: ComponentBase,
@@ -51,91 +115,64 @@ export default {
         },
         directions: ['right', 'bottom'],
       },
-
+      editColumnsDialog: false,
+      column:  {},
+      selected: null,
     };
   },
   computed: {
     list() {
-      return [{ name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" },
-      { name: "aaa", age: 12, test: "AB撒地方", test2: "AB撒地方" }]
-    },
+      return []
+    }
   },
   watch: {
-    element: {
+    column: {
       handler: function (val) {
-        console.log("element", this.element);
-        this.titles = this.element.data.titles
+        this.selected = val
       },
       deep: true,
     },
+
+    editColumnsDialog(val) {
+
+      if (!val)
+        return
+      if( (!this.column.label || !this.column.prop) &&this.element.data.columns.length > 0 )
+        this.column = this.element.data.columns[0]
+
+    }
+
   },
   beforeCreate() {
 
   },
   created() {
 
-    console.log("数据拿去", this.element);
+    eventBus.$on('onEditColumns', (name, event) => {
+
+      if (name !== this.element.name) return
+
+
+      console.log("event", event);
+
+      this.editColumnsDialog = true
+
+    });
+
+
 
     // this.element.selectorList = [
     // { label: "奇数行颜色", value: "/deep/ .el-table tbody tr:nth-child(odd) .cell" }
     // ];
 
-    this.element.data = {
-      columns: [
-        { prop: "date", label: "日期", width: "20" },
-        { prop: "name", label: "姓名", width: "20" },
-        { prop: "address", label: "地址", width: "60" }
-      ],
-      tableData: [{
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-08',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-06',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-07',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }]
-    }
-
     console.log("基类生命周期表格组件生命周期created", this.element);
   },
   mounted() {
+
+
+    this.$parent.$watch('element', (newValue, oldValue) => {
+        console.log('element changed:', newValue, oldValue);
+      }, { deep: true });
 
     console.log("txt的组件生命周期mounted");
   },
@@ -162,8 +199,36 @@ export default {
     tableScroll(event) {
     },
 
-    getRandStr
+    getRandStr,
+
+    addColumn(event) {
+
+      console.log("各种bug");
+      if (!event.target.value)
+        return
+      const hasLabel = this.element.data.columns.some(obj => obj.label === event.target.value);
+      if (!hasLabel) {
+        this.element.data.columns.push({ prop: "", label: event.target.value, width: "" })
+        this.column = this.element.data.columns.slice(-1)[0]
+      }
+    },
+
+    removeColumn() {
+      console.log("各种bug");
+
+      for (let i = 0; i < this.element.data.columns.length; i++) {
+        const element = this.element.data.columns[i];
+        if (element.prop === this.selected.prop && element.label === this.selected.label) {
+          this.element.data.columns.splice(i, 1)
+          break
+        }
+      }
+    }
+
   },
+  directives: {
+      elDragDialog
+  }
 };
 </script>
 

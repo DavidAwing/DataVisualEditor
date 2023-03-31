@@ -296,6 +296,8 @@ export default {
       return JSON.stringify(this.curStyle) === "{}";
     },
     addedStyleTags() {
+
+      console.log("当前组件的样式", this.curComponent.styleList);
       return this.curComponent.styleList;
     },
   },
@@ -553,8 +555,6 @@ export default {
         styleArr.push(match[1]);
       if (styleArr.length !== 2) return;
       this.selectedStyle = styleArr
-
-      // todo 还需要加载css
     },
   },
 };

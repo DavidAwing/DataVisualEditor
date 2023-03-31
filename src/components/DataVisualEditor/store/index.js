@@ -29,7 +29,6 @@ const data = {
       height: 100,
       scale: 100,
       unit: 'viewport',
-      background: '',
       dataSource: {}
     },
     isInEdiotr: false, // 是否在编辑器中，用于判断复制、粘贴组件时是否生效，如果在编辑器外，则无视这些操作

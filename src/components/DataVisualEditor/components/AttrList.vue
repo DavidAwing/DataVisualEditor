@@ -116,7 +116,6 @@
           >
         </div>
 
-
         <div v-else-if="type == 'eventbus-select'">
 
           <el-select

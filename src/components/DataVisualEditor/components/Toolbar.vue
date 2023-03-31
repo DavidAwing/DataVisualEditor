@@ -90,12 +90,6 @@
 
     <el-dialog title="全局配置" :visible.sync="canvasConfigDialogVisible">
       <el-form>
-        <el-form-item label="背景">
-          <el-input
-            v-model="canvasData.background"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
 
         <el-form-item label="数据来源">
           <el-input v-model="canvasData.dataSource.http" autocomplete="off"></el-input>

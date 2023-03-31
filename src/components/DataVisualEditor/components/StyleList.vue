@@ -44,6 +44,7 @@
           </el-image>
           <el-form-item label="样式" slot="reference">
             <el-cascader
+              v-model="selectedStyle"
               :options="styleList"
               @change="handleStyleChange"
               clearable
@@ -108,30 +109,6 @@
           </el-input>
                                                                                                     <el-button v-else class="button-new-tag" size="small" @click="showInput">+ Add</el-button> -->
 
-          <hr class="hr-edge-weak" style="margin-top: 6px" v-if="false" />
-
-          <el-popover
-            placement="left"
-            title=""
-            width="300"
-            trigger="hover"
-            :disabled="showStyleImg"
-            v-if="false"
-          >
-            <el-image :src="curStyle.img" lazy>
-              <div slot="placeholder" class="image-slot">
-                css效果加载中<span class="dot">...</span>
-              </div>
-            </el-image>
-            <el-form-item label="样式" slot="reference">
-              <el-cascader
-                :options="styleList"
-                @change="handleStyleChange"
-                clearable
-              ></el-cascader>
-            </el-form-item>
-          </el-popover>
-
           <el-collapse v-model="cssActiveCollapses">
             <el-collapse-item title="已应用样式" name="1">
               <el-tag
@@ -149,26 +126,8 @@
               </el-tag>
             </el-collapse-item>
 
-            <el-collapse-item title="css & less" name="2">
-              <hr
-                class="hr-edge-weak"
-                style="margin-top: 6px; margin-bottom: 6px"
-              />
-
+            <el-collapse-item title="变量" name="2">
               <div v-if="curStyle.type === 'css'">
-                <el-form-item label="">
-                  <el-input
-                    placeholder="请输入样式,例如:
-                                                                                                {
-                                                                                                  color: red;
-                                                                                                  background-color: aqua;
-                                                                                                }"
-                    v-model="curStyle.css"
-                    type="textarea"
-                    rows="10"
-                  />
-                </el-form-item>
-
                 <el-form-item
                   v-for="({ label, type, options }, index) in curStyle.attrList"
                   :key="index"
@@ -181,6 +140,48 @@
                     >
                     </el-color-picker>
                   </div>
+
+                  <div
+                    v-else-if="type == 'string'"
+                    style="display: flex; width: 100%; position: relative"
+                  >
+                    <el-input
+                      v-model="curStyle.attrList[index].value"
+                      type="string"
+                    />
+                  </div>
+
+                  <div v-else-if="type == 'select'">
+                    <el-select
+                      v-model="curStyle.attrList[index].value"
+                      placeholder=""
+                    >
+                      <el-option
+                        v-for="item in options"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"
+                      >
+                      </el-option>
+                    </el-select>
+                  </div>
+                </el-form-item>
+              </div>
+            </el-collapse-item>
+
+            <el-collapse-item title="css & less" name="3">
+              <div v-if="curStyle.type === 'css'">
+                <el-form-item label="">
+                  <el-input
+                    placeholder="请输入样式,例如:
+                                                                                                {
+                                                                                                  color: red;
+                                                                                                  background-color: aqua;
+                                                                                                }"
+                    v-model="curStyle.css"
+                    type="textarea"
+                    rows="10"
+                  />
                 </el-form-item>
               </div>
             </el-collapse-item>
@@ -242,11 +243,14 @@ export default {
       inputValue: "",
       styleMap: {},
       cssActiveCollapses: ["1", "2"],
+      selectedStyle: null
     };
   },
   computed: {
     ...mapState(["canvasName"]),
     styleList() {
+      // todo: Invalid prop: type check failed for prop "options". Expected Array, got String with value "[]".
+
       const key = "styleList:" + this.curComponent.component;
       let styleList = this.styleMap[key];
 
@@ -322,7 +326,12 @@ export default {
     },
     curStyle: {
       handler: function (val, old) {
-        console.log("当前样式变化", val);
+      },
+      deep: true,
+    },
+    selectedStyle: {
+      handler: function (val, old) {
+        this.handleStyleChange(val)
       },
       deep: true,
     },
@@ -347,6 +356,7 @@ export default {
             const style = category.children[j];
             if (style.value === nodes[1]) {
               this.curStyle = style;
+              this.curStyle.hierarchy = `[${nodes[0]}][${nodes[1]}]`
               return;
             }
           }
@@ -483,6 +493,7 @@ export default {
             selector: this.curSelector,
             cssData: cssData,
             css: originalStyle,
+            hierarchy: this.curStyle.hierarchy
           });
         }
 
@@ -534,7 +545,16 @@ export default {
     },
 
     switchToStyle(style) {
-      console.log("todo:点击样式切换至", style);
+      this.curSelector = style.selector;
+      const regex = /\[([^\]\s]*)\]/g;
+      const styleArr = [];
+      let match;
+      while ((match = regex.exec(style.hierarchy)) !== null)
+        styleArr.push(match[1]);
+      if (styleArr.length !== 2) return;
+      this.selectedStyle = styleArr
+
+      // todo 还需要加载css
     },
   },
 };
@@ -601,7 +621,13 @@ export default {
     right: 0;
     margin: 0 auto; */
 
-  padding: 10px 20px 10px 20px;
+  position: relative;
+  padding: 10px 20px 20px 20px;
+  display: flex;
+  justify-content: center;
+
+  & button {
+  }
 }
 
 /deep/ .el-form-item__label {

@@ -138,7 +138,7 @@ export function setStyleValues(cssStr, values) {
         cssKey = key
 
       if (!new RegExp(cssKey, 'gi').test(cssStr))
-        throw Error(`setStyleValues|样式中不存在变量${cssKey}`)
+        throw Error(`setStyleValues|样式中不存在变量${cssKey}: ${cssStr}`)
       // if (!cssStr.includes(key))
       //     throw Error(`setStyleValues|样式中不存在变量${cssKey}`)
       cssStr = cssStr.replaceAll(new RegExp(`(${cssKey})`, 'gi'), item[key])
@@ -193,7 +193,7 @@ export function deleteSelectorForStyle(id, selector) {
     const style = document.getElementById(id)
     if (style === null)
       throw Error(`deleteSelectorForStyle|找不到指定id的样式[${id}]`)
-    style.innerText = new String(style.innerText.replace(new RegExp(`(${name + ',|' + name})`, "gi"), '').trim())
+    style.innerText = String(style.innerText.replace(new RegExp(`(${name + ',|' + name})`, "gi"), '').trim())
     if (style.innerText == '' || style.innerText.startsWith('{') || style.innerText == '{}')
       removeStyleById(id)
   } else {
@@ -221,11 +221,11 @@ export function getStyleSelectorListById(id) {
   if (style === null)
     throw Error(`getStyleSelectorListById|找不到指定id的样式[${id}]`)
 
-  const selectorPattern = new RegExp(`([\\s\\S])*(?=({))`, "gi")
+  const selectorPattern = /([\s\S])*(?=({))/gi
   const selectors = style.innerText.match(selectorPattern)
   const selectorList = []
   if (selectors == null || selectors.length == 0)
-    throw Error(`getStyleSelectorListById|未匹配到选择器${selector}`)
+    throw Error(`getStyleSelectorListById|未匹配到选择器${id}`)
 
   selectors[0].split(",").forEach(item => {
     if (item.trim() != '')
@@ -246,7 +246,7 @@ export function getStyleSelectorStrById(id) {
 
 export function getStyleSelectorStr(cssStr) {
 
-  const regexp = new RegExp(`([\\S\\s]+)(?=({))`, "gi")
+  const regexp = /([\S\s]+)(?=({))/gi
   const selectorStr = cssStr.match(regexp)
 
   if (selectorStr && selectorStr.length === 1) {
@@ -263,7 +263,7 @@ export function getStyleSelectorStr(cssStr) {
  * @returns
  */
 export function getCssKeys(cssStr) {
-  const regexp = new RegExp(`(?<=:\\s*)(@[a-zA-Z0-9\\S]+)(?=(\\s*;))`, "gi")
+  const regexp = /(?<=:\s*)(@[a-zA-Z0-9\S]+)(?=(\s*;))/gi
   let keys = cssStr.match(regexp)
   return keys
 }
@@ -280,19 +280,19 @@ export function getCssStrById(id) {
 export function compressCssStrWhitespace(cssStr) {
 
   cssStr = cssStr.trim()
-  cssStr = cssStr.replaceAll(RegExp('\\s+', 'gi'), " ")
-  cssStr = cssStr.replaceAll(RegExp('\\s+;\\s+', 'gi'), ";")
-  cssStr = cssStr.replaceAll(RegExp('\\s+;', 'gi'), ";")
-  cssStr = cssStr.replaceAll(RegExp(';\\s+', 'gi'), ";")
-  cssStr = cssStr.replaceAll(RegExp('\\s+}\\s+', 'gi'), "}")
-  cssStr = cssStr.replaceAll(RegExp('\\s+}', 'gi'), "}")
-  cssStr = cssStr.replaceAll(RegExp('}\\s+', 'gi'), "}")
-  cssStr = cssStr.replaceAll(RegExp('\\s+{\\s+', 'gi'), "{")
-  cssStr = cssStr.replaceAll(RegExp('\\s+{', 'gi'), "{")
-  cssStr = cssStr.replaceAll(RegExp('{\\s+', 'gi'), "{")
-  cssStr = cssStr.replaceAll(RegExp('\\s+:\\s+', 'gi'), ":")
-  cssStr = cssStr.replaceAll(RegExp('\\s+:', 'gi'), ":")
-  cssStr = cssStr.replaceAll(RegExp(':\\s+', 'gi'), ":")
+  cssStr = cssStr.replaceAll(/\s+/gi, " ")
+  cssStr = cssStr.replaceAll(/\s+;\s+/gi, ";")
+  cssStr = cssStr.replaceAll(/\s+;/gi, ";")
+  cssStr = cssStr.replaceAll(/;\s+/gi, ";")
+  cssStr = cssStr.replaceAll(/\s+}\\s+/gi, "}")
+  cssStr = cssStr.replaceAll(/\s+}/gi, "}")
+  cssStr = cssStr.replaceAll(/}\s+/gi, "}")
+  cssStr = cssStr.replaceAll(/\s+{\s+/gi, "{")
+  cssStr = cssStr.replaceAll(/\s+{/gi, "{")
+  cssStr = cssStr.replaceAll(/{\s+/gi, "{")
+  cssStr = cssStr.replaceAll(/\s+:\s+/gi, ":")
+  cssStr = cssStr.replaceAll(/\s+:/gi, ":")
+  cssStr = cssStr.replaceAll(/:\s+/gi, ":")
   return cssStr
 }
 
@@ -360,7 +360,7 @@ export function parseCssExpressions(cssStr, evalCssExpression, keyValuePairs) {
     cssStr = cssStr.substring(1, cssStr.length - 1)
 
   const cssLines = cssStr.split(';')
-  const ifPattern = new RegExp(`(?<=\\s*)(if.+)(?=(\\s([@$a-zA-Z0-9]+)\\s*:))`, 'gi') // 提取表达式
+  const ifPattern = /(?<=\s*)(if.+)(?=(\s([@$a-zA-Z0-9]+)\s*:))/gi // 提取表达式
   const validCssLine = []
 
   cssLines.forEach(line => {
@@ -400,11 +400,11 @@ export function getCssStr(cssStr) {
     throw Error(`getCssStr|只能是字符串`)
   }
 
-  const stylePattern = new RegExp(`{([\\s\\S]+)}`, "gi")
+  const stylePattern = /{([\s\S]+)}/gi
   const matchCssStr = cssStr.match(stylePattern)
 
   if (matchCssStr == null || matchCssStr.length == 0)
-    throw Error(`getCssStr|无法匹配样式[${id}]`)
+    throw Error(`getCssStr|无法匹配样式[${cssStr}]`)
 
   if (!matchCssStr[0].startsWith("{") || !matchCssStr[0].endsWith("}"))
     throw Error(`getCssStr|css解析错误[${matchCssStr}]`)
@@ -417,14 +417,14 @@ export function getCssStr(cssStr) {
 export function getCssStr2(cssStr) {
 
   if (typeof cssStr !== 'string')
-    throw new Error("getCssStr2|cssStr只能是字符串类型")
+    throw Error("getCssStr2|cssStr只能是字符串类型")
 
   cssStr = cssStr.trim()
   let css = ''
   if (cssStr.startsWith('{') && cssStr.endsWith('}')) {
     css = cssStr.substring(1, cssStr.length - 1)
   } else {
-    const cssPattern = new RegExp(`(?<={)(\\s*\\S*)*(?=})`, "gi")
+    const cssPattern = /(?<={)(\s*\S*)*(?=})/gi
     css = cssStr.match(cssPattern)
     if (Array.isArray(css) && css.length > 0) {
       css = css[0]
@@ -494,9 +494,9 @@ export function addStyleToHead(id, cssString, canvasName) {
   style.setAttribute("canvas-name", canvasName);
   style.setAttribute("id", id);
 
-  if (style.styleSheet) {// IE
+  if (style.styleSheet) { // IE
     style.styleSheet.cssText = cssString;
-  } else {// w3c
+  } else { // w3c
     const cssText = document.createTextNode(cssString);
     style.appendChild(cssText);
   }

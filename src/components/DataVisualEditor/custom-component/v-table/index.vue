@@ -4,13 +4,14 @@
     <el-table
       :data="element.data.tableData"
       height="250"
-      border
+      :border="false"
       style="width: 100%"
     >
       <template v-for="(column, index) in element.data.columns">
         <el-table-column
           :prop="column.prop"
           :label="column.label"
+          :align="column.align"
           :min-width="column.width"
           v-bind:key="index"
         >
@@ -21,32 +22,29 @@
     <top-el-dialog
       title="表头编辑"
       :visible.sync="editColumnsDialog"
-      width="30%"
-      style="z-index: 3000"
+      width="35%"
       v-el-drag-dialog
       center
     >
-      <el-form :inline="true" label-width="60px">
-        <el-form-item label="列" class="full-width">
-          <div>
-            <el-select
-              v-model="column"
-              clearable
-              filterable
-              placeholder=""
-              autocomplete="off"
-              @blur="addColumn"
-              @clear="removeColumn"
+      <el-form :inline="true" label-width="80px">
+        <el-form-item label="列名" class="full-width">
+          <el-select
+            v-model="selected"
+            clearable
+            filterable
+            placeholder=""
+            autocomplete="off"
+            @blur="addColumn"
+            @clear="removeColumn"
+          >
+            <el-option
+              v-for="(item, index) in element.data.columns"
+              :key="index"
+              :label="item.label"
+              :value="item.prop"
             >
-              <el-option
-                v-for="item in element.data.columns"
-                :key="item.label"
-                :label="item.label"
-                :value="item"
-              >
-              </el-option>
-            </el-select>
-          </div>
+            </el-option>
+          </el-select>
         </el-form-item>
 
         <el-form-item label="prop" :style="{ width: '100%' }">
@@ -66,6 +64,16 @@
         </el-form-item>
         <el-form-item label="width" :style="{ width: '100%' }">
           <el-input v-model="column.width" autocomplete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="对齐" class="full-width">
+          <div>
+            <el-select v-model="column.align" placeholder="" autocomplete="off">
+              <el-option label="left" value="left"> </el-option>
+              <el-option label="center" value="center"> </el-option>
+              <el-option label="right" value="right"> </el-option>
+            </el-select>
+          </div>
         </el-form-item>
       </el-form>
 
@@ -87,7 +95,6 @@ import ComponentBase from "../ComponentBase";
 import { getRandStr } from "../../utils/utils";
 import VResize from 'v-resize'
 import eventBus from '../../utils/eventBus'
-import draggable from 'draggable'
 
 import elDragDialog from "../../directive/el-drag-dialog";
 
@@ -116,8 +123,9 @@ export default {
         directions: ['right', 'bottom'],
       },
       editColumnsDialog: false,
-      column:  {},
-      selected: null,
+      column: {},
+      selected: "",
+
     };
   },
   computed: {
@@ -128,18 +136,28 @@ export default {
   watch: {
     column: {
       handler: function (val) {
-        this.selected = val
+        //
       },
       deep: true,
     },
 
     editColumnsDialog(val) {
-
       if (!val)
         return
-      if( (!this.column.label || !this.column.prop) &&this.element.data.columns.length > 0 )
+      if ((!this.column.label || !this.column.prop) && this.element.data.columns.length > 0) {
         this.column = this.element.data.columns[0]
+        this.selected = this.column.prop
+      }
+    },
 
+    selected(value) {
+      for (let i = 0; i < this.element.data.columns.length; i++) {
+        const element = this.element.data.columns[i];
+        if (element.prop === value) {
+          this.column = element
+          break
+        }
+      }
     }
 
   },
@@ -156,7 +174,6 @@ export default {
       console.log("event", event);
 
       this.editColumnsDialog = true
-
     });
 
 
@@ -171,8 +188,8 @@ export default {
 
 
     this.$parent.$watch('element', (newValue, oldValue) => {
-        console.log('element changed:', newValue, oldValue);
-      }, { deep: true });
+      console.log('element changed:', newValue, oldValue);
+    }, { deep: true });
 
     console.log("txt的组件生命周期mounted");
   },
@@ -202,24 +219,32 @@ export default {
     getRandStr,
 
     addColumn(event) {
-
-      console.log("各种bug");
-      if (!event.target.value)
+      const value = event.target.value
+      if (!value)
         return
-      const hasLabel = this.element.data.columns.some(obj => obj.label === event.target.value);
+      const hasLabel = this.element.data.columns.some(obj => obj.label === value);
       if (!hasLabel) {
-        this.element.data.columns.push({ prop: "", label: event.target.value, width: "" })
+        this.element.data.columns.push({ prop: value, label: value, width: 10, align: 'center' })
         this.column = this.element.data.columns.slice(-1)[0]
+        this.selected = this.column.prop
       }
     },
 
     removeColumn() {
-      console.log("各种bug");
-
       for (let i = 0; i < this.element.data.columns.length; i++) {
         const element = this.element.data.columns[i];
-        if (element.prop === this.selected.prop && element.label === this.selected.label) {
+        if (element.prop === this.column.prop && element.label === this.column.label) {
           this.element.data.columns.splice(i, 1)
+          if (this.element.data.columns[i]) {
+            this.column = this.element.data.columns[i]
+          } else if (this.element.data.columns.length > 0) {
+            this.column = this.element.data.columns.slice(-1)[0]
+          } else {
+            this.column = {}
+            this.selected = ""
+            break
+          }
+          this.selected = this.column.prop
           break
         }
       }
@@ -227,7 +252,7 @@ export default {
 
   },
   directives: {
-      elDragDialog
+    elDragDialog
   }
 };
 </script>

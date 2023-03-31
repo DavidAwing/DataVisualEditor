@@ -1,11 +1,19 @@
 <template>
   <div class="container">
-    <el-image style="width: 100%; height: 100%;" :src="element.data.image" :fit="element.data.fit"></el-image>
+    <el-image
+      style="width: 100%; height: 100%"
+      :src="element.data.image"
+      :fit="element.data.fit"
+    ></el-image>
   </div>
 </template>
 
 <script>
 import ComponentBase from "./ComponentBase";
+import eventBus from "../utils/eventBus";
+import { mapState } from "vuex";
+import { getUnit } from "../utils/style";
+import { changeStyleWithScale } from "../utils/translate";
 
 export default {
   extends: ComponentBase,
@@ -14,6 +22,7 @@ export default {
   },
   props: {},
   computed: {
+    ...mapState(["canvasData"]),
     styleKeys() {
       if (this.$store.state.curComponent) {
         const curComponentStyleKeys = Object.keys(
@@ -28,6 +37,28 @@ export default {
     curComponent() {
       return this.$store.state.curComponent;
     },
+  },
+  created() {
+    eventBus.$on("onFillCanvas", (name, value) => {
+      if (name !== this.element.name) return;
+
+      if (value === "fill") {
+        this.element.style.top = 0;
+        this.element.style.left = 0;
+        this.element.style.width = this.canvasData.width;
+        this.element.styleUnit.width = getUnit("width", this.canvasData.unit);
+        this.element.style.height = this.canvasData.height;
+        this.element.styleUnit.height = getUnit("height", this.canvasData.unit);
+      } else if (value === "horizontal") {
+        this.element.style.left = 0;
+        this.element.style.width = this.canvasData.width;
+        this.element.styleUnit.width = getUnit("width", this.canvasData.unit);
+      } else if (value === "vertical") {
+        this.element.style.top = 0;
+        this.element.style.height = this.canvasData.height;
+        this.element.styleUnit.height = getUnit("height", this.canvasData.unit);
+      }
+    });
   },
   watch: {
     element: {
@@ -56,7 +87,6 @@ export default {
   justify-content: center;
   align-items: center;
 }
-
 
 /* img {
   width: 100%;

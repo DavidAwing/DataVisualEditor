@@ -539,8 +539,8 @@ const list = [
     },
     attrExcludes: [],
     style: {
-      width: 211,
-      height: 22,
+      width: 500,
+      height: 260,
       fontSize: 14,
       fontStyle: 2500,
       fontWeight: 2500,
@@ -636,22 +636,30 @@ const list = [
         }
       },
       {
-        key: "color",
-        type: "color-picker",
-        label: '颜色',
-        bind: 'style',
-        options: {
-          showAlpha: false
-        }
-      },
-      {
-        key: "backgroundColor",
-        type: "color-picker",
-        label: '背景色',
-        bind: 'style',
-        options: {
-          showAlpha: false
-        }
+        type: "eventbus-select",
+        label: '填充画布',
+        bind: {
+          change: "onFillCanvas",
+          value: 'none',
+        },
+        options: [
+          {
+            label: 'fill',
+            value: 'fill'
+          },
+          {
+            label: 'horizontal',
+            value: 'horizontal',
+          },
+          {
+            label: 'vertical',
+            value: 'vertical',
+          },
+          {
+            label: 'none',
+            value: 'none',
+          }
+        ]
       },
       {
         key: "borderRadius",
@@ -1355,7 +1363,8 @@ const list = [
     name: "",
     data: {
       columns: [],
-      tableData: []
+      tableData: [],
+      showBorder: true
     },
     attrExcludes: [],
     style: {
@@ -1410,6 +1419,22 @@ const list = [
         bind: "style"
       },
       {
+        key: "showBorder",
+        type: "select",
+        label: '显示边框',
+        bind: 'data',
+        options: [
+          {
+            label: '是',
+            value: "true"
+          },
+          {
+            label: '否',
+            value: "false",
+          }
+        ]
+      },
+      {
         key: "rotate",
         type: "number",
         label: '旋转',
@@ -1425,9 +1450,9 @@ const list = [
         type: "eventbus-button",
         label: '',
         bind: {
+          label: '编辑表头',
           click: "onEditColumns",
-          dblclick: "onEditColumns",
-          label: "编辑表头"
+          dblclick: "onEditColumns"
         }
       },
 

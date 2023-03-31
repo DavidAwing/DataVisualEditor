@@ -112,9 +112,31 @@
           <el-button
             @click="eventBus.$emit(bind['click'], curComponent.name, $event)"
           >
-            {{ bind.label }}</el-button
+            {{ bind['label'] }}</el-button
           >
         </div>
+
+
+        <div v-else-if="type == 'eventbus-select'">
+
+          <el-select
+          v-model="bind.value"
+          @change="(value)=>eventBus.$emit(bind['change'], curComponent.name, value)"
+          placeholder=""
+        >
+          <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          >
+          </el-option>
+        </el-select>
+
+
+        </div>
+
+
       </el-form-item>
     </el-form>
   </div>

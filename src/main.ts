@@ -32,7 +32,6 @@ Vue.component('top-el-dialog', {
   },
 });
 
-
 Vue.config.productionTip = false
 
 new Vue({

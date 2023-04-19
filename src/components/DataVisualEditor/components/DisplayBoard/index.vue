@@ -14,6 +14,7 @@
 const cloneWithStyles = require("clone-with-styles");
 
 import { getCanvasStyle } from "../../utils/style";
+import { requestCanvasData } from "../../utils/dataBinder";
 import * as DB from "../../utils/indexDB";
 import { mapState } from "vuex";
 import ComponentWrapper from "../Editor/ComponentWrapper";
@@ -41,8 +42,8 @@ export default {
   data() {
     return {
       includes: ["propValue", "uniqueId"],
-      canvasName: null,
-      id: null, //此id不为空,则可进行实时刷新
+      id: null, //todo 此id不为空,则可进行实时刷新,
+      // canvasName: "",
     };
   },
   model: {
@@ -50,7 +51,7 @@ export default {
   },
   props: {},
   computed: {
-    ...mapState(["canvasComponentData", "canvasData"]),
+    ...mapState(["canvasComponentData", "canvasData", "canvasName"]),
     templateDataCopy() {
       return JSONfn.parse(JSONfn.stringify(this.canvasComponentData));
     },
@@ -62,12 +63,17 @@ export default {
     // dev环境下支持实时数据传输
     // http://localhost:9538/sub01/#/DisplayBoardViewer?name=生产进度看板&id=test&env=dev
 
-    this.canvasName = this.$route.query.name;
-    if (!this.canvasName) {
+    const canvasName = this.$route.query.name;
+    if (!canvasName) {
       // todo: 显示画布列表
       toast("请设置画布名称!!!");
       return;
     }
+
+    DB.CallbackMap.onOpenSucceedEventList.push(() => {
+      // 数据库开启后渲染数据
+      requestCanvasData.bind(this)(canvasName);
+    });
 
     this.id = this.$route.query.id;
     this.env = this.$route.query.env; // prod/dev
@@ -78,50 +84,6 @@ export default {
     // todo: id不为空的时候连接后台,远程调试
     if (this.id !== undefined) {
     }
-
-    this.$store.commit("setCanvasName", this.canvasName);
-    const getCanvasData = async (name) => {
-      const canvasList = await DB.getAllItemByType("Canvas-Data");
-      for (const data of canvasList)
-        if (data.name == name) {
-          const canvasComponentData = JSONfn.parse(data.canvasComponentData);
-          const canvasData = JSONfn.parse(data.canvasData);
-          // 恢复画布
-          this.$store.commit(
-            "setCanvasComponentData",
-            this.resetID(canvasComponentData)
-          );
-
-          this.$store.commit("setCanvasData", canvasData);
-
-          const job = schedule.scheduleJob(
-            "更新数据",
-            canvasData.dataSource.cron,
-            () => {
-              // 设置组件数据
-              this.$store.commit("setCanvasComponentAttribute", [
-                "data",
-                {
-                  ptjLrNXwDoVxaCQ: {
-                    text: new Date().toJSON(),
-                    name: "aaadsfs撒地方",
-                  },
-                },
-              ]);
-
-              console.log("执行任务Today is recognized by Rebecca Black!");
-            }
-          );
-
-          // 取消任务
-          // schedule.cancelJob("执行任务AAA");
-          return;
-        }
-    };
-
-    DB.CallbackMap.onOpenSuccess.push(async () => {
-      getCanvasData(this.canvasName);
-    });
   },
   mounted() {},
   updated() {},

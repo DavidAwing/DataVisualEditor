@@ -13,20 +13,16 @@
         :contenteditable="canEdit"
         :class="{ canEdit }"
         :tabindex="element.id"
-        :style="{ verticalAlign: element.style.verticalAlign }"
         @dblclick="setEdit"
         @paste="clearStyle"
         @mousedown="handleMousedown"
         @blur="handleBlur"
         @input="handleInput"
-        v-html="element.data.text"
+        v-html="!canEdit ? text : element.data.text"
       ></div>
     </div>
     <div v-else class="v-text preview">
-      <div
-        :style="{ verticalAlign: element.style.verticalAlign }"
-        v-html="element.data.text"
-      ></div>
+      <div v-html="!canEdit ? text : element.data.text"></div>
     </div>
   </div>
 </template>
@@ -50,25 +46,48 @@ export default {
     return {
       canEdit: false,
       ctrlKey: 17,
-      isCtrlDown: false
+      isCtrlDown: false,
+      verticalAlign: "",
+      writingMode: "",
     };
   },
   computed: {
     ...mapState(["editMode"]),
+    text() {
+      if (this.element.data.text === undefined) return "";
+      if (this.writingMode === "vertical") {
+        return this.element.data.text.split("").join("<br>");
+      } else if (this.writingMode === "horizontal") {
+        return this.element.data.text;
+      } else {
+        return this.element.data.text;
+      }
+    },
+    data() {
+      return this.element.data;
+    },
   },
   watch: {
     element: {
       handler: function (val) {
-        console.log("element", this.element);
+        if (val.data.verticalAlign !== this.verticalAlign)
+          this.verticalAlign = val.data.verticalAlign;
+        if (val.data.writingMode !== this.writingMode)
+          this.writingMode = val.data.writingMode;
       },
       deep: true,
+    },
+    verticalAlign() {
+      this.$refs["text"].style["vertical-align"] = this.verticalAlign;
     },
   },
   created() {
     console.log("txt的组件生命周期created");
   },
   mounted() {
-    console.log("txt的组件生命周期mounted");
+    this.$refs["text"].style["vertical-align"] = this.data.verticalAlign;
+    this.writingMode = this.data.writingMode;
+    // this.$refs["text"].style["writing-mode"] = this.element.data.writingMode;
   },
   methods: {
     handleInput(e) {
@@ -118,16 +137,13 @@ export default {
     },
 
     handleBlur(e) {
-      this.element.data.text = e.target.innerHTML || "&nbsp;";
-      const html = e.target.innerHTML;
-      if (html !== "") {
-        this.element.data.text = e.target.innerHTML;
+
+      if (this.writingMode === "vertical") {
+        this.element.data.text = e.target.innerHTML.replace(/<br>+/g, "") || "";
       } else {
-        this.element.data.text = "";
-        this.$nextTick(() => {
-          this.element.data.text = "&nbsp;";
-        });
+        this.element.data.text = e.target.innerHTML || "";
       }
+
       this.canEdit = false;
     },
 

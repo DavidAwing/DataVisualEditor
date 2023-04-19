@@ -524,9 +524,9 @@ export function removeAllStyleNotOfCanvasName(canvasName) {
 }
 
 export function generateStyleId(styleId, componentId) {
-  if (styleId.indexOf("{id}") !== -1 && componentId != null) {
+  if (styleId.indexOf("{id}") !== -1 && componentId !== undefined) {
     return "e-bi-" + strToBase64(styleId.replace("{id}", componentId)).toLowerCase();
-  } else if (styleId.indexOf("{id}") === -1 && componentId == null) {
+  } else if (styleId.indexOf("{id}") === -1 && componentId === undefined) {
     return "e-bi-" + strToBase64(styleId).toLowerCase();
   } else {
     throw new Error(`generateStyleId|参数错误: styleId: ${styleId}, componentId: ${componentId}`)
@@ -576,7 +576,7 @@ export function addStyleListToHead(component, canvasName) {
     return eval(expression.replace(/if/gi, ""));
   }
 
-  const styleList = component.styleList
+  const styleList = component.styleList.filter(s => s.type === "css")
 
   styleList.forEach((style) => {
 
@@ -596,7 +596,19 @@ export function addStyleListToHead(component, canvasName) {
     // 样式会添加到页面的head标签内
     const css = parseCssExpressions(style.css, evalCssExpression, style.cssData);
     const id = generateStyleId(style.styleId, component.id);
-    const selector = "#component" + component.id + " " + style.selector
+
+    let selector = ""
+    if (style.selector.includes(",")) {
+      const selectorArr = style.selector.split(",")
+      selectorArr.forEach(str => {
+        if (str.trim() !== "")
+          selector += "#component" + component.id + " " + str + ","
+      })
+      selector = selector.substring(0, selector.length - 1)
+    } else {
+      selector = "#component" + component.id + " " + style.selector.trim()
+    }
+
     if (isStyleExist(id)) {
       // 获取样式的选择器
       // let selectorStr = getStyleSelectorStrById(id);
@@ -604,8 +616,10 @@ export function addStyleListToHead(component, canvasName) {
       //   !selectorStr.trim().endsWith(",")
       //     ? (selectorStr = selectorStr + "," + selector)
       //     : (selectorStr = selectorStr + selector);
+      console.log("更新样式...", selector);
       updateStyle(id, selector + css); // 更新样式和选择器
     } else {
+      console.log("添加样式...", selector);
       addStyleToHead(id, selector + css, canvasName);
     }
   });
@@ -634,4 +648,14 @@ export function isStyleExist(id) {
   else
     return true
 }
+
+
+
+
+
+
+
+
+
+
 

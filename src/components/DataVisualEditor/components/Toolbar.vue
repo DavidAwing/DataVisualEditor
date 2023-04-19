@@ -90,13 +90,20 @@
 
     <el-dialog title="全局配置" :visible.sync="canvasConfigDialogVisible">
       <el-form>
-
         <el-form-item label="数据来源">
-          <el-input v-model="canvasData.dataSource.http" autocomplete="off"></el-input>
+          <el-input
+            type="textarea"
+            v-model="canvasData.dataSource.parameters"
+            autocomplete="off"
+            :rows="10"
+          ></el-input>
         </el-form-item>
 
         <el-form-item label="cron">
-          <el-input v-model="canvasData.dataSource.cron" autocomplete="off"></el-input>
+          <el-input
+            v-model="canvasData.dataSource.cron"
+            autocomplete="off"
+          ></el-input>
         </el-form-item>
 
         <!-- <el-form-item label="http地址">
@@ -116,7 +123,7 @@
           type="primary"
           @click="
             canvasConfigDialogVisible = false;
-            saveCanvasConfig();
+            save();
           "
           >确 定</el-button
         >
@@ -225,6 +232,9 @@ export default {
       },
       deep: false,
     },
+    canvasName() {
+      this.currentCanvasName = this.canvasName;
+    },
   },
   created() {
     eventBus.$on("preview", this.preview);
@@ -234,7 +244,7 @@ export default {
   },
   mounted() {
     const that = this;
-    DB.CallbackMap.onOpenSuccess.push(async () => {
+    DB.CallbackMap.onOpenSucceedEventList.push(async () => {
       this.canvasList = await DB.getAllItemByType("Canvas-Data");
       DB.getItem("CurrentCanvasName").then((item) => {
         this.currentCanvasName = item;
@@ -257,7 +267,7 @@ export default {
 
     exportTemplate() {
       if (this.currentCanvasName == null || this.currentCanvasName == "") {
-        toast("请设置标签模板的名称...");
+        toast("请设置看板模板的名称...");
         return;
       }
 
@@ -564,13 +574,6 @@ export default {
     inputCanvaName(event) {
       if (!event.target.value || !event.target.value.trim()) return;
       this.currentCanvasName = event.target.value;
-    },
-
-    saveCanvasConfig() {
-      this.$store.commit("setCanvasData", {
-        ...this.canvasData,
-        scale: this.scale,
-      });
     },
   },
 };

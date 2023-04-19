@@ -54,33 +54,30 @@
           return
         let gd = canvas.getContext('2d');//得到canvas上下文环境
 
-
-
-
         this.$nextTick(() => {
 
           gd.clearRect(0, 0, ele.style.width, ele.style.height);
-          if (ele.lineStyle == "solid") {
+          if (ele.data.lineStyle == "solid") {
             gd.setLineDash([]);
-          } else if (ele.lineStyle == "dotted") {
+          } else if (ele.data.lineStyle == "dotted") {
             gd.setLineDash([1, 1]);
-          } else if (ele.lineStyle == "double") {
+          } else if (ele.data.lineStyle == "double") {
             gd.setLineDash([10, 10]);
-          } else if (ele.lineStyle == "dashed") {
+          } else if (ele.data.lineStyle == "dashed") {
             gd.setLineDash([20, 5]);
-          } else if (ele.lineStyle == "dotted && dashed") {
+          } else if (ele.data.lineStyle == "dotted && dashed") {
             gd.setLineDash([15, 3, 3, 3]);
-          } else if (ele.lineStyle == "double && dashed") {
+          } else if (ele.data.lineStyle == "double && dashed") {
             gd.setLineDash([12, 3, 3]);
-          } else if (ele.lineStyle == "three && dashed") {
+          } else if (ele.data.lineStyle == "three && dashed") {
             gd.setLineDash([20, 3, 3, 3, 3, 3, 3, 3]);
           }
 
           gd.beginPath();//清除原来的痕迹
-          gd.strokeStyle = ele.color;//线条颜色
+          gd.strokeStyle = ele.data.color;//线条颜色
           gd.moveTo(start.x, start.y);//起点
           gd.lineTo(end.x, end.y);//终点
-          gd.lineWidth = ele.width;//线条宽度
+          gd.lineWidth = ele.data.width;//线条宽度
           gd.stroke();//这是最后一步，绘制
         })
       }

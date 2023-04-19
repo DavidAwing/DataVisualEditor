@@ -10,25 +10,18 @@
         v-if="showAttr(curComponent, key)"
       >
         <div v-if="type == 'text'">
-          <el-input v-model="curComponent[key] || curComponent[bind][key]">
-          </el-input>
+          <el-input v-model="curComponent[bind][key]"> </el-input>
         </div>
 
         <div v-else-if="type == 'textarea'">
-          <el-input
-            v-model="curComponent[key] || curComponent[bind][key]"
-            type="textarea"
-          />
+          <el-input v-model="curComponent[bind][key]" type="textarea" />
         </div>
 
         <div
           v-else-if="type == 'number'"
           style="display: flex; width: 100%; position: relative"
         >
-          <el-input
-            v-model.number="curComponent[key] || curComponent[bind][key]"
-            type="number"
-          />
+          <el-input v-model.number="curComponent[bind][key]" type="number" />
           <el-select
             v-if="curComponent.styleUnit[key]"
             v-model="curComponent.styleUnit[key]"
@@ -42,10 +35,7 @@
         </div>
 
         <div v-else-if="type == 'select'">
-          <el-select
-            v-model="curComponent[key] || curComponent[bind][key]"
-            placeholder=""
-          >
+          <el-select v-model="curComponent[bind][key]" placeholder="">
             <el-option
               v-for="item in options"
               :key="item.value"
@@ -58,7 +48,7 @@
 
         <div v-else-if="type == 'color-picker'">
           <el-color-picker
-            v-model="curComponent[key] || curComponent[bind][key]"
+            v-model="curComponent[bind][key]"
             :showAlpha="options.showAlpha"
           >
           </el-color-picker>
@@ -97,45 +87,39 @@
         </div>
 
         <div v-else-if="type == 'checkbox'">
-          <el-checkbox
-            v-model="curComponent[key] || curComponent[bind][key]"
-          ></el-checkbox>
+          <el-checkbox v-model="curComponent[bind][key]"></el-checkbox>
         </div>
 
         <div v-else-if="type == 'checkbox'">
-          <el-checkbox
-            v-model="curComponent[key] || curComponent[bind][key]"
-          ></el-checkbox>
+          <el-checkbox v-model="curComponent[bind][key]"></el-checkbox>
         </div>
 
         <div v-else-if="type == 'eventbus-button'">
           <el-button
-            @click="eventBus.$emit(bind['click'], curComponent.name, $event)"
+            @click="eventBus.$emit(bind['click'], curComponent.data.name, $event)"
           >
-            {{ bind['label'] }}</el-button
+            {{ bind["label"] }}</el-button
           >
         </div>
 
         <div v-else-if="type == 'eventbus-select'">
-
           <el-select
-          v-model="bind.value"
-          @change="(value)=>eventBus.$emit(bind['change'], curComponent.name, value)"
-          placeholder=""
-        >
-          <el-option
-            v-for="item in options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
+            v-model="bind.value"
+            @change="
+              (value) =>
+                eventBus.$emit(bind['change'], curComponent.name, value)
+            "
+            placeholder=""
           >
-          </el-option>
-        </el-select>
-
-
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
         </div>
-
-
       </el-form-item>
     </el-form>
   </div>
@@ -193,6 +177,25 @@ export default {
     },
     curComponent() {
       return this.$store.state.curComponent;
+    },
+    attrModel: {
+      get() {
+        console.log("参数");
+        return (key, bind) => {
+          if (bind) {
+            return this.curComponent[bind][key];
+          } else {
+            return this.curComponent[key];
+          }
+        };
+      },
+      set(value) {
+        if (bind) {
+          this.curComponent[bind][key] = value;
+        } else {
+          return (this.curComponent[key] = value);
+        }
+      },
     },
   },
   methods: {

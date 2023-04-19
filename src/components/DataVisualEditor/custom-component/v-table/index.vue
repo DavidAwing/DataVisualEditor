@@ -21,7 +21,7 @@
 
     <top-el-dialog
       title="表头编辑"
-      :visible.sync="editColumnsDialog"
+      :visible.sync="element.data.editColumnsDialog"
       width="35%"
       v-el-drag-dialog
       center
@@ -78,8 +78,12 @@
       </el-form>
 
       <span slot="footer" class="dialog-footer">
-        <el-button @click="editColumnsDialog = false">取 消</el-button>
-        <el-button type="primary" @click="editColumnsDialog = false"
+        <el-button @click="element.data.editColumnsDialog = false"
+          >取 消</el-button
+        >
+        <el-button
+          type="primary"
+          @click="element.data.editColumnsDialog = false"
           >确 定</el-button
         >
       </span>
@@ -88,6 +92,7 @@
 </template>
 
 <script lang="js">
+  import Vue from "vue";
 import { mapState } from "vuex";
 import axios from "axios";
 import { keycodes } from "../../utils/shortcutKey";
@@ -95,7 +100,6 @@ import ComponentBase from "../ComponentBase";
 import { getRandStr } from "../../utils/utils";
 import VResize from 'v-resize'
 import eventBus from '../../utils/eventBus'
-
 import elDragDialog from "../../directive/el-drag-dialog";
 
 
@@ -103,6 +107,7 @@ export default {
   extends: ComponentBase,
   directives: {
     resize: VResize,
+    elDragDialog
   },
   props: {
 
@@ -122,7 +127,6 @@ export default {
         },
         directions: ['right', 'bottom'],
       },
-      editColumnsDialog: false,
       column: {},
       selected: "",
 
@@ -141,13 +145,23 @@ export default {
       deep: true,
     },
 
-    editColumnsDialog(val) {
-      if (!val)
-        return
-      if ((!this.column.label || !this.column.prop) && this.element.data.columns.length > 0) {
-        this.column = this.element.data.columns[0]
-        this.selected = this.column.prop
-      }
+    element: {
+      handler: function (val) {
+
+        if ( this.element.data.editColumnsDialog == true) {
+
+        }
+
+        // if (!val)
+        // return
+      // if ((!this.column.label || !this.column.prop) && this.element.data.columns.length > 0) {
+      //   this.column = this.element.data.columns[0]
+      //   this.selected = this.column.prop
+      // }
+
+
+      },
+      deep: true,
     },
 
     selected(value) {
@@ -168,15 +182,11 @@ export default {
 
     eventBus.$on('onEditColumns', (name, event) => {
 
-      if (name !== this.element.name) return
+      console.log("图表组件修改...");
 
-
-      console.log("event", event);
-
-      this.editColumnsDialog = true
+      if (name !== this.element.data.name) return
+      Vue.set(this.element.data, "editColumnsDialog", true)
     });
-
-
 
     // this.element.selectorList = [
     // { label: "奇数行颜色", value: "/deep/ .el-table tbody tr:nth-child(odd) .cell" }
@@ -224,21 +234,25 @@ export default {
         return
       const hasLabel = this.element.data.columns.some(obj => obj.label === value);
       if (!hasLabel) {
-        this.element.data.columns.push({ prop: value, label: value, width: 10, align: 'center' })
-        this.column = this.element.data.columns.slice(-1)[0]
+
+        const columns = this.element.data.columns
+        columns.push({ prop: value, label: value, width: 10, align: 'center' })
+        Vue.set(this.element.data, "columns", columns)
+        this.column = columns.slice(-1)[0]
         this.selected = this.column.prop
       }
     },
 
     removeColumn() {
-      for (let i = 0; i < this.element.data.columns.length; i++) {
-        const element = this.element.data.columns[i];
+      const columns = this.element.data.columns
+      for (let i = 0; i < columns.length; i++) {
+        const element = columns[i];
         if (element.prop === this.column.prop && element.label === this.column.label) {
-          this.element.data.columns.splice(i, 1)
-          if (this.element.data.columns[i]) {
-            this.column = this.element.data.columns[i]
-          } else if (this.element.data.columns.length > 0) {
-            this.column = this.element.data.columns.slice(-1)[0]
+          columns.splice(i, 1)
+          if (columns[i]) {
+            this.column = columns[i]
+          } else if (columns.length > 0) {
+            this.column = columns.slice(-1)[0]
           } else {
             this.column = {}
             this.selected = ""
@@ -247,12 +261,10 @@ export default {
           this.selected = this.column.prop
           break
         }
+        Vue.set(this.element.data, "columns", columns)
       }
     }
 
-  },
-  directives: {
-    elDragDialog
   }
 };
 </script>

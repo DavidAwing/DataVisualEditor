@@ -29,7 +29,10 @@ const data = {
       height: 100,
       scale: 100,
       unit: 'viewport',
-      dataSource: {}
+      dataSource: {
+        cron: "*/30 * * * * *",
+        parameters: "select * from user\n\nhttp"
+      }
     },
     isInEdiotr: false, // 是否在编辑器中，用于判断复制、粘贴组件时是否生效，如果在编辑器外，则无视这些操作
     canvasComponentData: [], // 画布组件数据
@@ -112,10 +115,12 @@ const data = {
 
       const attribute = params[0]
       const componentAttributeDataMap = params[1]
+
       for (const component of state.canvasComponentData) {
-        const attributeData = componentAttributeDataMap[component.name]
-        if (attributeData)
+        const attributeData = componentAttributeDataMap[component.data.name]
+        if (attributeData) {
           component[attribute] = { ...component[attribute], ...attributeData }
+        }
       }
     },
 

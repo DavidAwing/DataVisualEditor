@@ -7,20 +7,23 @@ let indexedDB = window.indexedDB
 let db: any;
 const request = indexedDB.open(dbName, version)
 
+export let isOpened = false
+
 const CallbackMap = {
 
   onOpenError: new Array<any>(),
-  onOpenSuccess: new Array<any>(),
+  onOpenSucceedEventList: new Array<any>(),
 
 }
 
 request.onsuccess = (event: Event) => {
+
+  isOpened = true;
   db = (event.target as any).result // 数据库对象
   console.log("数据库类型", event);
   console.log("数据库类型", db);
-  console.log('数据库打开成功')
 
-  CallbackMap.onOpenSuccess.forEach(callback => {
+  CallbackMap.onOpenSucceedEventList.forEach(callback => {
     callback()
   })
 }
@@ -203,10 +206,15 @@ function getAllItemByType(type: string | number) {
 
   return new Promise((resolve, reject) => {
 
+    if (!db) {
+      console.warn("DB未开启...");
+      return
+    }
+
     const transaction = db.transaction([_storeName], "readonly") // 事务
     const objectStore = transaction.objectStore(_storeName) // 仓库对象
 
-    const request = objectStore.openCursor();
+    const request = objectStore?.openCursor();
     const itemList = new Array<any>()
     let most = 0;
     request.onsuccess = (event: any) => {

@@ -73,6 +73,9 @@ export default {
 
 // 恢复上一次剪切的数据
 function restorePreCutData(state) {
+
+  console.log("bug在哪里");
+
   if (state.isCut && state.copyData) {
     const data = deepCopy(state.copyData.data)
     const index = state.copyData.index
@@ -86,6 +89,7 @@ function restorePreCutData(state) {
 }
 
 function copyData(state) {
+  console.log("bug在哪里1111");
   state.copyData = {
     data: deepCopy(state.curComponent),
     index: state.curComponentIndex,

@@ -27,19 +27,20 @@ export default class ComponentBase extends Vue {
   //     )
   // }
 
-  private created() {
+  public created() {
     console.log("基类生命周期", this.element);
 
     this.element.data.p = "父组件挂载的数据"
+
   }
 
-  private mounted() {
+  public mounted() {
     console.log("基类生命周期: mounted");
 
 
     this.$watch('element', (newValue, oldValue) => {
       console.log('基类生命周期 element changed:', newValue, oldValue);
-    }, { deep: true });
+    }, { deep: false });
 
   }
 

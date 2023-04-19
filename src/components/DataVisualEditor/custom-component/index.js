@@ -9,7 +9,9 @@ const components = [
     'VBarcode',
     'VQrcode',
     'VLine',
-    'v-table'
+    'v-table',
+    'v-iframe',
+    'vc-bar',
 ]
 
 components.forEach(key => {

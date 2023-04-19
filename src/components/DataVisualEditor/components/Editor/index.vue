@@ -68,6 +68,9 @@ import eventBus from "../../utils/eventBus";
 import Grid from "./Grid.vue";
 import { changeStyleWithScale } from "../../utils/translate";
 import { getComponentSharedData } from "../../custom-component/component-list"; // 左侧列表数据
+import { requestCanvasData } from "../../utils/dataBinder";
+import * as DB from "../../utils/indexDB";
+import generateID, { resetID } from "../../utils/generateID";
 
 export default {
   components: { Shape, ContextMenu, MarkLine, Area, Grid },
@@ -112,6 +115,13 @@ export default {
       },
       deep: false,
     },
+    canvasName: {
+      handler: function (val, old) {
+        requestCanvasData.bind(this)();
+      },
+      deep: false,
+      immediate: true,
+    },
   },
   created() {},
   mounted() {
@@ -121,11 +131,17 @@ export default {
     eventBus.$on("hideArea", () => {
       this.hideArea();
     });
+
+    DB.CallbackMap.onOpenSucceedEventList.push(async () => {
+      console.log("数据库开启成功...");
+    });
   },
   methods: {
     changeStyleWithScale,
 
     getUnit,
+
+    resetID,
 
     handleMouseDown(e) {
       // 如果没有选中组件 在画布上点击时需要调用 e.preventDefault() 防止触发 drop 事件
@@ -336,7 +352,7 @@ export default {
       const newHeight = (text.split("<br>").length - 1) * lineHeight * fontSize;
       return height > newHeight ? height : newHeight;
     },
-  },
+  }
 };
 </script>
 

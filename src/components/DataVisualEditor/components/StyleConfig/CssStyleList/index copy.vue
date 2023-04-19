@@ -1,6 +1,6 @@
 <!-- TODO: 这个页面后续将用 JSX 重构 -->
 <template>
-  <div class="root">
+  <div class="container">
     <!-- <el-button @click="addStyle">添加样式</el-button>
     <hr class="hr-edge-weak" style="margin-top: 6px" /> -->
 
@@ -13,13 +13,21 @@
                                                                                                           <hr class="hr-edge-weak" style="margin-top: 6px;"> -->
               <el-option
                 v-for="(selector, index) in selectorList"
-                :key="selector.label || selector"
-                :label="selector.label || selector"
-                :value="selector.value || selector"
+                :key="selector.label"
+                :label="selector.label"
+                :value="selector.value"
               >
               </el-option>
             </el-select>
-            <button class="add-selector">+</button>
+            <button class="add-selector">
+              <img
+                src="@/assets/setting.png"
+                alt=""
+                srcset=""
+                width="18px"
+                style="vertical-align: middle"
+              />
+            </button>
           </div>
 
           <!-- <el-checkbox-group v-model="activeClassList" @change="()=>{
@@ -35,13 +43,19 @@
           title=""
           width="300"
           trigger="hover"
-          :disabled="showStyleImg"
+          :open-delay="1500"
+          :disabled="showStyleDetails"
         >
-          <el-image :src="curStyle.img" lazy>
+          <!-- todo: 根据字符串的不同,或者显示图片或者显示网页,或者显示html -->
+          <!-- 图片 -->
+          <!-- <el-image :src="curStyle.details" lazy>
             <div slot="placeholder" class="image-slot">
-              css效果加载中<span class="dot">...</span>
+              样式详情加载中<span class="dot">...</span>
             </div>
-          </el-image>
+          </el-image> -->
+          <!-- html -->
+          <div v-html="curStyle.details">页面加载中...</div>
+
           <el-form-item label="样式" slot="reference">
             <el-cascader
               v-model="selectedStyle"
@@ -64,9 +78,9 @@
                                                                                                           <hr class="hr-edge-weak" style="margin-top: 6px;"> -->
                 <el-option
                   v-for="(selector, index) in selectorList"
-                  :key="selector.label || selector"
-                  :label="selector.label || selector"
-                  :value="selector.value || selector"
+                  :key="selector.label"
+                  :label="selector.label"
+                  :value="selector.value"
                 >
                 </el-option>
               </el-select>
@@ -127,11 +141,13 @@
             </el-collapse-item>
 
             <el-collapse-item title="变量" name="2">
-              <div v-if="curStyle.type === 'css'">
+              <div>
                 <el-form-item
-                  v-for="({ label, type, options }, index) in curStyle.attrList"
+                  v-for="(
+                    { label, variable, type, options }, index
+                  ) in curStyle.attrList"
                   :key="index"
-                  :label="label"
+                  :label="label || variable"
                 >
                   <div v-if="type == 'color-picker'">
                     <el-color-picker
@@ -169,7 +185,7 @@
               </div>
             </el-collapse-item>
 
-            <el-collapse-item title="css & less" name="3">
+            <el-collapse-item title="css & less" name="3" v-if="false">
               <div v-if="curStyle.type === 'css'">
                 <el-form-item label="">
                   <el-input
@@ -219,18 +235,22 @@ import {
   addStyleListToHead,
   generateStyleId,
   removeAllStyleNotOfCanvasName,
-} from "../utils/style";
-import * as DB from "../utils/indexDB";
+} from "@/components/DataVisualEditor/utils/style";
+import * as DB from "@/components/DataVisualEditor/utils/indexDB";
 const toStyleString = require("to-style").string;
 const toStyleObject = require("to-style").object;
 import { toCSS, toJSON } from "cssjson";
-import { strToBase64, isArrayInclude } from "../utils/utils";
+import {
+  strToBase64,
+  isArrayInclude,
+} from "@/components/DataVisualEditor/utils/utils";
 import deepClone from "deep-clone";
-
 import axios from "axios";
+import  StyleBase from "../StyleBase";
 
 export default {
   components: {},
+  extends: StyleBase,
   data() {
     return {
       excludes: ["Group"], // 这些组件不显示内容
@@ -252,9 +272,11 @@ export default {
       // todo: Invalid prop: type check failed for prop "options". Expected Array, got String with value "[]".
 
       const key = "styleList:" + this.curComponent.component;
-      let styleList = this.styleMap[key];
+      if (this.styleMap.hasOwnProperty(key)) return this.styleMap[key];
 
-      if (styleList != null) return styleList;
+      if (this.isStyleListInterrupt) return [];
+
+      this.isStyleListInterrupt = true;
       axios
         .get("/BI/Component/GetStyleList", {
           params: {
@@ -263,17 +285,23 @@ export default {
           timeout: 10000,
         })
         .then(({ data }) => {
+          this.isStyleListInterrupt = false;
+          if (data.data == null || data.data.length == 0) {
+            console.warn("组件未配置样式");
+            return;
+          }
           Vue.set(this.styleMap, key, data.data);
+        })
+        .catch((error) => {
+          this.isStyleListInterrupt = false;
         });
-
-      return styleList;
+      return [];
     },
     selectorList() {
       const key = "selectorList:" + this.curComponent.component;
-      let selectorList = this.styleMap[key];
-
-      if (selectorList != null) return selectorList;
-
+      if (this.styleMap.hasOwnProperty(key)) return this.styleMap[key];
+      if (this.isStyleListInterrupt) return [];
+      this.isStyleListInterrupt = true;
       axios
         .get("/BI/Component/GetSelectorList", {
           params: {
@@ -282,22 +310,30 @@ export default {
           timeout: 10000,
         })
         .then(({ data }) => {
+          this.isStyleListInterrupt = false;
+          if (data.data == null || data.data.length == 0) {
+            console.warn("组件未配置选择器");
+            return;
+          }
           Vue.set(this.styleMap, key, data.data);
+        })
+        .catch((error) => {
+          this.isStyleListInterrupt = false;
         });
-
-      return selectorList;
+      return [];
     },
     curComponent() {
       // const defaultSelector = this.$store.state.curComponent.selectorList[0]
       // this.curSelector = defaultSelector.value || defaultSelector
+
+      this.isSwitchToStyle = true;
       return this.$store.state.curComponent;
     },
-    showStyleImg() {
+    showStyleDetails() {
       return JSON.stringify(this.curStyle) === "{}";
     },
     addedStyleTags() {
-
-      console.log("当前组件的样式", this.curComponent.styleList);
+      if (this.curComponent.styleList == null) return [];
       return this.curComponent.styleList;
     },
   },
@@ -327,15 +363,50 @@ export default {
       deep: true,
     },
     curStyle: {
-      handler: function (val, old) {
-      },
+      handler: function (val, old) {},
       deep: true,
     },
     selectedStyle: {
       handler: function (val, old) {
-        this.handleStyleChange(val)
+        this.handleStyleChange(val);
       },
       deep: true,
+    },
+    styleList: {
+      handler: function (val, old) {
+        if (!this.isSwitchToStyle) return;
+
+        if (
+          this.addedStyleTags === undefined ||
+          this.addedStyleTags.length === 0
+        ) {
+          console.warn("组件未应用任何样式...");
+          return;
+        }
+
+        if (val === undefined || val.length === 0) {
+          console.warn("组件未配置任何样式...");
+          return;
+        }
+
+        // todo, 需要切换到组件最后一次编辑的项
+        const style = this.addedStyleTags[0];
+        const regex = /\[([^\]\s]*)\]/g;
+        const styleArr = [];
+        let match;
+        while ((match = regex.exec(style.hierarchy)) !== null)
+          styleArr.push(match[1]);
+
+        if (styleArr.length !== 2) {
+          console.warn(`样式的hierarchy不正确`, style);
+          return;
+        }
+        this.handleStyleChange(styleArr);
+        this.switchToStyle(style);
+        this.isSwitchToStyle = false;
+      },
+      deep: true,
+      immediate: true,
     },
   },
 
@@ -358,7 +429,7 @@ export default {
             const style = category.children[j];
             if (style.value === nodes[1]) {
               this.curStyle = style;
-              this.curStyle.hierarchy = `[${nodes[0]}][${nodes[1]}]`
+              this.curStyle.hierarchy = `[${nodes[0]}][${nodes[1]}]`;
               return;
             }
           }
@@ -384,125 +455,119 @@ export default {
       //   css = "{\n" + css + "}";
       // }
 
-      if (this.curStyle.type === "css") {
+      if (this.curStyle.css == null || this.curStyle.css.trim().length === 0) {
+        console.warn("请选择样式");
+        return;
+      }
+
+      if (this.curSelector == null || this.curSelector.trim().length === 0) {
+        console.warn("请选择选择器");
+        return;
+      }
+
+      let originalStyle = convertToCss(this.curStyle.css);
+
+      const cssData = {};
+      this.curStyle.attrList.forEach((attr) => {
+        let attrKey = "";
+        const variable = attr.variable.trim();
+        !variable.startsWith("@")
+          ? (attrKey = variable)
+          : (attrKey = variable.substring(1));
+        cssData[attrKey] = attr.value;
+      });
+
+      // if (this.curSelector === "main-style") {
+      //   // 直接修改组件的样式
+      //   const keys = Object.keys(cssData)
+      //   keys.forEach(key => {
+      //     this.curComponent.style[key] = cssData[key]
+      //   })
+      //   selector = this.curSelector
+      // }
+
+      // 样式会添加到页面的head标签内
+      const id = this.generateStyleId(
+        this.canvasName +
+          "-" +
+          this.curStyle.value +
+          "-" +
+          this.curComponent.id +
+          "-" +
+          this.curSelector
+      );
+      const selector = this.curSelector;
+
+      // if (isStyleExist(id)) {
+      //   // 获取样式的选择器
+      //   let selectorStr = getStyleSelectorStrById(id);
+      //   if (!selectorStr.includes(selector))
+      //     !selectorStr.trim().endsWith(",")
+      //       ? (selectorStr = selectorStr + "," + selector)
+      //       : (selectorStr = selectorStr + selector);
+      //   css = selectorStr + css;
+      //   updateStyle(id, css); // 更新样式和选择器
+      // } else {
+      //   css = selector + css;
+      //   addStyleToHead(id, css);
+      // }
+
+      // 添加到组件的样式列表
+
+      // 样式已存在则删除
+      let isExists = false;
+      for (let i = 0; i < this.curComponent.styleList.length; i++) {
+        // todo 速度可以优化
+        const style = this.curComponent.styleList[i];
         if (
-          this.curStyle.css == null ||
-          this.curStyle.css.trim().length === 0
+          this.generateStyleId(style.styleId, this.curComponent.id) === id &&
+          style.selector === selector
         ) {
-          console.warn("请选择样式");
-          return;
+          this.curComponent.styleList[i].css = originalStyle;
+          this.curComponent.styleList[i].cssData = cssData;
+          isExists = true;
+          break;
         }
+      }
 
-        if (this.curSelector == null || this.curSelector.trim().length === 0) {
-          console.warn("请选择选择器");
-          return;
-        }
-
-        let originalStyle = convertToCss(this.curStyle.css);
-
-        const cssData = {};
-        this.curStyle.attrList.forEach((attr) => {
-          let attrKey = "";
-          const label = attr.label.trim();
-          !label.startsWith("@")
-            ? (attrKey = label)
-            : (attrKey = label.substring(1));
-          cssData[attrKey] = attr.value;
-        });
-
-        // if (this.curSelector === "main-style") {
-        //   // 直接修改组件的样式
-        //   const keys = Object.keys(cssData)
-        //   keys.forEach(key => {
-        //     this.curComponent.style[key] = cssData[key]
-        //   })
-        //   selector = this.curSelector
-        // }
-
-        // 样式会添加到页面的head标签内
-        const id = this.generateStyleId(
-          this.canvasName +
-            "-" +
-            this.curStyle.value +
-            "-" +
-            this.curComponent.id +
-            "-" +
-            this.curSelector
-        );
-        const selector = this.curSelector;
-
-        // if (isStyleExist(id)) {
-        //   // 获取样式的选择器
-        //   let selectorStr = getStyleSelectorStrById(id);
-        //   if (!selectorStr.includes(selector))
-        //     !selectorStr.trim().endsWith(",")
-        //       ? (selectorStr = selectorStr + "," + selector)
-        //       : (selectorStr = selectorStr + selector);
-        //   css = selectorStr + css;
-        //   updateStyle(id, css); // 更新样式和选择器
-        // } else {
-        //   css = selector + css;
-        //   addStyleToHead(id, css);
-        // }
-
-        // 添加到组件的样式列表
-
-        // 样式已存在则删除
-        let isExists = false;
-        for (let i = 0; i < this.curComponent.styleList.length; i++) {
-          // todo 速度可以优化
-          const style = this.curComponent.styleList[i];
+      if (!isExists) {
+        let selectorName = "";
+        for (let i = 0; i < this.selectorList.length; i++) {
+          const selector = this.selectorList[i];
           if (
-            this.generateStyleId(style.styleId, this.curComponent.id) === id &&
-            style.selector === selector
+            typeof selector === "object" &&
+            selector.label &&
+            selector.value &&
+            selector.value === this.curSelector
           ) {
-            this.curComponent.styleList[i].css = originalStyle;
-            this.curComponent.styleList[i].cssData = cssData;
-            isExists = true;
+            selectorName = selector.label;
+            break;
+          } else if (
+            typeof selector === "string" &&
+            selector === this.curSelector
+          ) {
+            selectorName = selector;
             break;
           }
         }
 
-        if (!isExists) {
-          let selectorName = "";
-          for (let i = 0; i < this.selectorList.length; i++) {
-            const selector = this.selectorList[i];
-            if (
-              typeof selector === "object" &&
-              selector.label &&
-              selector.value &&
-              selector.value === this.curSelector
-            ) {
-              selectorName = selector.label;
-              break;
-            } else if (
-              typeof selector === "string" &&
-              selector === this.curSelector
-            ) {
-              selectorName = selector;
-              break;
-            }
-          }
-
-          this.curComponent.styleList.push({
-            styleId:
-              this.canvasName +
-              "-" +
-              this.curStyle.value +
-              "-{id}-" +
-              this.curSelector,
-            styleName: "[" + selectorName + "][" + this.curStyle.label + "]",
-            selector: this.curSelector,
-            cssData: cssData,
-            css: originalStyle,
-            hierarchy: this.curStyle.hierarchy
-          });
-        }
-
-        addStyleListToHead(this.curComponent, this.canvasName);
-      } else {
-        console.warn(`样式类型错误`, this.curStyle);
+        this.curComponent.styleList.push({
+          styleId:
+            this.canvasName +
+            "-" +
+            this.curStyle.value +
+            "-{id}-" +
+            this.curSelector,
+          styleName: "[" + selectorName + "][" + this.curStyle.label + "]",
+          selector: this.curSelector,
+          cssData: cssData,
+          css: originalStyle,
+          hierarchy: this.curStyle.hierarchy,
+          type: this.curStyle.type,
+        });
       }
+
+      addStyleListToHead(this.curComponent, this.canvasName);
     },
 
     contentChange(text) {
@@ -554,17 +619,30 @@ export default {
       while ((match = regex.exec(style.hierarchy)) !== null)
         styleArr.push(match[1]);
       if (styleArr.length !== 2) return;
-      this.selectedStyle = styleArr
+      this.selectedStyle = styleArr;
+      if (this.curStyle === undefined || this.curStyle.attrList === undefined)
+        return;
+
+      this.$nextTick(() => {
+        for (let i = 0; i < this.curStyle.attrList.length; i++) {
+          const attr = this.curStyle.attrList[i];
+          const key = attr.variable.startsWith("@")
+            ? attr.variable.substring(1)
+            : attr.variable;
+          if (style.cssData !== undefined && style.cssData.hasOwnProperty(key))
+            attr.value = style.cssData[key];
+        }
+      });
     },
   },
 };
 </script>
 
 <style lang="less" scoped>
-@import url(../styles/hr-style.css);
-@import url(StyleList.less);
+@import url(../../../styles/hr-style.css);
+@import url(index.less);
 
-.root {
+.container {
   position: absolute;
   left: 0;
   right: 00;

@@ -1,0 +1,55 @@
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    overflow: auto;
+    background-color: transparent;
+    align-items: flex-start;    
+    justify-items: flex-start;
+
+    & iframe { 
+        width: 100%;
+        height: 100%;
+    }
+
+    & .mask-layer{
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: transparent;
+        z-index: 1;
+    }
+}
+
+ 
+
+ 
+ 
+
+
+
+/*
+
+
+
+    <iframe
+      :onload="onload()"
+      :src="element.data.src"
+      ref="microApp"
+      id="micro-app"
+      height="100%"
+      width="100%"
+      frameborder="no"
+      border="0"
+      marginwidth="0"
+      marginheight="0"
+      scrolling="no"
+      allowtransparency="yes"
+      seamless
+      allowfullscreen="true"
+      webkitallowfullscreen="true"
+      mozallowfullscreen="true"
+    ></iframe>
+
+
+*/

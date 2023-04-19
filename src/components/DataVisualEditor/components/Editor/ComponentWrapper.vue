@@ -28,7 +28,8 @@ export default {
   },
   mounted() {
     try {
-      runAnimation(this.$refs.component.$el, this.config.animations);
+      // todo 动画
+      // runAnimation(this.$refs.component.$el, this.config.animations);
     } catch (error) {
       console.log(error.message);
     }
@@ -39,14 +40,17 @@ export default {
     },
 
     handleClick() {
-      const events = this.config.events;
-      Object.keys(events).forEach((event) => {
-        try {
-          this[event](events[event]);
-        } catch (error) {
-          console.warn("handleClick", error);
-        }
-      });
+
+      // todo 事件处理
+      // const events = this.config.events;
+      // Object.keys(events).forEach((event) => {
+      //   try {
+      //     // console.log("把偶哦了", this[event], event);
+      //     this[event](events[event]);
+      //   } catch (error) {
+      //     console.warn("handleClick", error);
+      //   }
+      // });
     },
   },
 };

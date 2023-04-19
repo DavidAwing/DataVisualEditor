@@ -28,7 +28,8 @@
             <p v-else class="placeholder">请选择组件</p>
           </el-tab-pane>
           <el-tab-pane label="样式" name="style">
-            <StyleList v-if="curComponent" />
+            <StyleList v-if="curComponent && curComponent.component.startsWith('v-')" />
+            <ChartStyleList v-else-if="curComponent && curComponent.component.startsWith('vc-')" />
             <p v-else class="placeholder">请选择组件</p>
           </el-tab-pane>
           <el-tab-pane label="动画" name="animation">
@@ -49,7 +50,8 @@
 import Editor from "../../components/DataVisualEditor/components/Editor/index";
 import ComponentList from "../../components/DataVisualEditor/components/ComponentList"; // 左侧列表组件
 import AttrList from "../../components/DataVisualEditor/components/AttrList"; // 右侧属性列表
-import StyleList from "../../components/DataVisualEditor/components/StyleList"; // 右侧样式列表
+import StyleList from "../../components/DataVisualEditor/components/StyleConfig/CssStyleList"; // 右侧样式列表
+import ChartStyleList from  "../../components/DataVisualEditor/components/StyleConfig/ChartStyleList"; // 右侧图表样式列表
 import AnimationList from "../../components/DataVisualEditor/components/AnimationList"; // 右侧动画列表
 import EventList from "../../components/DataVisualEditor/components/EventList"; // 右侧事件列表
 import componentList, {
@@ -83,6 +85,7 @@ export default {
     EventList,
     Toolbar,
     StyleList,
+    ChartStyleList,
   },
   data() {
     return {
@@ -144,6 +147,33 @@ export default {
     var demo1_h = window.getComputedStyle(ele).getPropertyValue("height");
   },
   methods: {
+    isShowStyle(type, curComponent) {
+      if (!curComponent) return false;
+
+      console.log("数据", curComponent);
+
+      if (type === "css" && curComponent.component.startsWith("v-")) {
+        return true;
+      } else if (type === "chart" && curComponent.component.startsWith("vc-")) {
+        return true;
+      } else {
+        console.log("不知道是什么类型的样式", type, curComponent);
+        return false;
+      }
+
+      // if (
+      //   chartComponentList.includes(curComponent.component) &&
+      //   type === "chart"
+      // ) {
+      //   console.log("显示AAA");
+      //   return true;
+      // } else if (type === "css") {
+      //   return true;
+      // } else {
+      //   return false
+      // }
+    },
+
     save(name, canvasEditorData) {
       return;
 
@@ -201,6 +231,7 @@ export default {
     resetID,
 
     handleDrop(event) {
+      console.log("移动中...");
       event.preventDefault();
       event.stopPropagation();
       const index = event.dataTransfer.getData("index");
@@ -210,7 +241,7 @@ export default {
         component.style.top = parseInt(event.clientY - rectInfo.y);
         component.style.left = parseInt(event.clientX - rectInfo.x);
         component.id = generateID();
-        component.name = getRandStr();
+        component.data.name = getRandStr();
         // 组件生命周期回调
         // component.events &&
         //   component.events.onBeforeCreate &&

@@ -216,10 +216,10 @@ export default {
         return {
           width:
             changeStyleWithScale(this.canvasStyleData.width) +
-            getUnit("width1", this.canvasStyleData.unit),
+            getUnit("width", this.canvasStyleData.unit),
           height:
             changeStyleWithScale(this.canvasStyleData.height) +
-            getUnit("height1", this.canvasStyleData.unit),
+            getUnit("height", this.canvasStyleData.unit),
           // 'page-break-after': pageIndex == 0 ? "auto" : "always",
           // 'break-before': 'page',
           "margin-top": pageIndex == 0 ? "0px" : "15px",
@@ -228,10 +228,10 @@ export default {
         return {
           width:
             changeStyleWithScale(this.canvasStyleData.width) +
-            getUnit("width2", this.canvasStyleData.unit),
+            getUnit("width", this.canvasStyleData.unit),
           height:
             changeStyleWithScale(this.canvasStyleData.height) +
-            getUnit("height2", this.canvasStyleData.unit),
+            getUnit("height", this.canvasStyleData.unit),
           "margin-top": 0,
         };
       }

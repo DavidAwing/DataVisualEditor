@@ -5,7 +5,6 @@
       @change="handlePreviewChange"
       :data="labelData"
       :scale="scale"
-      :background="background"
     />
   </div>
 </template>
@@ -34,7 +33,6 @@ export default {
       isShowPreview: true,
       labelData: {},
       scale: 100,
-      background: "#FFFFF0",
       alignType: {
         justifyContent: "flex-start",
         alignItems: "flex-start",
@@ -48,7 +46,7 @@ export default {
     this.restore();
     // 全局监听按键事件
     listenGlobalKeyDown();
-    document.title = "预览标签";
+    // document.title = "预览标签";
   },
   mounted() {},
   methods: {
@@ -65,7 +63,7 @@ export default {
         JSONfn.stringify(this.$route.query) == "{}" ||
         this.$route.query.labelPath == undefined
       ) {
-        console.warn("标签模板路径缺失");
+        console.warn("看板模板路径缺失");
         return;
       }
 

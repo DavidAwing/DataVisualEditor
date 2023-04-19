@@ -155,7 +155,7 @@ export default {
       isShowPreview: false,
       isShowComponentListViewer: false,
       needToChange: ["top", "left", "width", "height", "fontSize"],
-      scale: "100%",
+      scale: 100,
       scaleCopy: null,
       messageList: [],
       timer: null,
@@ -231,16 +231,19 @@ export default {
         });
       },
       deep: false,
+      immediate: true,
     },
     canvasName() {
       this.currentCanvasName = this.canvasName;
+    },
+    canvasData() {
+      this.scale = this.canvasData.scale;
     },
   },
   created() {
     eventBus.$on("preview", this.preview);
     eventBus.$on("save", this.save);
     eventBus.$on("clearCanvas", this.clearCanvas);
-    this.scale = this.canvasData.scale;
   },
   mounted() {
     const that = this;

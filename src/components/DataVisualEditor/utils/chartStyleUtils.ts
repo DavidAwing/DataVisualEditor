@@ -9,6 +9,7 @@ const JSONfn = require("jsonfn").JSONfn;
  * @returns
  */
 export function setJsonAttribute(json: string | object, attributePath: string, value: any, isCopy = true) {
+
   const properties = attributePath.split(".");
   let currentObj: any = null
   if (isCopy) {
@@ -16,8 +17,7 @@ export function setJsonAttribute(json: string | object, attributePath: string, v
   } else {
     currentObj = typeof json === 'object' ? json : JSONfn.parse(json);
   }
-
-
+  const originalObj = currentObj;
   for (let i = 0; i < properties.length; i++) {
     const property = properties[i];
     const isArray = /^[a-zA-Z]\w*\[(\d+|\w+)\]$/.test(property);
@@ -31,7 +31,7 @@ export function setJsonAttribute(json: string | object, attributePath: string, v
         throw Error("setJsonAttribute,格式不正确: " + attributePath);
       if (i === properties.length - 1) {
         currentObj[match[1]][index] = value;
-        return currentObj;
+        return originalObj;
       }
       currentObj = currentObj[match[1]][index];
     } else if (
@@ -46,12 +46,12 @@ export function setJsonAttribute(json: string | object, attributePath: string, v
         } else {
           currentObj[property] = value;
         }
-        return currentObj;
+        return originalObj;
       }
       currentObj = currentObj[property];
     }
   }
-  return currentObj
+  return originalObj
 }
 
 /**

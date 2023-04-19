@@ -1,11 +1,18 @@
 import Vue, { PropType, VNode } from "vue";
 import { Component, Prop, Emit, Watch } from 'vue-property-decorator'
 import axios from "axios";
+import * as tsx from "vue-tsx-support";
+import { Component as tsc } from "vue-tsx-support";
+
+import {
+  generateStyleId,
+  removeStyleById
+} from "@/components/DataVisualEditor/utils/style";
 
 @Component({
   components: {},
 })
-export default class StyleListBase extends Vue {
+export default class StyleListBase extends tsc<Vue> {
 
   isStyleListInterrupt = false
   isSwitchToStyle = false
@@ -88,18 +95,22 @@ export default class StyleListBase extends Vue {
     return [];
   }
 
-  // todo: 撑满父组件
-
   constructor() {
     super()
     console.log("样式组件基类创建组件");
   }
+
   public created() {
     console.log("样式组件基类创建组件: created");
     this.isStyleListInterrupt = false;
     this.isSwitchToStyle = false;
 
+    this.$watch('curStyle', (val, old) => {
+      this.isSwitchToStyle = false
+    })
+
     this.$watch('styleList', (val, old) => {
+
       if (!this.isSwitchToStyle) return;
 
       if (
@@ -115,19 +126,10 @@ export default class StyleListBase extends Vue {
         return;
       }
 
-      // todo, 需要切换到组件最后一次编辑的项
-      const style = this.addedStyleTags[0];
-      const regex = /\[([^\]\s]*)\]/g;
-      const styleArr = [];
-      let match;
-      while ((match = regex.exec(style.hierarchy)) !== null)
-        styleArr.push(match[1]);
+    // todo, 需要切换到组件最后一次编辑的项
+    const style = this.addedStyleTags[0];
 
-      if (styleArr.length !== 2) {
-        console.warn(`样式的hierarchy不正确`, style);
-        return;
-      }
-      this.handleStyleChange(styleArr);
+      this.handleStyleChange(this.getHierarchy(style.hierarchy));
       this.switchToStyle(style);
       this.isSwitchToStyle = false;
 
@@ -140,6 +142,35 @@ export default class StyleListBase extends Vue {
 
   public mounted() {
     console.log("样式组件基类创建组件: mounted");
+  }
+
+  // 获取当前样式的层级
+  getHierarchy(hierarchy:string) {
+
+    // const regex = /\[([^\]\s]*)\]/g;
+
+    const styleArr = [];
+
+    const regex = /^\[(.+?)\]\[(.+?)\]$/;
+    const match = hierarchy.match(regex);
+    if (match !== null && match.length > 0) {
+      styleArr[0] = match[1]
+      styleArr[1] = match[2]
+    } else {
+      console.warn(`样式的hierarchy不正确`, hierarchy);
+      return undefined;
+    }
+
+
+    // let match;
+    // while ((match = regex.exec(hierarchy)) !== null)
+    //   styleArr.push(match[1]);
+
+    if (styleArr.length !== 2) {
+      console.warn(`样式的hierarchy不正确`, hierarchy);
+      return undefined;
+    }
+    return styleArr
   }
 
   handleStyleChange(nodes: any) {
@@ -157,17 +188,35 @@ export default class StyleListBase extends Vue {
     }
   }
 
+  handleStyleTagsClose(closeStyle:any) {
+
+    if (closeStyle.type === "chart") {
+      const index = this.curComponent.styleList.indexOf(closeStyle);
+    const style = this.curComponent.styleList[index];
+    this.curComponent.styleList.splice(index, 1);
+    // todo 移除样式,恢复为echarts默认的样式
+    // removeStyleById();
+    } else if (closeStyle.type === "css") {
+      const index = this.curComponent.styleList.indexOf(closeStyle);
+      const style = this.curComponent.styleList[index];
+      this.curComponent.styleList.splice(index, 1);
+      removeStyleById(generateStyleId(style.styleId, this.curComponent.id));
+    } else {
+      console.warn(`handleStyleTagsClose|无法删除的样式`, closeStyle);
+    }
+
+  }
+
   switchToStyle(style: any) {
+
     this.curSelector = style.selector;
-    const regex = /\[([^\]\s]*)\]/g;
-    const styleArr = [];
-    let match;
-    while ((match = regex.exec(style.hierarchy)) !== null)
-      styleArr.push(match[1]);
-    if (styleArr.length !== 2) return;
+    const styleArr =  this.getHierarchy(style.hierarchy);
+    if (styleArr === undefined || styleArr.length !== 2) return;
     this.selectedStyle = styleArr;
-    if (this.curStyle === undefined || this.curStyle.attrList === undefined)
+    if (this.curStyle === undefined || this.curStyle.attrList === undefined) {
+      console.warn(`switchToStyle|当前样式异常: `, style);
       return;
+    }
 
     this.$nextTick(() => {
       for (let i = 0; i < this.curStyle.attrList.length; i++) {

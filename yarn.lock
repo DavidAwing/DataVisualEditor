@@ -12244,9 +12244,9 @@
     "loader-utils" "^2.0.2"
 
 "monaco-editor@^0.37.0-dev.20230328", "monaco-editor@>= 0.31.0":
-  "integrity" "sha512-1oWNCWLM6RRRYzd8lv6hAPAFhLnWuWQJ5GcuVeksaYLK0bhkphIaGhZ4ORXhFznXIK3MdGYUYjEYpfBv2iKQ6g=="
-  "resolved" "https://registry.npmmirror.com/monaco-editor/-/monaco-editor-0.37.0-dev.20230328.tgz"
-  "version" "0.37.0-dev.20230328"
+  "integrity" "sha512-jLXEEYSbqMkT/FuJLBZAVWGuhIb4JNwHE9kPTorAVmsdZ4UzHAfgWxLsVtD7pLRFaOwYPhNG9nUCpmFL1t/dIg=="
+  "resolved" "https://registry.npmmirror.com/monaco-editor/-/monaco-editor-0.37.1.tgz"
+  "version" "0.37.1"
 
 "move-concurrently@^1.0.1":
   "integrity" "sha512-hdrFxZOycD/g6A6SoI2bB5NA/5NEqD0569+S47WZhPvm46sD50ZHdYaFmnua5lndde9rCHGjmfK7Z8BuCt/PcQ=="
@@ -17965,7 +17965,7 @@
 
 "vue-tsx-support@^3.2.0":
   "integrity" "sha512-Uc3i9deEvZeHKc43Lcsh1ihCWvG1yygFnbY1jMe49K+DWCmGgwYWUkD0mxdgPwAMc6gi23CRVkrJsvamfCvD7A=="
-  "resolved" "https://registry.npmjs.org/vue-tsx-support/-/vue-tsx-support-3.2.0.tgz"
+  "resolved" "https://registry.npmmirror.com/vue-tsx-support/-/vue-tsx-support-3.2.0.tgz"
   "version" "3.2.0"
 
 "vue@*", "vue@^2", "vue@^2 || ^3.2.13", "vue@^2.0.0", "vue@^2.4.4", "vue@^2.5.17", "vue@^2.6.11", "vue@^2.6.12 || ^3.1.1", "vue@^2.6.14", "vue@^2.7.10", "vue@^2.x", "vue@^3.0.0-0 || ^2.6.0", "vue@>= 2.5 < 3", "vue@>=2.6.0", "vue@2.x":

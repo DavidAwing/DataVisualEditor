@@ -157,6 +157,28 @@
                     </el-select>
                   </div>
 
+                  <div
+                  v-else-if="type === 'integer'"
+                  style="display: flex; width: 100%; position: relative"
+                >
+                <!--  oninput="value=value.replace(/[^0-9]/g,'')" -->
+                  <el-input-number
+                    v-model.number="curStyle.attrList[index].value"
+                    :min="options.min || -99999"
+                    :max="options.max || 99999"
+                    :step="options.step || 1"
+                    type="number"
+                  />
+                  <el-select
+                    v-if="curStyle.attrList[index].options.unit"
+                    v-model="curStyle.attrList[index].options.unit"
+                    style="width: 100px; margin-left: 6px"
+                  >
+                    <el-option key="px" label="px" value="px"></el-option>
+                    <el-option key="%" label="%" value="%"></el-option>
+                  </el-select>
+                </div>
+
                   <div v-else-if="type == 'select'">
                     <el-select
                       v-model="curStyle.attrList[index].value"
@@ -231,7 +253,6 @@ import {
   generateStyleId,
   removeAllStyleNotOfCanvasName,
 } from "@/components/DataVisualEditor/utils/style";
-import { setJsonAttribute } from "@/components/DataVisualEditor/utils/chartStyleUtils";
 import * as DB from "@/components/DataVisualEditor/utils/indexDB";
 const toStyleString = require("to-style").string;
 const toStyleObject = require("to-style").object;
@@ -276,18 +297,13 @@ export default {
     addStyle() {
       const style = this.curStyle;
       const component = this.curComponent;
-      console.log("添加图表样式...", style, this.curComponent);
       if (style.css == null || style.css.trim().length === 0) {
         console.warn("请选择样式");
         return;
       }
-
-      const regex = /\[([^\]\s]*)\]/g;
-      const styleArr = [];
-      let match;
-      while ((match = regex.exec(style.hierarchy)) !== null)
-        styleArr.push(match[1]);
-
+      
+      const styleArr = this.getHierarchy(style.hierarchy);
+ 
       const key = "styleList:" + this.curComponent.component;
       let menuName = "";
       for (let i = 0; i < styleArr.length; i++) {
@@ -347,14 +363,6 @@ export default {
       return !curComponent.attrExcludes.includes(key);
     },
 
-    handleStyleTagsClose(closeStyle) {
-      const index = this.curComponent.styleList.indexOf(closeStyle);
-      const style = this.curComponent.styleList[index];
-      this.curComponent.styleList.splice(index, 1);
-      // todo 移除样式
-      // removeStyleById();
-    },
-
     showInput() {
       this.inputVisible = true;
       this.$nextTick((_) => {
@@ -381,118 +389,4 @@ export default {
 @import url(../../../styles/hr-style.css);
 @import url(index.less);
 
-.container {
-  position: absolute;
-  left: 0;
-  right: 00;
-  bottom: 0;
-  top: 0;
-  overflow: auto;
-  display: flex;
-  flex-flow: column nowrap;
-}
-
-.style-list {
-  position: relative;
-  overflow: auto;
-  padding: 0 20px 0 20px;
-}
-
-.style-css {
-  position: relative;
-  overflow: auto;
-  padding: 20px;
-  padding-top: 0;
-  height: 100%;
-  display: flex;
-  flex: 1;
-  flex-flow: column nowrap;
-}
-
-.style-css::-webkit-scrollbar {
-  width: 5px;
-  background-color: rgba(122, 122, 122, 0.3);
-}
-
-.style-css::-webkit-scrollbar-track {
-  background-color: transparent;
-}
-
-.style-css::-webkit-scrollbar-thumb {
-  background: rgba(122, 122, 122, 1);
-  border-radius: 15px;
-}
-
-.style-item {
-  margin-top: 8px;
-  height: 100%;
-  max-height: 100%;
-  flex: 1;
-}
-
-.footer {
-  /*
-    position: absolute;
-    bottom: 0.5rem;
-    left: 0;
-    right: 0;
-    margin: 0 auto; */
-
-  position: relative;
-  padding: 10px 20px 20px 20px;
-  display: flex;
-  justify-content: center;
-
-  & button {
-  }
-}
-
-/deep/ .el-form-item__label {
-}
-
-.el-tag + .el-tag {
-  margin-left: 10px;
-}
-
-.button-new-tag {
-  margin-left: 10px;
-  height: 32px;
-  line-height: 30px;
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-.input-new-tag {
-  width: 90px;
-  margin-left: 10px;
-  vertical-align: bottom;
-}
-
-/* 有弹框时的弹框样式 */
-.show-popper.el-popover {
-  padding: 0 !important;
-  background: transparent !important;
-  border: none;
-  box-shadow: 0 0 15px #faab3d;
-}
-
-/* 无弹框时直接隐藏 */
-.hide-popper {
-  display: none;
-}
-
-.set-selector,
-.set-style {
-  display: inline-block;
-  width: 35px;
-  background-color: #faab3dbb;
-  margin-left: 8px;
-  margin-right: -8px;
-  border-radius: 6px;
-  border-width: 0;
-
-  &:hover {
-    cursor: pointer;
-  }
-}
 </style>

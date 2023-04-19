@@ -439,6 +439,7 @@ export default {
     },
 
     handleStyleTagsClose(closeStyle) {
+
       const index = this.curComponent.styleList.indexOf(closeStyle);
       const style = this.curComponent.styleList[index];
       this.curComponent.styleList.splice(index, 1);

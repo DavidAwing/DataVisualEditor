@@ -39,11 +39,14 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx",
+    "node_modules/vue-tsx-support/enable-check.d.ts",
     "src/components/DataVisualEditor/custom-component/VText/index.tsx",
     "src/components/DataVisualEditor/custom-component/VText/index.tsx",
     "src/components/DataVisualEditor/custom-component/ComponentBase/index.tsx",
-    "src/components/DataVisualEditor/custom-component/ComponentBase/index.tsx"
-, "src/components/DataVisualEditor/utils/domUtils.js", "src/components/DataVisualEditor/utils/domUtils.js"  ],
+    "src/components/DataVisualEditor/custom-component/ComponentBase/index.tsx",
+    "src/components/DataVisualEditor/utils/domUtils.js",
+    "src/components/DataVisualEditor/utils/domUtils.js"
+  ],
   "exclude": [
     "node_modules"
   ]

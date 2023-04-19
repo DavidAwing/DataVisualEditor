@@ -89,7 +89,9 @@ export default class ChartsComponentBase extends ComponentBase {
 
       for (let i = 0; i < newValue.length; i++) {
         const style = newValue[i];
-        console.log("数据", style);
+
+        if (style == null || style.attributePath == null || style.attributePath.trim() === "")
+          continue
 
         const keys = Object.keys(style.cssData)
         if (testString(style.css) === 'object') {
@@ -99,7 +101,21 @@ export default class ChartsComponentBase extends ComponentBase {
             value[key] = style.cssData[key]
           })
 
-          this.option = setJsonAttribute(this.option, style.attributePath, value)
+          let attributePath = style.attributePath.includes("~~~") ? style.attributePath.split("~~~")[0] : style.attributePath
+          attributePath = attributePath.includes(" ") ? attributePath.replaceAll(" ", "") : attributePath
+          // @开头的字符串是变量
+          if (attributePath.includes("@")) {
+            const regex = /@\w+(?=[\x20\].])/g;
+            const match = attributePath.match(regex); // ['@index', '@aaindex']
+            match.forEach((placeholder: string) => {
+              const key = placeholder.substring(1)
+              attributePath = attributePath.replaceAll(placeholder, style.cssData[key])
+              // 参与路径的变量必须删, 不修改样式
+              delete value[key];
+            });
+          }
+          // $开头的字符串是方法
+          this.option = setJsonAttribute(this.option, attributePath, value)
           this.chart.setOption(this.option)
         }
       }

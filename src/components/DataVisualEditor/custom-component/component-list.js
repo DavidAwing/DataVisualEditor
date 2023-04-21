@@ -1809,6 +1809,386 @@ const list = [
         // }
       ]
   },
+  // 柱折线图
+  {
+    uniqueId: '',
+    component: 'vc-bar-MultipleYAxes',
+    label: '柱折线图',
+    icon: 'wenben',
+    data: {
+      chartId: "",
+      option: {
+        color: ['#5470C6', '#91CC75', '#EE6666'],
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'cross'
+          }
+        },
+        grid: {
+          right: '20%'
+        },
+        toolbox: {
+          feature: {
+            dataView: { show: true, readOnly: false },
+            restore: { show: true },
+            saveAsImage: { show: true }
+          }
+        },
+        legend: {
+          data: ['Evaporation', 'Precipitation', 'Temperature']
+        },
+        xAxis: [
+          {
+            type: 'category',
+            axisTick: {
+              alignWithLabel: true
+            },
+            // prettier-ignore
+            data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+          }
+        ],
+        yAxis: [
+          {
+            type: 'value',
+            name: 'Evaporation',
+            position: 'right',
+            alignTicks: true,
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#5470C6'
+              }
+            },
+            axisLabel: {
+              formatter: '{value} ml'
+            }
+          },
+          {
+            type: 'value',
+            name: 'Precipitation',
+            position: 'right',
+            alignTicks: true,
+            offset: 80,
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#91CC75'
+              }
+            },
+            axisLabel: {
+              formatter: '{value} ml'
+            }
+          },
+          {
+            type: 'value',
+            name: '温度',
+            position: 'left',
+            alignTicks: true,
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#EE6666'
+              }
+            },
+            axisLabel: {
+              formatter: '{value} °C'
+            }
+          }
+        ],
+        series: [
+          {
+            name: 'Evaporation',
+            type: 'bar',
+            data: [
+              2.0, 4.9, 7.0, 23.2, 25.6, 76.7, 135.6, 162.2, 32.6, 20.0, 6.4, 3.3
+            ]
+          },
+          {
+            name: 'Precipitation',
+            type: 'bar',
+            yAxisIndex: 1,
+            data: [
+              2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 175.6, 182.2, 48.7, 18.8, 6.0, 2.3
+            ]
+          },
+          {
+            name: 'Temperature',
+            type: 'line',
+            yAxisIndex: 2,
+            data: [2.0, 2.2, 3.3, 4.5, 6.3, 10.2, 20.3, 23.4, 23.0, 16.5, 12.0, 6.2]
+          }
+        ]
+      }
+    },
+    attrExcludes: [],
+    style: {
+      width: 211,
+      height: 22,
+      fontSize: 14,
+      fontStyle: 2500,
+      fontWeight: 2500,
+      borderRadius: 0,
+      lineHeight: '',
+      letterSpacing: 0,
+      left: 0,
+      textAlign: '',
+      color: 'rgba(0, 0, 0, 1)',
+      backgroundColor: 'rgba(0,0,0,0)',
+      fontFamily: '宋体'
+    },
+    styleUnit: {
+      top: "px",
+      left: "px",
+      width: 'px',
+      height: 'px',
+      fontSize: 'px',
+    },
+    attrList: [
+      {
+        key: "name",
+        type: "text",
+        label: '名称',
+        bind: "data"
+      },
+      {
+        key: "left",
+        type: "number",
+        label: 'x 坐标',
+        bind: "style"
+      },
+      {
+        key: "top",
+        type: "number",
+        label: 'y 坐标',
+        bind: "style"
+      },
+      {
+        key: "width",
+        type: "number",
+        label: '宽',
+        bind: "style"
+      },
+      {
+        key: "rotate",
+        type: "number",
+        label: '旋转',
+        bind: "style"
+      },
+      {
+        key: "color",
+        type: "color-picker",
+        label: '颜色',
+        bind: 'style',
+        options: {
+          showAlpha: false
+        }
+      },
+      {
+        key: "backgroundColor",
+        type: "color-picker",
+        label: '背景色',
+        bind: 'style',
+        options: {
+          showAlpha: false
+        }
+      },
+      {
+        key: "borderRadius",
+        type: "number",
+        label: '边框半径',
+        bind: 'style'
+      },
+      {
+        key: "fontSize",
+        type: "number",
+        label: '字体大小',
+        bind: 'style'
+      },
+      {
+        key: "fontWeight",
+        type: "number",
+        label: '字体粗细',
+        bind: 'style'
+      },
+      {
+        key: "lineHeight",
+        type: "number",
+        label: '行高',
+        bind: 'style'
+      },
+      {
+        key: "letterSpacing",
+        type: "number",
+        label: '字间距',
+        bind: 'style'
+      },
+      {
+        key: "writingMode",
+        type: "select",
+        label: '文字排列',
+        bind: 'data',
+        options: [
+          {
+            label: '水平',
+            value: 'horizontal'
+          },
+          {
+            label: '垂直',
+            value: 'vertical'
+          }
+        ]
+      },
+      {
+        key: "textAlign",
+        type: "select",
+        label: '左右对齐',
+        bind: 'style',
+        options: [
+          {
+            label: '左对齐',
+            value: 'left'
+          },
+          {
+            label: '居中',
+            value: 'center',
+          },
+          {
+            label: '右对齐',
+            value: 'right',
+          }
+        ]
+      },
+      {
+        key: "verticalAlign",
+        type: "select",
+        label: '垂直对齐',
+        bind: 'data',
+        options: [
+          {
+            label: '上对齐',
+            value: 'top'
+          },
+          {
+            label: '居中',
+            value: 'middle',
+          },
+          {
+            label: '下对齐',
+            value: 'bottom',
+          }
+        ]
+      },
+      {
+        key: "opacity",
+        type: "number",
+        label: '透明度',
+        bind: 'style'
+      },
+      {
+        key: "fontFamily",
+        type: "select",
+        label: '字体',
+        options: fontFamilyOpts,
+        bind: 'style'
+      },
+      {
+        key: "text",
+        type: "textarea",
+        label: '文本',
+        bind: "data"
+      }
+    ],
+    events: {
+
+      onBeforeCreate: (self, caller) => {
+
+        console.log("生命周期组件onBeforeCreate-self", self);
+        console.log("生命周期组件onBeforeCreate-caller", caller);
+
+        // return new Promise((resolve, reject) => {
+        //   setTimeout(() => {
+        //     console.log("更新之前2");
+        //     caller.$set(self.styleList, 0, {
+        //       value: 'border',
+        //       label: '边框',
+        //       children: [
+        //         {
+        //           type: 'css',
+        //           value: 'fg',
+        //           label: '效果1',
+        //           activeClassList: [],
+        //           style: "{color: red;}",
+        //           img: "",
+        //           attrList: []
+        //         }
+        //       ]
+        //     })
+        //     // self.styleList = textStyleList
+        //     resolve()
+        //   }, 5000);
+        // })
+
+      },
+
+      onMounted: (self, caller) => {
+
+        console.log("生命周期组件onMounted-self", self);
+        console.log("生命周期组件onMounted-caller", caller);
+
+        // return new Promise((resolve, reject) => {
+        //   setTimeout(() => {
+        //     console.log("更新之前2");
+        //     caller.$set(self.styleList, 0, {
+        //       value: 'border',
+        //       label: '边框',
+        //       children: [
+        //         {
+        //           type: 'css',
+        //           value: 'fg',
+        //           label: '效果1',
+        //           activeClassList: [],
+        //           style: "{color: red;}",
+        //           img: "",
+        //           attrList: []
+        //         }
+        //       ]
+        //     })
+        //     // self.styleList = textStyleList
+        //     resolve()
+        //   }, 5000);
+        // })
+
+      },
+
+      /**
+       *
+       * @param {*} self 当前的组件配置
+       * @param {*} caller 调用者
+       * @param {*} newData 新数据
+       * @param {*} oldData 旧数据
+       */
+      onBeforeDataChange: (self, caller, newData, oldData) => {
+
+        console.log("数据已经改变1111111");
+
+      },
+      onAfterDataChange: (self, caller, newData, oldData) => {
+
+        console.log("数据已经改变222222222");
+
+      }
+    },
+    styleList: //todo: 从后台读取组件支持的样式列表
+      [
+        // {
+        //   elementId: "",
+        //   selector: "",
+        //   styleName: "",
+        //   css: ""
+        // }
+      ]
+  },
   {
     component: 'v-iframe',
     label: '网页',

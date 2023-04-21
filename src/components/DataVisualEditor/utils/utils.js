@@ -225,3 +225,9 @@ export function isArrayInclude(arr, val) {
   }
 
 }
+
+// 去除空格,换行
+export function removeWhitespace(str) {
+  return str.replace(/\t|\n|\v|\r|\f/g,'').replace(/\s+/g,'')
+}
+

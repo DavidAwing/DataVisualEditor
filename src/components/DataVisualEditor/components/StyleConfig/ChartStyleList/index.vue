@@ -158,26 +158,36 @@
                   </div>
 
                   <div
-                  v-else-if="type === 'integer'"
-                  style="display: flex; width: 100%; position: relative"
-                >
-                <!--  oninput="value=value.replace(/[^0-9]/g,'')" -->
-                  <el-input-number
-                    v-model.number="curStyle.attrList[index].value"
-                    :min="options.min || -99999"
-                    :max="options.max || 99999"
-                    :step="options.step || 1"
-                    type="number"
-                  />
-                  <el-select
-                    v-if="curStyle.attrList[index].options.unit"
-                    v-model="curStyle.attrList[index].options.unit"
-                    style="width: 100px; margin-left: 6px"
+                    v-else-if="type === 'integer'"
+                    style="display: flex; width: 100%; position: relative"
                   >
-                    <el-option key="px" label="px" value="px"></el-option>
-                    <el-option key="%" label="%" value="%"></el-option>
-                  </el-select>
-                </div>
+                    <!--  oninput="value=value.replace(/[^0-9]/g,'')"     :max="options.max !== undefined ? options.max : 99999"-->
+                    <el-input-number
+                      v-model.number="curStyle.attrList[index].value"
+                      :min="options.min !== undefined ? options.min : -99999"
+                      :max="options.max !== undefined ? options.max : -99999"
+                      :step="options.step !== undefined ? options.step : 1"
+                      type="number"
+                      @change="
+                        (newValue, oldValue) => {
+                          onStyleAttrValueChange([...options['onchange']], {
+                            attrIndex: index,
+                            attr: curStyle.attrList[index],
+                            style: curStyle,
+                            eventData: { newValue, oldValue },
+                          });
+                        }
+                      "
+                    />
+                    <el-select
+                      v-if="curStyle.attrList[index].options.unit"
+                      v-model="curStyle.attrList[index].options.unit"
+                      style="width: 100px; margin-left: 6px"
+                    >
+                      <el-option key="px" label="px" value="px"></el-option>
+                      <el-option key="%" label="%" value="%"></el-option>
+                    </el-select>
+                  </div>
 
                   <div v-else-if="type == 'select'">
                     <el-select
@@ -260,6 +270,7 @@ import { toCSS, toJSON } from "cssjson";
 import {
   strToBase64,
   isArrayInclude,
+  removeWhitespace,
 } from "@/components/DataVisualEditor/utils/utils";
 import deepClone from "deep-clone";
 import StyleBase from "../StyleBase";
@@ -295,15 +306,17 @@ export default {
     generateStyleId,
 
     addStyle() {
+      // todo 数据未修改时候不要修改
+
       const style = this.curStyle;
       const component = this.curComponent;
       if (style.css == null || style.css.trim().length === 0) {
         console.warn("请选择样式");
         return;
       }
-      
+
       const styleArr = this.getHierarchy(style.hierarchy);
- 
+
       const key = "styleList:" + this.curComponent.component;
       let menuName = "";
       for (let i = 0; i < styleArr.length; i++) {
@@ -326,19 +339,43 @@ export default {
         cssData[attrKey] = attr.value;
       });
 
-      const styleId =
+      let styleValue = this.curStyle.value;
+      if (styleValue.includes("@")) {
+        const regex = /@\w+(?=[\x20\].])/g;
+        const match = styleValue.match(regex); // ['@index', '@aaindex']
+        match.forEach((placeholder) => {
+          const key = placeholder.substring(1);
+          styleValue = styleValue.replaceAll(placeholder, cssData[key]);
+        });
+      }
+
+      const styleId = removeWhitespace(
         this.canvasName +
-        "-" +
-        component.id +
-        "-" +
-        styleArr[0] +
-        "-" +
-        this.curStyle.value;
+          "-" +
+          component.id +
+          "-" +
+          styleArr[0] + // 父样式
+          "-" +
+          styleValue
+      );
+
+      // 删除已存在的样式
       for (let i = 0; i < component.styleList.length; i++) {
         const style = component.styleList[i];
         if (style.styleId === styleId) {
-          this.curComponent.styleList.splice(i, 1);
-          break;
+          // this.curComponent.styleList.splice(i, 1);
+
+          // todo 给修改的样式标签一个动画,并高亮显示当前标签
+          this.$set(this.curComponent.styleList, i, {
+            styleId: styleId,
+            styleName: `[${menuName}][${this.curStyle.label}]`,
+            cssData: cssData,
+            css: style.css,
+            hierarchy: this.curStyle.hierarchy,
+            attributePath: removeWhitespace(styleValue),
+            type: this.curStyle.type,
+          });
+          return;
         }
       }
 
@@ -348,7 +385,7 @@ export default {
         cssData: cssData,
         css: style.css,
         hierarchy: this.curStyle.hierarchy,
-        attributePath: this.curStyle.value,
+        attributePath: removeWhitespace(styleValue),
         type: this.curStyle.type,
       });
     },
@@ -388,5 +425,4 @@ export default {
 <style lang="less" scoped>
 @import url(../../../styles/hr-style.css);
 @import url(index.less);
-
 </style>

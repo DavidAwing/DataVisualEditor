@@ -87,6 +87,9 @@ export default class ChartsComponentBase extends ComponentBase {
 
     this.$watch('styleList', (newValue: any, oldValue) => {
 
+      console.log("样式修改...", newValue, oldValue);
+
+
       for (let i = 0; i < newValue.length; i++) {
         const style = newValue[i];
 
@@ -102,7 +105,7 @@ export default class ChartsComponentBase extends ComponentBase {
           })
 
           let attributePath = style.attributePath.includes("~~~") ? style.attributePath.split("~~~")[0] : style.attributePath
-          attributePath = attributePath.includes(" ") ? attributePath.replaceAll(" ", "") : attributePath
+        //  attributePath = attributePath.includes(" ") ? attributePath.replaceAll(" ", "") : attributePath
           // @开头的字符串是变量
           if (attributePath.includes("@")) {
             const regex = /@\w+(?=[\x20\].])/g;

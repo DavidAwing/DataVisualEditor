@@ -12,6 +12,7 @@ const components = [
     'v-table',
     'v-iframe',
     'vc-bar',
+    'vc-bar-MultipleYAxes',
 ]
 
 components.forEach(key => {

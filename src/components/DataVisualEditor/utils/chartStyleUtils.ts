@@ -1,6 +1,5 @@
 const JSONfn = require("jsonfn").JSONfn;
 
-
 /**
  *
  * @param {json} json json格式的数据
@@ -76,3 +75,6 @@ export function testString(str: string) {
     return "string"
   }
 }
+
+
+

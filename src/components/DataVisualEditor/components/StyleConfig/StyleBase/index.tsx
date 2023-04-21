@@ -113,26 +113,40 @@ export default class StyleListBase extends tsc<Vue> {
           if (val.startsWith("\"") && val.endsWith("\"")) {
             return val.substring(1, val.length-1)
           } else if (val.includes("+") || val.includes("-") || val.includes("*") || val.includes("/")) {
-
-            let expressionNodeList:any[] = []
-
-            if (val.includes("+")) 
-              expressionNodeList = expressionNodeList.concat(val.split("+"))
-            if (val.includes("-")) 
-              expressionNodeList = expressionNodeList.concat(val.split("-"))
-            if (val.includes("*")) 
-              expressionNodeList = expressionNodeList.concat(val.split("*"))
-            if (val.includes("/")) 
-              expressionNodeList = expressionNodeList.concat(val.split("/"))
+  
+            // 通过运算符分割字符串
+            function splitByOperators(str:string):string[] {
+              let operators = ['+', '-', '*', '/'];
+              let index = -1;
+              for (let i = str.length - 1; i >= 0; i--) {
+                if (operators.includes(str[i])) {
+                  index = i;
+                  break;
+                }
+              }
+              if (index === -1) {
+                return [str];
+              } else {
+                let left = str.slice(0, index);
+                let right = str.slice(index + 1);
+                let leftParts = splitByOperators(left);
+                let rightParts = splitByOperators(right);
+                return [...leftParts, str[index], ...rightParts];
+              }
+            } 
+            // let expressionNodeList:any[] = val.split(/[+\-*/]/); // 正则分割
+            let expressionNodeList:any[] = splitByOperators(val);  // 递归分割
 
               for (let i = 0; i < expressionNodeList.length; i++) {
                 const expressionNode = expressionNodeList[i].trim();
                 if (expressionNode.includes("$")) {
-                  const result = this.executionString(expressionNode)
-                  val = val.replaceAll(expressionNode, result)
+                  const returnedValue = this.executionString(expressionNode)
+                  val = val.replaceAll(expressionNode, returnedValue)
                 }
                 // todo 如果是变量?
               }
+
+              // todo eval需要替换成更好的方式
              return  eval(val)
           } else if (val.includes("$")) {
             return this.executionString(val)
@@ -145,11 +159,8 @@ export default class StyleListBase extends tsc<Vue> {
           }
         });
       }
-
       return (window as any)[functionName](...argumentList);
     }
-
-
     return value
   }
 

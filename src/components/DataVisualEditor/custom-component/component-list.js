@@ -1523,28 +1523,42 @@ const list = [
         },
         series: [
           {
-            data: [120, 200, 150, 80, 70, 110, 130],
+            id: "红色1",
+            name: "职业22222222222222222222",
+            data: [10, 200, 150, 80, 70, 110, 130],
             type: "bar",
             showBackground: true,
             backgroundStyle: {
-              color: "rgba(180, 180, 180, 0.2)",
+              color: "rgba(255, 123, 321, 0.5)",
             },
           },
           {
-            data: [120, 200, 150, 80, 70, 110, 130],
+            id: "绿色2",
+            name: "收入士大夫萨芬",
+            data: [130, 200, 150, 80, 70, 110, 130],
             type: "bar",
             showBackground: true,
             backgroundStyle: {
-              color: "rgba(180, 180, 180, 0.2)",
+              color: "rgba(0, 255, 0, 1)",
             },
           },
+          {
+            id: "蓝色3",
+            name: "地区",
+            data: [140, 200, 150, 80, 70, 110, 130],
+            type: "bar",
+            showBackground: true,
+            backgroundStyle: {
+              color: "rgba(0, 0, 255, 1)",
+            },
+          }
         ],
       }
     },
     attrExcludes: [],
     style: {
-      width: 211,
-      height: 22,
+      width: 350,
+      height: 260,
       fontSize: 14,
       fontStyle: 2500,
       fontWeight: 2500,
@@ -1590,133 +1604,25 @@ const list = [
         bind: "style"
       },
       {
+        key: "height",
+        type: "number",
+        label: '高',
+        bind: "style"
+      },
+      {
         key: "rotate",
         type: "number",
         label: '旋转',
         bind: "style"
       },
       {
-        key: "color",
-        type: "color-picker",
-        label: '颜色',
-        bind: 'style',
-        options: {
-          showAlpha: false
+        type: "eventbus-button",
+        label: '',
+        bind: {
+          label: '编辑',
+          click: "onEditSeries",
+          dblclick: "onEditSeries"
         }
-      },
-      {
-        key: "backgroundColor",
-        type: "color-picker",
-        label: '背景色',
-        bind: 'style',
-        options: {
-          showAlpha: false
-        }
-      },
-      {
-        key: "borderRadius",
-        type: "number",
-        label: '边框半径',
-        bind: 'style'
-      },
-      {
-        key: "fontSize",
-        type: "number",
-        label: '字体大小',
-        bind: 'style'
-      },
-      {
-        key: "fontWeight",
-        type: "number",
-        label: '字体粗细',
-        bind: 'style'
-      },
-      {
-        key: "lineHeight",
-        type: "number",
-        label: '行高',
-        bind: 'style'
-      },
-      {
-        key: "letterSpacing",
-        type: "number",
-        label: '字间距',
-        bind: 'style'
-      },
-      {
-        key: "writingMode",
-        type: "select",
-        label: '文字排列',
-        bind: 'data',
-        options: [
-          {
-            label: '水平',
-            value: 'horizontal'
-          },
-          {
-            label: '垂直',
-            value: 'vertical'
-          }
-        ]
-      },
-      {
-        key: "textAlign",
-        type: "select",
-        label: '左右对齐',
-        bind: 'style',
-        options: [
-          {
-            label: '左对齐',
-            value: 'left'
-          },
-          {
-            label: '居中',
-            value: 'center',
-          },
-          {
-            label: '右对齐',
-            value: 'right',
-          }
-        ]
-      },
-      {
-        key: "verticalAlign",
-        type: "select",
-        label: '垂直对齐',
-        bind: 'data',
-        options: [
-          {
-            label: '上对齐',
-            value: 'top'
-          },
-          {
-            label: '居中',
-            value: 'middle',
-          },
-          {
-            label: '下对齐',
-            value: 'bottom',
-          }
-        ]
-      },
-      {
-        key: "opacity",
-        type: "number",
-        label: '透明度',
-        bind: 'style'
-      },
-      {
-        key: "fontFamily",
-        type: "select",
-        label: '字体',
-        options: fontFamilyOpts,
-        bind: 'style'
-      },
-      {
-        key: "text",
-        type: "textarea",
-        label: '文本',
-        bind: "data"
       }
     ],
     events: {

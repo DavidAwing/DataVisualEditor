@@ -42,6 +42,9 @@ export default class ComponentBase extends Vue {
       console.log('基类生命周期 element changed:', newValue, oldValue);
     }, { deep: false });
 
+
+    // todo  监听组件样式, 执行组件的配置事件
+
   }
 
 }

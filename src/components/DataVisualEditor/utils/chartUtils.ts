@@ -1,4 +1,9 @@
+
+import {
+  removeWhitespace
+} from "@/components/DataVisualEditor/utils/utils";
 const JSONfn = require("jsonfn").JSONfn;
+
 
 /**
  *
@@ -9,7 +14,7 @@ const JSONfn = require("jsonfn").JSONfn;
  */
 export function setJsonAttribute(json: string | object, attributePath: string, value: any, isCopy = true) {
 
-  const properties = attributePath.split(".");
+  const properties = removeWhitespace(attributePath).split(".");
   let currentObj: any = null
   if (isCopy) {
     currentObj = typeof json === 'object' ? JSONfn.parse(JSONfn.stringify(json)) : JSONfn.parse(json);
@@ -53,6 +58,64 @@ export function setJsonAttribute(json: string | object, attributePath: string, v
   return originalObj
 }
 
+
+
+export function getValueByAttributePath(this: any, from: any, attributePath: string) {
+
+  const properties = removeWhitespace(attributePath).split(".").map((x: any) => x.trim());
+  let currentObj: any = (from === undefined || from === null || from.constructor.name === 'VueComponent') ? (this) : JSONfn.parse(JSONfn.stringify(from))
+
+  for (let i = 0; i < properties.length; i++) {
+    const property = properties[i];
+    if (property === "this")
+      continue
+
+    const isArray = /^[a-zA-Z]\w*\[(\d+|\w+)\]$/.test(property);
+    if (isArray) {
+      const match = property.match(/([a-zA-Z]+)\[(\d|\w+)\]/);
+      if (match === null || match.length !== 3) {
+        throw Error("setJsonAttribute,格式匹配错误: " + attributePath);
+      }
+      let index = parseInt(match[2]);
+      if (isNaN(index))
+        throw Error("setJsonAttribute,格式不正确: " + attributePath);
+      if (i === properties.length - 1) {
+        if (currentObj[match[1]][index] !== undefined) {
+          return currentObj[match[1]][index]
+        } else {
+          console.warn(`getValueByAttributePath|from: ${JSONfn.stringify(from)}, attributePath:${attributePath}, 找不到属性`);
+          return undefined
+        }
+      }
+      currentObj = currentObj[match[1]][index];
+    } else if (
+      Object.prototype.toString.call(currentObj) === "[object Object]"
+    ) {
+      if (i === properties.length - 1) {
+        if (currentObj[property] !== undefined) {
+          return currentObj[property]
+        } else {
+          console.warn(`getValueByAttributePath|from: ${JSONfn.stringify(from)}, attributePath:${attributePath}, 找不到属性`)
+          return undefined
+        }
+      }
+      currentObj = currentObj[property];
+    }
+  }
+  return currentObj
+}
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * 测试字符串可转换的类型
  * @param str
@@ -76,5 +139,12 @@ export function testString(str: string) {
   }
 }
 
+
+export enum CRUD {
+  create,
+  read,
+  update,
+  delete
+}
 
 

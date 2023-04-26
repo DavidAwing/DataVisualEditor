@@ -55,7 +55,7 @@
           <!-- html -->
           <div v-html="curStyle.details">页面加载中...</div>
 
-          <el-form-item label="样式" slot="reference">
+          <el-form-item label="选项" slot="reference">
             <div style="width: 100%; min-width: 100%; display: flex">
               <el-cascader
                 v-model="selectedStyle"
@@ -64,7 +64,7 @@
                 clearable
               >
               </el-cascader>
-              <button class="set-style">
+              <button class="set-style" v-if="false">
                 <img
                   src="@/assets/setting.png"
                   alt=""
@@ -100,7 +100,7 @@
                                                                                                     <el-button v-else class="button-new-tag" size="small" @click="showInput">+ Add</el-button> -->
 
           <el-collapse v-model="cssActiveCollapses">
-            <el-collapse-item title="已应用样式" name="1">
+            <el-collapse-item title="已应用样式" name="1"  v-if="false">
               <el-tag
                 v-for="(style, styleIndex) in addedStyleTags"
                 :key="generateStyleId(style.styleId) + styleIndex"
@@ -114,7 +114,7 @@
               </el-tag>
             </el-collapse-item>
 
-            <el-collapse-item title="变量" name="2">
+            <el-collapse-item title="设置" name="2">
               <div style="display: flex; flex-flow: column nowrap">
                 <el-form-item
                   v-for="(
@@ -123,6 +123,14 @@
                   :key="index"
                   :label="label || variable"
                 >
+                  <!-- <span slot="label" >
+                    <span>
+                      <span >{{label}}</span>
+                      <el-button class="array-icon" type="primary" icon="el-icon-minus" size="mini" style="transform: scale(0.6);" circle @click=""  v-if="type === 'string[]'"></el-button>
+                      <el-button class="array-icon" type="primary" icon="el-icon-plus" size="mini" style="transform: scale(0.6) translateX(-20px);" circle @click=""  v-if="type === 'string[]'"></el-button>
+                    </span>
+                  </span> -->
+
                   <div v-if="type == 'color-picker'">
                     <el-color-picker
                       v-model="curStyle.attrList[index].value"
@@ -132,11 +140,33 @@
                   </div>
 
                   <div
-                    v-else-if="type == 'text'"
+                    v-else-if="type === 'text'"
                     style="display: flex; width: 100%; position: relative"
                     class="form-item-input"
                   >
-                    <el-input v-model="curStyle.attrList[index].value" />
+                    <el-input
+                      v-model="curStyle.attrList[index].value"
+                      @change="
+                        (val, old) => {
+                          onStyleAttrValueChange([...options['onChange']], {
+                            attrIndex: index,
+                            attr: curStyle.attrList[index],
+                            style: curStyle,
+                            eventData: { val, old },
+                          });
+                        }
+                      "
+                      @input="
+                        (val, old) => {
+                          onStyleAttrValueChange([...options['onInput']], {
+                            attrIndex: index,
+                            attr: curStyle.attrList[index],
+                            style: curStyle,
+                            eventData: { val, old },
+                          });
+                        }
+                      "
+                    />
                   </div>
 
                   <div
@@ -169,12 +199,12 @@
                       :step="options.step !== undefined ? options.step : 1"
                       type="number"
                       @change="
-                        (newValue, oldValue) => {
-                          onStyleAttrValueChange([...options['onchange']], {
+                        (val, old) => {
+                          onStyleAttrValueChange([...options['onChange']], {
                             attrIndex: index,
                             attr: curStyle.attrList[index],
                             style: curStyle,
-                            eventData: { newValue, oldValue },
+                            eventData: { val, old },
                           });
                         }
                       "
@@ -202,6 +232,51 @@
                       >
                       </el-option>
                     </el-select>
+                  </div>
+
+                  <div v-else-if="type === 'string[]' || type === 'number[]'">
+                    <div>
+                      <el-button
+                        type="primary"
+                        icon="el-icon-minus"
+                        size="mini"
+                        circle
+                        @click="
+                          () => {
+                            curStyle.attrList[index].value.splice(
+                              curStyle.attrList[index].options.focusIndex,
+                              1
+                            );
+                          }
+                        "
+                      ></el-button>
+                      <el-button
+                        type="danger"
+                        icon="el-icon-plus"
+                        size="mini"
+                        circle
+                        @click="
+                          () => {
+                            curStyle.attrList[index].value.push('');
+                          }
+                        "
+                      ></el-button>
+                    </div>
+                    <div
+                      v-for="(item, stringIndex) in curStyle.attrList[index]
+                        .value"
+                    >
+                      <el-input
+                        v-model="curStyle.attrList[index].value[stringIndex]"
+                        :type="type === 'string[]' ? 'text' : 'number'"
+                        @focus="
+                          () => {
+                            curStyle.attrList[index].options.focusIndex =
+                              stringIndex;
+                          }
+                        "
+                      />
+                    </div>
                   </div>
 
                   <div v-else-if="type === 'checkbox'">
@@ -234,7 +309,7 @@
       </div>
     </div>
 
-    <div class="footer">
+    <div class="footer" v-if="false">
       <!-- 自动替换变量, 自动循环 -->
       <el-button @click="addStyle">应用</el-button>
     </div>
@@ -274,8 +349,9 @@ import {
 } from "@/components/DataVisualEditor/utils/utils";
 import deepClone from "deep-clone";
 import StyleBase from "../StyleBase";
-
 import axios from "axios";
+import eventBus from "../../../utils/eventBus";
+import { CRUD } from "../../../utils/chartUtils";
 
 export default {
   components: {},
@@ -306,7 +382,7 @@ export default {
     generateStyleId,
 
     addStyle() {
-      // todo 数据未修改时候不要修改
+      // todo 对比新旧数据,未修改时不要修改
 
       const style = this.curStyle;
       const component = this.curComponent;
@@ -360,26 +436,7 @@ export default {
       );
 
       // 删除已存在的样式
-      for (let i = 0; i < component.styleList.length; i++) {
-        const style = component.styleList[i];
-        if (style.styleId === styleId) {
-          // this.curComponent.styleList.splice(i, 1);
-
-          // todo 给修改的样式标签一个动画,并高亮显示当前标签
-          this.$set(this.curComponent.styleList, i, {
-            styleId: styleId,
-            styleName: `[${menuName}][${this.curStyle.label}]`,
-            cssData: cssData,
-            css: style.css,
-            hierarchy: this.curStyle.hierarchy,
-            attributePath: removeWhitespace(styleValue),
-            type: this.curStyle.type,
-          });
-          return;
-        }
-      }
-
-      this.curComponent.styleList.push({
+      const newData = {
         styleId: styleId,
         styleName: `[${menuName}][${this.curStyle.label}]`,
         cssData: cssData,
@@ -387,7 +444,34 @@ export default {
         hierarchy: this.curStyle.hierarchy,
         attributePath: removeWhitespace(styleValue),
         type: this.curStyle.type,
-      });
+      };
+      for (let i = 0; i < component.styleList.length; i++) {
+        const style = component.styleList[i];
+        if (style.styleId === styleId) {
+          // this.curComponent.styleList.splice(i, 1);
+
+          // todo 给修改的样式标签一个动画,并高亮显示当前标签
+          const oldData = deepClone(this.curComponent.styleList[i]);
+          this.$set(this.curComponent.styleList, i, newData);
+          eventBus.$emit(
+            "onOptionChange",
+            this.curComponent.data.name,
+            CRUD.update,
+            newData,
+            oldData
+          );
+          return;
+        }
+      }
+
+      this.curComponent.styleList.push(newData);
+      eventBus.$emit(
+        "onOptionChange",
+        this.curComponent.data.name,
+        CRUD.create,
+        newData,
+        undefined
+      );
     },
 
     contentChange(text) {

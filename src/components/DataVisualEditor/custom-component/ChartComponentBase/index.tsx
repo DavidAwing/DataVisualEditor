@@ -3,8 +3,10 @@ import ComponentBase from "../ComponentBase";
 import { Component, Prop, Emit, Watch } from 'vue-property-decorator'
 import * as echarts from "echarts";
 import { getRandStr } from "../../utils/utils";
-import { setJsonAttribute, testString } from "../../utils/chartStyleUtils";
-
+import { setJsonAttribute, testString, CRUD, getValueByAttributePath } from "../../utils/chartUtils";
+import eventBus from '../../utils/eventBus'
+const equal = require('fast-deep-equal')
+const JSONfn = require("jsonfn").JSONfn;
 @Component({
   components: {
   },
@@ -15,6 +17,11 @@ export default class ChartsComponentBase extends ComponentBase {
 
   chartDom: HTMLElement | undefined = undefined
   chart: any = undefined
+  editSeriesDialog = false
+  oldSeries: any = undefined
+  oldStyle: any = {}
+
+  activeSerieIndex = 0
 
   // 计算属性
   get styleList() {
@@ -28,7 +35,62 @@ export default class ChartsComponentBase extends ComponentBase {
   set option(val) {
     this.element.data.option = val;
   }
+  get test222(): any {
 
+    const aa: any = []
+    for (let i = 0; i < 60; i++) {
+      aa.push({
+        id: "蓝色" + i,
+        name: "地区" + i,
+        data: [140, 200, 150, 80, 70, 110, 130],
+        type: "bar",
+        showBackground: true,
+        backgroundStyle: {
+          color: "rgba(0, 0, 255, 1)",
+        },
+      })
+    }
+    return aa
+  }
+
+  deleteSerie() {
+    const index = this.element.data.option.series.indexOf(this.activeSerie)
+    this.activeSerieIndex = index - 1
+    if (this.activeSerieIndex < 0)
+      this.activeSerieIndex = 0
+    Vue.delete(this.element.data.option.series, index)
+  }
+
+  addSerie() {
+    const serie = JSONfn.parse(JSONfn.stringify(this.activeSerie))
+    serie.id = getRandStr()
+    this.element.data.option.series.splice(this.activeSerieIndex, 0, serie)
+  }
+
+  get activeSerie() {
+    return this.element.data.option.series[this.activeSerieIndex] || {};
+  }
+
+  get serieTypeList() {
+    return [
+      {
+        label: "折线图",
+        value: "line",
+      },
+      {
+        label: "柱状图",
+        value: "bar",
+      },
+      {
+        label: "饼图",
+        value: "pie",
+      },
+      {
+        label: "散点(气泡)图",
+        value: "scatter",
+      },
+    ]
+  }
 
   constructor() {
     super()
@@ -51,22 +113,103 @@ export default class ChartsComponentBase extends ComponentBase {
     console.log("图表基类生命周期", this.element);
     this.element.data.chartId = getRandStr();
 
+    eventBus.$on("onEditSeries", (name: string, event: Event) => {
+      console.log("图表组件修改onEditSeries...");
 
+      if (name !== this.element.data.name) return;
 
+      this.editSeriesDialog = true
+    });
 
   }
 
   public mounted() {
     console.log("图表基类生命周期: mounted");
 
-
     const data = this.element.data
     this.chartDom = document.getElementById(data.chartId) as HTMLElement;
     this.chart = echarts.init(this.chartDom);
     this.chart.setOption(this.option)
 
+    eventBus.$on("endDraggable", (dragEvent: any) => {
 
-    this.$watch('element', (newValue: any, oldValue) => {
+      const { newIndex, oldIndex } = dragEvent
+
+      function equalSeries(obj1: any, obj2: any, ignoreProps = ["id", "name"]) {
+        if (obj2 === undefined)
+          return true
+        let newobj1 = JSONfn.parse(JSONfn.stringify(obj1))
+        let newobj2 = JSONfn.parse(JSONfn.stringify(obj2))
+        ignoreProps.forEach((prop: string) => {
+          delete newobj1[prop]
+          delete newobj2[prop]
+        })
+        return equal(newobj1, newobj2);
+      }
+
+      if (!equalSeries(this.option.series, this.oldSeries)) {
+        // todo 重新设置  已保存的样式
+        if (this.element.styleList !== undefined && this.element.styleList.length > 0) {
+          let isSetNewIndex = false
+          let isSetOldIndex = false
+          for (let i = 0; i < this.element.styleList.length; i++) {
+            const style = this.element.styleList[i];
+            if (!isSetNewIndex && style.attributePath.includes(`series[${newIndex}]`)) {
+              style.attributePath = style.attributePath.replaceAll(`series[${newIndex}]`, `series[${oldIndex}]`)
+              style.styleId = style.styleId.replaceAll(`series[${newIndex}]`, `series[${oldIndex}]`)
+              // 获取hierarchy里面的@开头的变量, 替换cssData里面的同名属性的值为oldIndex
+              const match = style.hierarchy.match(/(?<=(series(\s*\[\s*)+)@)(\w)+(?=(\s*\]+))/g)
+              if (match === null) {
+                console.warn("style更新异常newIndex: ", style);
+                isSetNewIndex = true
+                return
+              }
+              if (Object.prototype.hasOwnProperty.call(style.cssData, match[0])) {
+                style.cssData[match[0]] = oldIndex
+                isSetNewIndex = true
+              }
+            }
+            if (!isSetOldIndex && style.attributePath.includes(`series[${oldIndex}]`)) {
+              style.attributePath = style.attributePath.replaceAll(`series[${oldIndex}]`, `series[${newIndex}]`)
+              style.styleId = style.styleId.replaceAll(`series[${oldIndex}]`, `series[${newIndex}]`)
+              const match = style.hierarchy.match(/(?<=(series(\s*\[\s*)+)@)(\w)+(?=(\s*\]+))/g)
+              if (match === null) {
+                console.warn("style更新异常oldIndex: ", style);
+                isSetOldIndex = true
+                return
+              }
+              if (Object.prototype.hasOwnProperty.call(style.cssData, match[0])) {
+                style.cssData[match[0]] = newIndex
+                isSetOldIndex = true
+              }
+            }
+            if (isSetNewIndex && isSetOldIndex)
+              break
+          }
+        }
+        this.chart.setOption(this.option, true)
+      }
+
+    })
+
+    this.$watch('option', (val: any, old) => {
+
+
+
+
+    }, { deep: true });
+
+    this.$watch('element', (val: any, old) => {
+
+      if (val.style.width !== this.oldStyle.width || val.style.height !== this.oldStyle.height) {
+        setTimeout(() => {
+          this.$nextTick(() => {
+            this.chart.resize()
+            this.oldStyle = val
+          })
+        }, 300);
+      }
+
 
       // setJsonAttribute(
       //   option,
@@ -87,9 +230,6 @@ export default class ChartsComponentBase extends ComponentBase {
 
     this.$watch('styleList', (newValue: any, oldValue) => {
 
-      console.log("样式修改...", newValue, oldValue);
-
-
       for (let i = 0; i < newValue.length; i++) {
         const style = newValue[i];
 
@@ -105,7 +245,7 @@ export default class ChartsComponentBase extends ComponentBase {
           })
 
           let attributePath = style.attributePath.includes("~~~") ? style.attributePath.split("~~~")[0] : style.attributePath
-        //  attributePath = attributePath.includes(" ") ? attributePath.replaceAll(" ", "") : attributePath
+          //  attributePath = attributePath.includes(" ") ? attributePath.replaceAll(" ", "") : attributePath
           // @开头的字符串是变量
           if (attributePath.includes("@")) {
             const regex = /@\w+(?=[\x20\].])/g;
@@ -117,13 +257,51 @@ export default class ChartsComponentBase extends ComponentBase {
               delete value[key];
             });
           }
-          // $开头的字符串是方法
+          // todo $开头的字符串是方法
           this.option = setJsonAttribute(this.option, attributePath, value)
-          this.chart.setOption(this.option)
+          this.chart.setOption(this.option, true)
         }
       }
 
     }, { deep: true })
+
+    eventBus.$on('SetOption', (name: string, newOption: any) => {
+
+      if (name !== this.element.data.name) return
+      console.log("设置图形", name, newOption);
+      function removeEmpty(obj: any) {
+        for (let prop in obj) {
+          if (obj[prop] === null) {
+            delete obj[prop];
+          } else if (Array.isArray(obj[prop])) {
+            obj[prop] = obj[prop].filter((el: any) => el !== null && el !== undefined); // 过滤空元素
+            if (obj[prop].length === 0) {
+              delete obj[prop];
+            } else {
+              obj[prop].forEach((el: any) => {
+                if (typeof el === "object") {
+                  removeEmpty(el);
+                }
+              });
+            }
+          } else if (typeof obj[prop] === "object") {
+            removeEmpty(obj[prop]);
+          }
+        }
+      }
+
+      removeEmpty(newOption)
+      this.option = newOption
+      this.chart.setOption(this.option, true)
+
+    });
+
+
+    this.$watch('activeSerie', (val: any, old) => {
+
+      this.chart.setOption(this.option, true)
+
+    }, { deep: true });
 
   }
 

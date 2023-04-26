@@ -25,11 +25,11 @@ export default {
       const screenWidth = document.body.clientWidth
       const screenHeight = document.body.clientHeight
 
-      const minDragDomLeft = dragDom.offsetLeft
-      const maxDragDomLeft = screenWidth - dragDom.offsetLeft - dragDomWidth
+      const minDragDomLeft = dragDom.offsetLeft + 360
+      const maxDragDomLeft = screenWidth - dragDom.offsetLeft - dragDomWidth + 360
 
       const minDragDomTop = dragDom.offsetTop
-      const maxDragDomTop = screenHeight - dragDom.offsetTop - dragDomheight
+      const maxDragDomTop = screenHeight - dragDom.offsetTop - dragDomheight + 300
 
       // 获取到的值带px 正则匹配替换
       let styL = getStyle(dragDom, 'left')

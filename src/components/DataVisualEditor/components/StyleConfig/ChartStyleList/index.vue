@@ -100,7 +100,7 @@
                                                                                                     <el-button v-else class="button-new-tag" size="small" @click="showInput">+ Add</el-button> -->
 
           <el-collapse v-model="cssActiveCollapses">
-            <el-collapse-item title="已应用样式" name="1"  v-if="false">
+            <el-collapse-item title="已应用样式" name="1" v-if="false">
               <el-tag
                 v-for="(style, styleIndex) in addedStyleTags"
                 :key="generateStyleId(style.styleId) + styleIndex"
@@ -123,13 +123,35 @@
                   :key="index"
                   :label="label || variable"
                 >
-                  <!-- <span slot="label" >
+                  <span slot="label">
                     <span>
-                      <span >{{label}}</span>
-                      <el-button class="array-icon" type="primary" icon="el-icon-minus" size="mini" style="transform: scale(0.6);" circle @click=""  v-if="type === 'string[]'"></el-button>
-                      <el-button class="array-icon" type="primary" icon="el-icon-plus" size="mini" style="transform: scale(0.6) translateX(-20px);" circle @click=""  v-if="type === 'string[]'"></el-button>
+                      <span>{{ label }}</span>
+                      <el-button
+                        v-for="(icon, iconIndex) in options.iconList"
+                        class="array-icon"
+                        :key="iconIndex"
+                        type="primary"
+                        :icon="icon.icon"
+                        size="mini"
+                        style="transform: scale(0.6)"
+                        circle
+                        @click="
+                          () => {
+                            onIconClick([...icon['onEvent']], {
+                              variable: variable,
+                              type: type,
+                              attrIndex: index,
+                              attr: curStyle.attrList[index],
+                              style: curStyle,
+                            });
+                          }
+                        "
+                      ></el-button>
+                      <!-- <el-button class="array-icon" type="primary" icon="el-icon-plus" size="mini"
+                      style="transform: scale(0.6) translateX(-20px);" circle @click="test2"
+                       v-if="true"></el-button> -->
                     </span>
-                  </span> -->
+                  </span>
 
                   <div v-if="type == 'color-picker'">
                     <el-color-picker
@@ -194,8 +216,17 @@
                     <!--  oninput="value=value.replace(/[^0-9]/g,'')"     :max="options.max !== undefined ? options.max : 99999"-->
                     <el-input-number
                       v-model.number="curStyle.attrList[index].value"
-                      :min="options.min !== undefined ? options.min : -99999"
-                      :max="options.max !== undefined ? options.max : -99999"
+                      :min="
+                        options.min !== undefined ? options.min : -999999999
+                      "
+                      :max="
+                        typeof options.max === 'string' &&
+                        options.max.startsWith('#')
+                          ? getComputedValue(options.max)
+                          : options.max !== undefined
+                          ? options.max
+                          : 999999999
+                      "
                       :step="options.step !== undefined ? options.step : 1"
                       type="number"
                       @change="
@@ -378,6 +409,7 @@ export default {
       return this.curComponent.styleList;
     },
   },
+  mounted() {},
   methods: {
     generateStyleId,
 
@@ -501,6 +533,10 @@ export default {
       }
       this.inputVisible = false;
       this.inputValue = "";
+    },
+
+    testAAA2() {
+      alert("aaa222");
     },
   },
 };

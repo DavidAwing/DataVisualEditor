@@ -83,3 +83,6 @@ echart
 git remote add origin https://github.com/DavidAwing/DataVisualEditor.git
 git branch -M main
 git push -u origin main
+
+字符串
+@ 变量 $ 方法 # 计算属性 $this_ 

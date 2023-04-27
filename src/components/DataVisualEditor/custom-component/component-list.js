@@ -1510,50 +1510,85 @@ const list = [
     icon: 'wenben',
     data: {
       chartId: "",
-      option: {
-        grid: {
-          left: "20"
-        },
+      option:
+      {
         xAxis: {
-          type: "category",
-          data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          type: 'category',
+          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
         },
         yAxis: {
-          type: "value",
+          type: 'value'
         },
         series: [
           {
-            id: "红色1",
-            name: "职业22222222222222222222",
-            data: [10, 200, 150, 80, 70, 110, 130],
-            type: "bar",
-            showBackground: true,
-            backgroundStyle: {
-              color: "rgba(255, 123, 321, 0.5)",
-            },
-          },
-          {
-            id: "绿色2",
-            name: "收入士大夫萨芬",
-            data: [130, 200, 150, 80, 70, 110, 130],
-            type: "bar",
-            showBackground: true,
-            backgroundStyle: {
-              color: "rgba(0, 255, 0, 1)",
-            },
-          },
-          {
-            id: "蓝色3",
-            name: "地区",
-            data: [140, 200, 150, 80, 70, 110, 130],
-            type: "bar",
-            showBackground: true,
-            backgroundStyle: {
-              color: "rgba(0, 0, 255, 1)",
-            },
+            data: [
+              {
+                value: 150,
+                itemStyle: {
+                  color: '#a90000'
+                }
+              },
+              {
+                value: 200,
+                itemStyle: {
+                  color: '#a90000'
+                }
+              },
+              150,
+              80,
+              70,
+              110,
+              130
+            ],
+            type: 'bar'
           }
-        ],
+        ]
       }
+
+      // {
+      //   grid: {
+      //     left: "20"
+      //   },
+      //   xAxis: {
+      //     type: "category",
+      //     data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      //   },
+      //   yAxis: {
+      //     type: "value",
+      //   },
+      //   series: [
+      //     {
+      //       id: "红色1",
+      //       name: "职业22222222222222222222",
+      //       data: [10, 200, 150, 80, 70, 110, 130],
+      //       type: "bar",
+      //       showBackground: true,
+      //       backgroundStyle: {
+      //         color: "rgba(255, 123, 321, 0.5)",
+      //       },
+      //     },
+      //     {
+      //       id: "绿色2",
+      //       name: "收入士大夫萨芬",
+      //       data: [130, 200, 150, 80, 70, 110, 130],
+      //       type: "bar",
+      //       showBackground: true,
+      //       backgroundStyle: {
+      //         color: "rgba(0, 255, 0, 1)",
+      //       },
+      //     },
+      //     {
+      //       id: "蓝色3",
+      //       name: "地区",
+      //       data: [140, 200, 150, 80, 70, 110, 130],
+      //       type: "bar",
+      //       showBackground: true,
+      //       backgroundStyle: {
+      //         color: "rgba(0, 0, 255, 1)",
+      //       },
+      //     }
+      //   ],
+      // }
     },
     attrExcludes: [],
     style: {

@@ -2,6 +2,7 @@
 import {
   removeWhitespace
 } from "@/components/DataVisualEditor/utils/utils";
+import { boolean } from "mathjs";
 const JSONfn = require("jsonfn").JSONfn;
 
 
@@ -34,8 +35,23 @@ export function setJsonAttribute(json: string | object, attributePath: string, v
       if (isNaN(index))
         throw Error("setJsonAttribute,格式不正确: " + attributePath);
       if (i === properties.length - 1) {
-        currentObj[match[1]][index] = value;
+        if (currentObj[match[1]] === undefined || currentObj[match[1]] === null) {
+          currentObj[match[1]] = []
+          currentObj[match[1]][index] = value;
+        } else if (
+          Object.prototype.toString.call(currentObj[match[1]][index]) === "[object Object]" &&
+          Object.prototype.toString.call(value) === "[object Object]") {
+          currentObj[match[1]][index] = { ...currentObj[match[1]][index], ...value };
+        } else {
+          currentObj[match[1]][index] = value;
+        }
         return originalObj;
+      }
+      if (currentObj[match[1]] === undefined || currentObj[match[1]] === null)
+        currentObj[match[1]] = []
+      if (currentObj[match[1]][index] === undefined ||
+        currentObj[match[1]][index] === null) {
+        currentObj[match[1]][index] = {}
       }
       currentObj = currentObj[match[1]][index];
     } else if (
@@ -58,9 +74,16 @@ export function setJsonAttribute(json: string | object, attributePath: string, v
   return originalObj
 }
 
+export function getValueByAttributePath(this: any, from: any, attributePath: string): any {
 
-
-export function getValueByAttributePath(this: any, from: any, attributePath: string) {
+  // todo
+  // const mathc = attributePath.match(/(?<=(\[{1}))(\w|.)+(?=(\]{1}))/g)
+  // if (mathc !== null && mathc.length > 0) {
+  //   for (let i = 0; i < mathc.length; i++) {
+  //     const str = mathc[i];
+  //    return getValueByAttributePath.bind(this)(from, str)
+  //   }
+  // }
 
   const properties = removeWhitespace(attributePath).split(".").map((x: any) => x.trim());
   let currentObj: any = (from === undefined || from === null || from.constructor.name === 'VueComponent') ? (this) : JSONfn.parse(JSONfn.stringify(from))
@@ -80,6 +103,9 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
       if (isNaN(index))
         throw Error("setJsonAttribute,格式不正确: " + attributePath);
       if (i === properties.length - 1) {
+
+        if (currentObj[match[1]] === undefined || currentObj[match[1]] === null)
+          return undefined
         if (currentObj[match[1]][index] !== undefined) {
           return currentObj[match[1]][index]
         } else {
@@ -109,8 +135,30 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
 
 
 
+// variable是itemStyle.color或series[0]这样的格式
+export function SetValueAndAttributePathFromKey(json: string | object, attributePath: string, value: any) {
 
+  let newJson: any = json;
+  const keys = Object.keys(value)
+  for (let i = keys.length - 1; i >= 0; i--) {
+    const key = keys[i]
+    if (!key.includes(".") && !(key.includes("[") && key.includes("]")))
+      continue
 
+    const val = value[key]
+
+    const lastIndex = key.lastIndexOf(".")
+    const name = key.substring(lastIndex + 1)
+    const newAttributePath = attributePath + "." + key.substring(0, lastIndex)
+    const newData: any = {}
+    newData[name] = val
+    console.log("获取数据异常");
+    newJson = setJsonAttribute(newJson, newAttributePath, newData)
+    delete value[key]
+  }
+
+  return newJson
+}
 
 
 

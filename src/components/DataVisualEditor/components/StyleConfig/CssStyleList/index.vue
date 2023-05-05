@@ -268,7 +268,6 @@ export default {
   watch: {
     curSelector: {
       handler: function (val, old) {
-        console.log("当前选择器变化", val);
 
         // this.selectStyle.activeClassList = val
         // if (val.length == 0)
@@ -429,7 +428,7 @@ export default {
     },
 
     contentChange(text) {
-      console.log("text", text);
+
     },
 
     showAttr(curComponent, key) {

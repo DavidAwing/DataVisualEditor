@@ -93,7 +93,7 @@ export default class ChartsComponentBase extends ComponentBase {
 
   constructor() {
     super()
-    console.log("图表基类创建组件");
+    console.log();
   }
 
   // render(createElement: any) {

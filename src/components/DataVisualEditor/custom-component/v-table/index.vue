@@ -181,9 +181,6 @@ export default {
   created() {
 
     eventBus.$on('onEditColumns', (name, event) => {
-
-      console.log("图表组件修改...");
-
       if (name !== this.element.data.name) return
       Vue.set(this.element.data, "editColumnsDialog", true)
     });
@@ -191,32 +188,24 @@ export default {
     // this.element.selectorList = [
     // { label: "奇数行颜色", value: "/deep/ .el-table tbody tr:nth-child(odd) .cell" }
     // ];
-
-    console.log("基类生命周期表格组件生命周期created", this.element);
   },
   mounted() {
-
 
     this.$parent.$watch('element', (newValue, oldValue) => {
       console.log('element changed:', newValue, oldValue);
     }, { deep: true });
-
-    console.log("txt的组件生命周期mounted");
   },
   updated() {
-
 
     if (this.isFixedHead) {
 
       const tableContainer = document.querySelectorAll(".table-container")[1]
       const table = document.querySelectorAll(".table")[0]
 
-
-      // 判断有没有滚动条
-      // 获取滚动条宽度
+      // todo 判断有没有滚动条
+      // todo 获取滚动条宽度
       console.log("组件更新");
     }
-
   },
   methods: {
     handleInput(event) {

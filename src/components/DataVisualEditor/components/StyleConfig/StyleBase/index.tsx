@@ -53,6 +53,11 @@ class Job {
 
 
 (window as any)['getArrayLength'] = (arr: any[]) => {
+
+  console.log("数据异常1", arr);
+  console.log("数据异常2", arr.length);
+
+
   return arr.length
 }
 
@@ -68,6 +73,7 @@ class Job {
 
 
 enum StyleState {
+  created, // 刚创建
   latest,  // 最新的
   recovered,  // 已恢复
   modified,  // 已修改
@@ -80,13 +86,13 @@ enum StyleState {
 export default class StyleListBase extends tsc<Vue> {
 
   isStyleListInterrupt = false
-  isSwitchToStyle = false
+  // isSwitchToStyle = false
   styleMap: any = {} as any
   curStyle: any = {} as any
   oldStyle: any = {} as any
   curSelector: any = ""
   selectedStyle: any = null
-  STYLE_STATE: StyleState = StyleState.latest
+  STYLE_STATE: StyleState = StyleState.created
 
   getComputedValue(computedName: string, parameters: any) {
 
@@ -467,7 +473,7 @@ export default class StyleListBase extends tsc<Vue> {
   }
 
   get curComponent() {
-    this.isSwitchToStyle = true;
+    // this.isSwitchToStyle = true;
     return this.$store.state.curComponent;
   }
 
@@ -567,15 +573,33 @@ export default class StyleListBase extends tsc<Vue> {
 
   constructor() {
     super()
-    console.log("样式组件基类创建组件");
+    console.log();
   }
 
   public created() {
 
     this.isStyleListInterrupt = false;
-    this.isSwitchToStyle = false;
+    // this.isSwitchToStyle = false;
 
     this.$watch('curStyle', (val, old) => {
+
+      if (JSONfn.stringify(this.curStyle) === "{}")
+        return
+
+      if (this.STYLE_STATE === StyleState.recovered) {
+        this.STYLE_STATE = StyleState.latest
+        return
+      }
+
+      console.log("改变了或者切换", val, old, this.oldStyle);
+
+      // 是否切换了样式
+      const isSwitchStyle = val.hierarchy !== old.hierarchy
+
+      if (this.STYLE_STATE === StyleState.created) {
+
+        console.log("curStylepcsdf刚刚创建");
+      }
 
       const execution = () => {
         if (this.curStyle !== undefined && this.curStyle.attrList !== undefined) {
@@ -600,13 +624,9 @@ export default class StyleListBase extends tsc<Vue> {
         })
       }
 
-      if (this.STYLE_STATE === StyleState.recovered) {
-        this.STYLE_STATE = StyleState.latest
-        return
-      }
 
-      if (JSONfn.stringify(this.curStyle) === "{}")
-        return
+
+
 
       let attributePath = this.curStyle.value.split("~~~")[0]
       const cssData: any = {};
@@ -644,103 +664,33 @@ export default class StyleListBase extends tsc<Vue> {
         execution()
       })
 
+      // 切换过来的
+      if (isSwitchStyle) {
 
+        if (this.curStyle.type === "chart") {
 
-      if (this.isSwitchToStyle) {
-        console.log("修改样式A", val, JSON.stringify(this.curStyle) === "{}");
-      } else {
+          let optionValue = getValueByAttributePath(this.curComponent.data.option, attributePath)
+          if (optionValue === undefined || optionValue === null) {
 
-        if (!(JSONfn.stringify(this.curStyle) === "{}")) {
-          if (this.curStyle.type === "chart") {
+            // todo 找不到的数据从echart实例获取
 
-            // 如果是路径变量修改,则把数据绑定回来
-            let isPathChange = false
-            if (JSONfn.stringify(this.oldStyle) !== "{}" && this.oldStyle.value === this.curStyle.value) {
-              const newValueList: any[] = []
-              const oldValueList: any[] = []
-              for (let i = 0; i < pathVariables.length; i++) {
-                const pathVariable = pathVariables[i];
-                for (let j = 0; j < this.curStyle.attrList.length; j++) {
-                  const attr = this.curStyle.attrList[j]
-                  if (attr.variable === pathVariable)
-                    newValueList.push(attr.value)
-                }
-                for (let j = 0; j < this.oldStyle.attrList.length; j++) {
-                  const attr = this.oldStyle.attrList[j]
-                  if (attr.variable === pathVariable)
-                    oldValueList.push(attr.value)
-                }
-              }
-              if (JSON.stringify(newValueList) !== JSON.stringify(oldValueList))
-                isPathChange = true
-            }
-
-            if (isPathChange) {
-              let optionValue = getValueByAttributePath(this.curComponent.data.option, attributePath)
-              if (optionValue === undefined || optionValue === null) {
-                console.warn("获取不到数据", attributePath, this.curComponent.data.option);
-                optionValue = {}
-                optionValue = { ...cssData }
-                let newOption = SetValueAndAttributePathFromKey(this.curComponent.data.option, attributePath, optionValue)
-                newOption = setJsonAttribute(newOption, attributePath, optionValue)
-                // 设置新的newOption
-                eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
-                this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
+            optionValue = {}
+            optionValue = { ...cssData }
+            let newOption = setJsonAttribute(this.curComponent.data.option, attributePath, optionValue)
+            newOption = SetValueAndAttributePathFromKey(newOption, attributePath, optionValue)
+            // 设置新的newOption
+            eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
+          } else {
+            // 绑定图形option数据
+            this.curStyle.attrList.forEach((attr: any) => {
+              let variable = attr.variable
+              if (variable === undefined || variable === null)
                 return
-              }
-              this.curStyle.attrList.forEach((attr: any) => {
-
-                let variable = attr.variable
-                if (variable === undefined || variable === null)
-                  return
-                variable = variable.startsWith("@") ? variable.substring(1).trim() : variable.trim()
-
-                if (variable !== undefined && variable !== null) {
-                  const value = getValueByAttributePath(optionValue, variable)
-                  if (value !== undefined && value !== null)
-                    attr.value = value
-                }
-              })
-              this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
-              this.STYLE_STATE = StyleState.recovered
-              return
-            } else {
-              let newOption = SetValueAndAttributePathFromKey(this.curComponent.data.option, attributePath, cssData)
-              newOption = setJsonAttribute(newOption, attributePath, cssData)
-              eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
-              this.STYLE_STATE = StyleState.latest
-              this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
-              return
-            }
-          }
-        }
-      }
-
-      if (this.curStyle.type === "css") {
-        this.isSwitchToStyle = false
-      } else if (this.curStyle.type === "chart") {
-        let optionValue = getValueByAttributePath(this.curComponent.data.option, attributePath)
-
-        if (optionValue === undefined || optionValue === null) {
-          optionValue = {}
-          optionValue = { ...cssData }
-          let newOption = setJsonAttribute(this.curComponent.data.option, attributePath, optionValue)
-          newOption = SetValueAndAttributePathFromKey(this.curComponent.data.option, attributePath, optionValue)
-          // 设置新的newOption
-          eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
-        } else {
-          if (!this.isSwitchToStyle)
-            return
-          // 绑定图形option数据
-          this.curStyle.attrList.forEach((attr: any) => {
-            let variable = attr.variable
-            if (variable === undefined || variable === null)
-              return
-
-            variable = variable.startsWith("@") ? variable.substring(1).trim() : variable.trim()
-            const value = getValueByAttributePath(optionValue, variable)
-            if (value !== undefined && value !== null && attr.value !== value) {
-              if (attr.type === "color-picker" && value.type === "linear") {
+              variable = variable.startsWith("@") ? variable.substring(1).trim() : variable.trim()
+              const value = getValueByAttributePath(optionValue, variable)
+              if (value === undefined || value === null || attr.value === value)
+                return
+              if (attr.type === "color-picker" && typeof value === "object" && value.type === "linear") {
                 attr.options.gradientType = "linear"
                 attr.options.value.x = value.x
                 attr.options.value.x2 = value.x2
@@ -752,12 +702,102 @@ export default class StyleListBase extends tsc<Vue> {
               } else {
                 attr.value = value
               }
-            }
-          })
-          this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
-          this.STYLE_STATE = StyleState.recovered
+            })
+            this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
+            this.STYLE_STATE = StyleState.recovered
+          }
+          // this.isSwitchToStyle = false
         }
-        this.isSwitchToStyle = false
+
+      } else {
+
+        if (this.curStyle.type === "chart") {
+
+          // 如果是路径变量修改,则把数据绑定回来
+          let isPathChange = false
+          if (this.oldStyle.value === this.curStyle.value) {
+            const newValueList: any[] = []
+            const oldValueList: any[] = []
+            for (let i = 0; i < pathVariables.length; i++) {
+              const pathVariable = pathVariables[i];
+              for (let j = 0; j < this.curStyle.attrList.length; j++) {
+                const attr = this.curStyle.attrList[j]
+                if (attr.variable === pathVariable)
+                  newValueList.push(attr.value)
+              }
+              for (let j = 0; j < this.oldStyle.attrList.length; j++) {
+                const attr = this.oldStyle.attrList[j]
+                if (attr.variable === pathVariable)
+                  oldValueList.push(attr.value)
+              }
+            }
+            if (JSON.stringify(newValueList) !== JSON.stringify(oldValueList))
+              isPathChange = true
+          }
+
+          // todo 从别的项目回到这里会
+          if (isPathChange) {
+
+            let optionValue = getValueByAttributePath(this.curComponent.data.option, attributePath)
+            if (optionValue === undefined || optionValue === null) {
+              console.warn("获取不到数据", attributePath, this.curComponent.data.option);
+              optionValue = { ...cssData }
+              let newOption = SetValueAndAttributePathFromKey(this.curComponent.data.option, attributePath, optionValue)
+              newOption = setJsonAttribute(newOption, attributePath, optionValue)
+
+              // 设置新的newOption
+              eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
+              this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
+              return
+            }
+
+            if (typeof optionValue !== "object") {
+              console.warn(`通过${attributePath}找到的数据不正确`, optionValue);
+              return
+            }
+
+            this.curStyle.attrList.forEach((attr: any) => {
+
+              let variable = attr.variable
+              if (variable === undefined || variable === null)
+                return
+              variable = variable.startsWith("@") ? variable.substring(1).trim() : variable.trim()
+              if (variable === undefined || variable === null)
+                return
+
+              const value = getValueByAttributePath(optionValue, variable)
+              if (value === undefined || value === null)
+                return
+              if (attr.type === "color-picker" && typeof value === "object" && value.type === "linear") {
+                attr.options.gradientType = "linear"
+                attr.options.value.x = value.x
+                attr.options.value.x2 = value.x2
+                attr.options.value.y = value.y
+                attr.options.value.y2 = value.y2
+                attr.options.value.colorStops = value.colorStops
+                attr.options.iconList[1].show = true
+                attr.options.iconList[2].show = true
+              } else if (attr.type === "color-picker" && typeof value === "object" && (value.type === undefined || value.type === "undefined")) {
+                attr.value = value
+                attr.options.gradientType = "undefined"
+                attr.options.iconList[1].show = false
+                attr.options.iconList[2].show = false
+              } else {
+                attr.value = value
+              }
+
+            })
+            this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
+            this.STYLE_STATE = StyleState.recovered
+          } else {
+            let newOption = SetValueAndAttributePathFromKey(this.curComponent.data.option, attributePath, cssData)
+            newOption = setJsonAttribute(newOption, attributePath, cssData)
+            eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
+            this.STYLE_STATE = StyleState.latest
+            this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
+          }
+
+        }
       }
 
     }, { deep: true, immediate: false })
@@ -774,7 +814,10 @@ export default class StyleListBase extends tsc<Vue> {
 
     this.$watch('styleList', (val, old) => {
 
-      if (!this.isSwitchToStyle) return;
+      console.log("样式改变");
+
+
+      // if (!this.isSwitchToStyle) return;
       if (
         this.addedStyleTags === undefined ||
         this.addedStyleTags.length === 0
@@ -795,7 +838,7 @@ export default class StyleListBase extends tsc<Vue> {
       const style = this.addedStyleTags[0];
       this.handleStyleChange(this.getHierarchy(style.hierarchy));
       this.switchToStyle(style);
-      this.isSwitchToStyle = false;
+      // this.isSwitchToStyle = false;
 
     }, { deep: true, immediate: true });
 
@@ -813,7 +856,7 @@ export default class StyleListBase extends tsc<Vue> {
   }
 
   public mounted() {
-    console.log("样式组件基类创建组件: mounted");
+    console.log();
   }
 
   get canvasName() {

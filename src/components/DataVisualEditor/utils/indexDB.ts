@@ -13,30 +13,25 @@ const CallbackMap = {
 
   onOpenError: new Array<any>(),
   onOpenSucceedEventList: new Array<any>(),
-
 }
 
 request.onsuccess = (event: Event) => {
 
   isOpened = true;
   db = (event.target as any).result // 数据库对象
-  console.log("数据库类型", event);
-  console.log("数据库类型", db);
-
   CallbackMap.onOpenSucceedEventList.forEach(callback => {
     callback()
   })
 }
 
 request.onerror = function (event) {
-  console.log('数据库打开报错')
+  console.warn('数据库打开报错')
 }
 
 // 数据库创建或升级的时候会触发
 request.onupgradeneeded = function (event) {
-  console.log('数据库创建或升级, onupgradeneeded')
-  db = (event.target as any).result // 数据库对象
 
+  db = (event.target as any).result // 数据库对象
   let objectStore
   if (!db.objectStoreNames.contains(_storeName)) {
     objectStore = db.createObjectStore(_storeName, { keyPath: 'id' }) // 创建表

@@ -12,7 +12,7 @@ export default class ComponentBase extends Vue {
 
   constructor() {
     super()
-    console.log("基类创建组件");
+    console.log();
   }
 
   // render(createElement: any) {
@@ -28,23 +28,14 @@ export default class ComponentBase extends Vue {
   // }
 
   public created() {
-    console.log("基类生命周期", this.element);
-
     this.element.data.p = "父组件挂载的数据"
-
   }
 
   public mounted() {
-    console.log("基类生命周期: mounted");
-
-
     this.$watch('element', (newValue, oldValue) => {
-      console.log('基类生命周期 element changed:', newValue, oldValue);
     }, { deep: false });
 
-
     // todo  监听组件样式, 执行组件的配置事件
-
   }
 
 }

@@ -1,8 +1,6 @@
 <!-- TODO: 这个页面后续将用 JSX 重构 -->
 <template>
   <div class="container">
-
-
     <div v-if="getTypeName(option) === 'object'">
       <el-collapse v-model="attributeActiveCollapses">
         <el-collapse-item title="key" name="key + i" key="i">
@@ -39,8 +37,6 @@
     <div v-if="getTypeName(option) === 'object[]'">
       <ChartOptionEditor :option="item" />
     </div>
-
-
   </div>
 </template>
 
@@ -104,6 +100,9 @@ export default {
   mounted() {
     console.log("创建组件的配置项", this.option);
   },
+  created() {
+
+  },
   methods: {
     getRandStr,
     getTypeName(value) {
@@ -119,9 +118,6 @@ export default {
       else if (Object.prototype.toString.call(value) === "[object Boolean]")
         type = "boolean";
       else type = "undefined";
-
-      console.log("类型", type, value);
-
       return type;
     },
   },

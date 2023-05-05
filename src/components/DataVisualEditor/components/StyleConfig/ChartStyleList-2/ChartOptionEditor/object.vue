@@ -144,7 +144,6 @@ export default {
   },
   computed: {},
   mounted() {
-    console.log("创建组件的配置项", this.option);
   },
   methods: {
     getRandStr,
@@ -161,9 +160,6 @@ export default {
       else if (Object.prototype.toString.call(value) === "[object Boolean]")
         type = "boolean";
       else type = "undefined";
-
-      console.log("类型", type, value);
-
       return type;
     },
   },

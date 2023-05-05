@@ -180,7 +180,6 @@ export default {
     },
     attrModel: {
       get() {
-        console.log("参数");
         return (key, bind) => {
           if (bind) {
             return this.curComponent[bind][key];

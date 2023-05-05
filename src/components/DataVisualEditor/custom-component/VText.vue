@@ -82,7 +82,6 @@ export default {
     },
   },
   created() {
-    console.log("txt的组件生命周期created");
   },
   mounted() {
     this.$refs["text"].style["vertical-align"] = this.data.verticalAlign;

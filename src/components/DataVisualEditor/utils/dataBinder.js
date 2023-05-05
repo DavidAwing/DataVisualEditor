@@ -240,9 +240,6 @@ export function requestCanvasData(canvasName) {
   this.$nextTick(() => {
 
     setTimeout(() => {
-      console.log("1画布数据1", this.canvasComponentData);
-      console.log("1画布数据2", this.canvasData);
-      console.log("1画布数据3", this.canvasName);
     }, 1000);
 
   })
@@ -250,7 +247,6 @@ export function requestCanvasData(canvasName) {
   const getCanvasData = async (name) => {
 
     const canvasList = await DB.getAllItemByType("Canvas-Data");
-    console.log("数据1");
     for (const data of canvasList) {
 
       if (data.name == name) {

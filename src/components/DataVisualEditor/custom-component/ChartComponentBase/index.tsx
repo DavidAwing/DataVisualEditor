@@ -20,7 +20,6 @@ export default class ChartsComponentBase extends ComponentBase {
   editSeriesDialog = false
   oldSeries: any = undefined
   oldStyle: any = {}
-
   activeSerieIndex = 0
 
   // 计算属性
@@ -110,21 +109,17 @@ export default class ChartsComponentBase extends ComponentBase {
   // }
 
   public created() {
-    console.log("图表基类生命周期", this.element);
+
     this.element.data.chartId = getRandStr();
 
     eventBus.$on("onEditSeries", (name: string, event: Event) => {
-      console.log("图表组件修改onEditSeries...");
-
       if (name !== this.element.data.name) return;
-
       this.editSeriesDialog = true
     });
 
   }
 
   public mounted() {
-    console.log("图表基类生命周期: mounted");
 
     const data = this.element.data
     this.chartDom = document.getElementById(data.chartId) as HTMLElement;
@@ -268,7 +263,6 @@ export default class ChartsComponentBase extends ComponentBase {
     eventBus.$on('SetOption', (name: string, newOption: any) => {
 
       if (name !== this.element.data.name) return
-      console.log("设置图形", name, newOption);
       function removeEmpty(obj: any) {
         for (let prop in obj) {
           if (obj[prop] === null) {
@@ -296,11 +290,8 @@ export default class ChartsComponentBase extends ComponentBase {
 
     });
 
-
     this.$watch('activeSerie', (val: any, old) => {
-
       this.chart.setOption(this.option, true)
-
     }, { deep: true });
 
   }

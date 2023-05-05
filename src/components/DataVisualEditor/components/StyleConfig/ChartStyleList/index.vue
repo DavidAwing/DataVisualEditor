@@ -120,41 +120,198 @@
                   v-for="(
                     { label, variable, type, options }, index
                   ) in curStyle.attrList"
-                  :key="index"
+                  :key="index + '-' + type"
                   :label="label || variable"
                 >
                   <span slot="label">
                     <span>
                       <span>{{ label }}</span>
-                      <el-button
-                        v-for="(icon, iconIndex) in options.iconList"
-                        class="array-icon"
-                        :key="iconIndex"
-                        type="primary"
-                        :icon="icon.icon"
-                        size="mini"
-                        style="transform: scale(0.6)"
-                        circle
-                        @click="
-                          () => {
-                            onIconClick([...icon['onEvent']], {
-                              variable: variable,
-                              type: type,
-                              attrIndex: index,
-                              attr: curStyle.attrList[index],
-                              style: curStyle,
-                            });
-                          }
-                        "
-                      ></el-button>
+
+                      <template v-for="(icon, iconIndex) in options.iconList">
+                        <el-button
+                          class="array-icon"
+                          :key="iconIndex"
+                          type="primary"
+                          :icon="icon.icon"
+                          size="mini"
+                          style="transform: scale(0.65)"
+                          v-if="icon.show !== false"
+                          circle
+                          @click="
+                            () => {
+                              onIconClick([...icon['onClick']], {
+                                variable: variable,
+                                type: type,
+                                attrIndex: index,
+                                attr: curStyle.attrList[index],
+                                style: curStyle,
+                              });
+                            }
+                          "
+                        ></el-button>
+                      </template>
+
                       <!-- <el-button class="array-icon" type="primary" icon="el-icon-plus" size="mini"
                       style="transform: scale(0.6) translateX(-20px);" circle @click="test2"
                        v-if="true"></el-button> -->
                     </span>
                   </span>
 
-                  <div v-if="type == 'color-picker'">
+                  <div v-if="type === 'color-picker'">
+                    <div
+                      v-if="options.gradientType === 'linear'"
+                      style="
+                        display: flex;
+                        width: 100%;
+                        position: relative;
+                        flex-flow: column nowrap;
+                      "
+                    >
+                      <div style="display: flex; justify-content: center">
+                        起止位置
+                      </div>
+
+                      <div
+                        style="
+                          flex: 1;
+                          width: 100%;
+                          display: flex;
+                          flex-flow: row nowrap;
+                          justify-content: center;
+                        "
+                      >
+                        <span style="margin-left: 8px">右</span>
+                        <span style="margin-left: 10px">
+                          <el-input-number
+                            v-model.number="
+                              curStyle.attrList[index].options.value.x
+                            "
+                            type="number"
+                            :min="0"
+                            :max="1"
+                            :step="0.1"
+                        /></span>
+                      </div>
+
+                      <div
+                        style="
+                          flex: 1;
+                          width: 100%;
+                          display: flex;
+                          flex-flow: row nowrap;
+                          justify-content: center;
+                          margin-top: 6px;
+                        "
+                      >
+                        <span style="margin-left: 8px">下</span>
+                        <span style="margin-left: 10px">
+                          <el-input-number
+                            v-model.number="
+                              curStyle.attrList[index].options.value.y
+                            "
+                            type="number"
+                            :min="0"
+                            :max="1"
+                            :step="0.1"
+                        /></span>
+                      </div>
+
+                      <div
+                        style="
+                          flex: 1;
+                          width: 100%;
+                          display: flex;
+                          flex-flow: row nowrap;
+                          justify-content: center;
+                          margin-top: 6px;
+                        "
+                      >
+                        <span style="margin-left: 8px">左</span>
+                        <span style="margin-left: 10px">
+                          <el-input-number
+                            v-model.number="
+                              curStyle.attrList[index].options.value.x2
+                            "
+                            type="number"
+                            :min="0"
+                            :max="1"
+                            :step="0.1"
+                        /></span>
+                      </div>
+
+                      <div
+                        style="
+                          flex: 1;
+                          width: 100%;
+                          display: flex;
+                          flex-flow: row nowrap;
+                          justify-content: center;
+                          margin-top: 6px;
+                        "
+                      >
+                        <span style="margin-left: 8px">上</span>
+                        <span style="margin-left: 10px">
+                          <el-input-number
+                            v-model.number="
+                              curStyle.attrList[index].options.value.y2
+                            "
+                            type="number"
+                            :min="0"
+                            :max="1"
+                            :step="0.1"
+                        /></span>
+                      </div>
+
+                      <div>渐变过程</div>
+
+                      <div
+                        style="
+                          flex: 1;
+                          width: 100%;
+                          display: flex;
+                          flex-flow: row nowrap;
+                          justify-content: center;
+                          align-items: center;
+                          margin-top: 6px;
+                        "
+                        v-for="item in curStyle.attrList[index].options.value
+                          .colorStops"
+                      >
+                        <div style="display: flex; justify-content: center">
+                          <span style="margin-left: 10px">
+                            <el-input-number
+                              v-model.number="item.offset"
+                              type="number"
+                              :min="0"
+                              :max="1"
+                              :step="0.1"
+                          /></span>
+
+                          <span style="margin-left: 10px">
+                            <el-color-picker
+                              v-model="item.color"
+                              :showAlpha="true"
+                            >
+                            </el-color-picker>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      v-else-if="options.gradientType === 'radial'"
+                      style="
+                        display: flex;
+                        width: 100%;
+                        position: relative;
+                        flex-flow: column nowrap;
+                      "
+                    >
+                      辐射状的渐变
+                    </div>
+
                     <el-color-picker
+                      v-else
                       v-model="curStyle.attrList[index].value"
                       :showAlpha="options.showAlpha"
                     >
@@ -223,9 +380,7 @@
                         typeof options.max === 'string' &&
                         options.max.startsWith('#')
                           ? getComputedValue(options.max)
-                          : options.max !== undefined
-                          ? options.max
-                          : 999999999
+                          : options.max || 999999999
                       "
                       :step="options.step !== undefined ? options.step : 1"
                       type="number"
@@ -266,44 +421,21 @@
                   </div>
 
                   <div v-else-if="type === 'string[]' || type === 'number[]'">
-                    <div>
-                      <el-button
-                        type="primary"
-                        icon="el-icon-minus"
-                        size="mini"
-                        circle
-                        @click="
-                          () => {
-                            curStyle.attrList[index].value.splice(
-                              curStyle.attrList[index].options.focusIndex,
-                              1
-                            );
-                          }
-                        "
-                      ></el-button>
-                      <el-button
-                        type="danger"
-                        icon="el-icon-plus"
-                        size="mini"
-                        circle
-                        @click="
-                          () => {
-                            curStyle.attrList[index].value.push('');
-                          }
-                        "
-                      ></el-button>
-                    </div>
                     <div
-                      v-for="(item, stringIndex) in curStyle.attrList[index]
+                      v-for="(item, itemIndex) in curStyle.attrList[index]
                         .value"
                     >
                       <el-input
-                        v-model="curStyle.attrList[index].value[stringIndex]"
+                        v-model="curStyle.attrList[index].value[itemIndex]"
                         :type="type === 'string[]' ? 'text' : 'number'"
                         @focus="
                           () => {
-                            curStyle.attrList[index].options.focusIndex =
-                              stringIndex;
+                            onControlEvent([...options['onFocus']], {
+                              attrIndex: index,
+                              attr: curStyle.attrList[index],
+                              style: curStyle,
+                              itemIndex: itemIndex,
+                            });
                           }
                         "
                       />
@@ -507,7 +639,6 @@ export default {
     },
 
     contentChange(text) {
-      console.log("text", text);
     },
 
     showAttr(curComponent, key) {

@@ -12,10 +12,14 @@ import {
 } from "@/components/DataVisualEditor/utils/utils";
 import { mapState } from "vuex";
 import eventBus from "../../../utils/eventBus";
-import { CRUD, getValueByAttributePath, setJsonAttribute, SetValueAndAttributePathFromKey } from "../../../utils/chartUtils";
+import {
+  CRUD, getValueByAttributePath, setJsonAttribute, SetValueAndAttributePathFromKey,
+  typeEqual
+} from "../../../utils/chartUtils";
+import * as echarts from "echarts";
+
 const JSONfn = require("jsonfn").JSONfn;
 const equal = require('fast-deep-equal')
-
 
 
 
@@ -58,6 +62,18 @@ class Job {
   return old
 }
 
+(window as any)['echarts'] = echarts
+
+
+
+
+enum StyleState {
+  latest,  // 最新的
+  recovered,  // 已恢复
+  modified,  // 已修改
+}
+
+
 @Component({
   components: {},
 })
@@ -70,16 +86,7 @@ export default class StyleListBase extends tsc<Vue> {
   oldStyle: any = {} as any
   curSelector: any = ""
   selectedStyle: any = null
-
-
-  test1() {
-    console.log("测试1");
-  }
-
-  test2() {
-    console.log("测试2");
-    alert("AAA")
-  }
+  STYLE_STATE: StyleState = StyleState.latest
 
   getComputedValue(computedName: string, parameters: any) {
 
@@ -94,7 +101,7 @@ export default class StyleListBase extends tsc<Vue> {
     console.log("渲染函数测试", createElement);
   }
 
-  get getSerieDataLength() {
+  get SerieDataLength() {
 
     let path = this.curStyle.value.split("~~~")[0]
     path = path.split("~~~")[0]
@@ -111,7 +118,6 @@ export default class StyleListBase extends tsc<Vue> {
     }
     const i = path.indexOf("data")
     const val = getValueByAttributePath(this.curComponent.data.option, path.substring(0, i + 4))
-
     if (val === undefined)
       return 0
     return val.length
@@ -123,7 +129,6 @@ export default class StyleListBase extends tsc<Vue> {
     let path = str.split("~~~")[0]
     path = path.split("~~~")[0]
     const match = path.match(/(?<=(\[{1}|\s*))@{1}(\w)+(?=(\s*\]{1}))/g)
-    console.log(match);
     if (match !== null) {
       match.forEach((val: string) => {
         for (let i = 0; i < this.curStyle.attrList.length; i++) {
@@ -136,6 +141,14 @@ export default class StyleListBase extends tsc<Vue> {
     }
     const val = getValueByAttributePath(this.curComponent.data.option, path)
     return val
+  }
+
+  public getArrayFocusIndex(extraData: any) {
+    if (extraData === undefined || extraData === null)
+      return 0
+    if (extraData.itemIndex === undefined || extraData.itemIndex === null)
+      return 0
+    return extraData.itemIndex
   }
 
   public deleteOptionItem(path: any, key: any) {
@@ -169,7 +182,7 @@ export default class StyleListBase extends tsc<Vue> {
       if (typeof key !== "number")
         key = parseInt(key)
       if (value[key] === undefined) {
-        console.warn("当前位置没有数据", value, key);
+        console.warn("deleteOptionItem|当前位置没有数据", value, key);
         return
       }
 
@@ -177,11 +190,91 @@ export default class StyleListBase extends tsc<Vue> {
       const newOption = setJsonAttribute(this.curComponent.data.option, path, value)
       eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
     }
-
   }
 
 
+  public toLinearGradient(gradientTypePath: string, path: string, stylePath: any) {
+    const type = getValueByAttributePath(this.curStyle, gradientTypePath)
 
+    if (type === "undefined") {
+      setJsonAttribute(this.curStyle, gradientTypePath, "linear", false)
+      setJsonAttribute(this.curStyle, stylePath + ".options.iconList[1].show", true, false)
+      setJsonAttribute(this.curStyle, stylePath + ".options.iconList[2].show", true, false)
+    } else if (type === "linear") {
+      setJsonAttribute(this.curStyle, gradientTypePath, "radial", false)
+      setJsonAttribute(this.curStyle, stylePath + ".options.iconList[1].show", true, false)
+      setJsonAttribute(this.curStyle, stylePath + ".options.iconList[2].show", false, false)
+    } else {
+      setJsonAttribute(this.curStyle, gradientTypePath, "undefined", false)
+      setJsonAttribute(this.curStyle, stylePath + ".options.iconList[1].show", false, false)
+      setJsonAttribute(this.curStyle, stylePath + ".options.iconList[2].show", false, false)
+    }
+
+  }
+
+  public getColorStop(data: any) {
+    console.log("渐变数据项", data);
+
+    return { offset: 0, color: '#2378f7' }
+  }
+
+  /**
+   * todo 此方法需要完善成可以添加删除数据
+   * @param target
+   * @param key
+   * @returns
+   */
+  public delete(target: object | string | [], key: number | string) {
+
+    if (typeof key === 'string' && key.startsWith("@")) {
+      for (let i = 0; i < this.curStyle.attrList.length; i++) {
+        const attr = this.curStyle.attrList[i];
+        const variable = attr.variable.startsWith("@") ? attr.variable.substring(1).trim() : attr.variable.trim()
+        if (variable === key.substring(1)) {
+          key = attr.value
+          break
+        }
+      }
+    }
+
+    if (Array.isArray(target)) {
+      if (typeof key !== "number")
+        key = parseInt(key)
+      if (target[key] === undefined) {
+        console.warn("delete|当前位置没有数据", target, key);
+        return
+      }
+      Vue.delete(target, key)
+    }
+
+  }
+
+  public add(target: never, key: number | string, value: never, data: any) {
+
+    if (Array.isArray(target)) {
+
+      if (target[0] !== undefined && (target as []).length > 0 && !typeEqual(target[0], value))
+        console.warn("设置的数值与数组元素类型不兼容", target, value);
+
+      if (typeof key === "number") {
+        (target as []).splice(key, 0, value)
+        return
+      }
+
+      if (typeof key === 'string' && key.startsWith("@")) {
+        for (let i = 0; i < this.curStyle.attrList.length; i++) {
+          const attr = this.curStyle.attrList[i];
+          const variable = attr.variable.startsWith("@") ? attr.variable.substring(1).trim() : attr.variable.trim()
+          if (variable === key.substring(1)) {
+            key = attr.value
+            break
+          }
+        }
+      }
+
+      (target as []).splice(parseInt(key + "") + 1, 0, value)
+    }
+  }
 
   getCurSerieName(index: number | string) {
     if (this.curComponent.data.option === undefined)
@@ -278,7 +371,7 @@ export default class StyleListBase extends tsc<Vue> {
           const expression = expressionList[i]
           if (expression.includes(";"))
             throw new Error("表达式异常: " + value);
-          this.executionString(expression)
+          this.executionString(expression, extraData)
         }
         return undefined
       }
@@ -291,8 +384,9 @@ export default class StyleListBase extends tsc<Vue> {
       const functionName = functionNameMatches[0];
       let argumentList = []
       const argumentsMatches: RegExpMatchArray | null = value.substring(functionName.length + 1).match(
-        /(?<=,{0,1}\s*)("|\$|\w|\+|\.|\x20|\+|\*|-|\/|\)|\[|\]|\.|_|@)*\x20*(\w)+\x20*\({0,1}(\w|\.|\x20|\+|\*|-|\/|\)|\[|\]|\.)*("){0,1}(?=\s*,|\))/g
+        /(?<=,{0,1}\s*)("|\$|\w|\+|\.|\x20|\+|\*|-|\/|\)|\[|\]|\.|_|@)*\x20*(\w|[\u4e00-\u9fa5])+\x20*\({0,1}(\w|\.|\x20|\+|\*|-|\/|\)|\[|\]|\.)*("){0,1}(?=\s*,|\))/g
       )
+
       if (argumentsMatches === null) {
         console.warn("executionString|未匹配到方法参数", value);
       } else {
@@ -328,7 +422,7 @@ export default class StyleListBase extends tsc<Vue> {
             for (let i = 0; i < expressionNodeList.length; i++) {
               const expressionNode = expressionNodeList[i].trim();
               if (expressionNode.startsWith("$")) {
-                const returnedValue = this.executionString(expressionNode)
+                const returnedValue = this.executionString(expressionNode, extraData)
                 val = val.replaceAll(expressionNode, returnedValue)
               }
               // todo 如果是变量?
@@ -337,7 +431,7 @@ export default class StyleListBase extends tsc<Vue> {
             // todo eval需要替换成更好的方式
             return eval(val)
           } else if (val.startsWith("$")) {
-            return this.executionString(val)
+            return this.executionString(val, extraData)
           } else if (val.startsWith("this")) {
 
             // (?<=(\[{1}))(\w|.)+(?=(\]{1}))
@@ -365,13 +459,12 @@ export default class StyleListBase extends tsc<Vue> {
       try {
         return functionName.startsWith("this_") ? (this as any)[functionName.substring(5)](...argumentList, extraData) : (window as any)[functionName](...argumentList, extraData);
       } catch (error) {
-        console.warn("executionString|方法执行出现异常", error);
-        throw new Error(`executionString|方法执行出现异常: functionName=${functionName}    argumentList=${argumentList.join(",")}`);
+        console.warn("executionString|方法执行异常信息:", error);
+        throw new Error(`executionString|方法执行出现异常: 字符串=${value} functionName=${functionName}    argumentList=${argumentList.join(",")}`);
       }
     }
     return value
   }
-
 
   get curComponent() {
     this.isSwitchToStyle = true;
@@ -379,7 +472,12 @@ export default class StyleListBase extends tsc<Vue> {
   }
 
   get showStyleDetails() {
-    return JSON.stringify(this.curStyle) !== "{}";
+    return JSONfn.stringify(this.curStyle) !== "{}";
+  }
+
+  public getFunction(name: string) {
+
+
   }
 
   get styleList() {
@@ -474,13 +572,40 @@ export default class StyleListBase extends tsc<Vue> {
 
   public created() {
 
-    console.log("样式组件基类创建组件: created");
     this.isStyleListInterrupt = false;
     this.isSwitchToStyle = false;
 
     this.$watch('curStyle', (val, old) => {
 
-      if (JSON.stringify(this.curStyle) === "{}")
+      const execution = () => {
+        if (this.curStyle !== undefined && this.curStyle.attrList !== undefined) {
+          for (let i = 0; i < this.curStyle.attrList.length; i++) {
+            const attr = this.curStyle.attrList[i];
+            if (attr === undefined)
+              continue
+            if (Object.prototype.toString.call(attr.options) === "[object Object]") {
+              const keys = Object.keys(attr.options)
+              keys.filter(key => key.startsWith("onValueChange")).forEach((key: string) => {
+                let str = attr.options[key]
+                if (Array.isArray(str))
+                  str = str.join(";")
+                const returnedValue = this.executionString(str)
+              })
+            }
+          }
+        }
+        return
+        return new Promise((resolve, reject) => {
+          resolve(undefined)
+        })
+      }
+
+      if (this.STYLE_STATE === StyleState.recovered) {
+        this.STYLE_STATE = StyleState.latest
+        return
+      }
+
+      if (JSONfn.stringify(this.curStyle) === "{}")
         return
 
       let attributePath = this.curStyle.value.split("~~~")[0]
@@ -491,9 +616,13 @@ export default class StyleListBase extends tsc<Vue> {
         !variable.startsWith("@")
           ? (attrKey = variable)
           : (attrKey = variable.substring(1));
-
         if (attrKey === undefined || attrKey.trim() === "")
           return
+        if (attr.type === "color-picker" && attr.options !== undefined && attr.options.gradientType !== undefined && attr.options.gradientType === 'linear') {
+          const gradient = attr.options.value
+          cssData[attrKey] = new echarts.graphic.LinearGradient(gradient.x, gradient.y, gradient.x2, gradient.y2, gradient.colorStops)
+          return
+        }
         cssData[attrKey] = attr.value;
       });
 
@@ -511,30 +640,19 @@ export default class StyleListBase extends tsc<Vue> {
         });
       }
 
-      if (this.curStyle !== undefined && this.curStyle.attrList !== undefined) {
-        for (let i = 0; i < this.curStyle.attrList.length; i++) {
-          const attr = this.curStyle.attrList[i];
-          if (attr === undefined)
-            continue
-          if (Object.prototype.toString.call(attr.options) === "[object Object]") {
-            const keys = Object.keys(attr.options)
-            keys.filter(key => key.startsWith("onOptionChange")).forEach((key: string) => {
-              let str = attr.options[key]
-              if (Array.isArray(str))
-                str = str.join(";")
-              const returnedValue = this.executionString(str)
-            })
-          }
-        }
-      }
+      this.$nextTick(() => {
+        execution()
+      })
+
+
 
       if (this.isSwitchToStyle) {
         console.log("修改样式A", val, JSON.stringify(this.curStyle) === "{}");
-
       } else {
 
-        if (!(JSON.stringify(this.curStyle) === "{}")) {
+        if (!(JSONfn.stringify(this.curStyle) === "{}")) {
           if (this.curStyle.type === "chart") {
+
             // 如果是路径变量修改,则把数据绑定回来
             let isPathChange = false
             if (JSONfn.stringify(this.oldStyle) !== "{}" && this.oldStyle.value === this.curStyle.value) {
@@ -544,12 +662,12 @@ export default class StyleListBase extends tsc<Vue> {
                 const pathVariable = pathVariables[i];
                 for (let j = 0; j < this.curStyle.attrList.length; j++) {
                   const attr = this.curStyle.attrList[j]
-                  if (attr['variable'] === pathVariable)
+                  if (attr.variable === pathVariable)
                     newValueList.push(attr.value)
                 }
                 for (let j = 0; j < this.oldStyle.attrList.length; j++) {
                   const attr = this.oldStyle.attrList[j]
-                  if (attr['variable'] === pathVariable)
+                  if (attr.variable === pathVariable)
                     oldValueList.push(attr.value)
                 }
               }
@@ -571,28 +689,38 @@ export default class StyleListBase extends tsc<Vue> {
                 return
               }
               this.curStyle.attrList.forEach((attr: any) => {
-                if (attr["variable"] !== undefined && optionValue[attr["variable"]] !== undefined
-                  && attr["value"] !== optionValue[attr["variable"]]) {
-                  attr["value"] = optionValue[attr["variable"]]
+
+                let variable = attr.variable
+                if (variable === undefined || variable === null)
+                  return
+                variable = variable.startsWith("@") ? variable.substring(1).trim() : variable.trim()
+
+                if (variable !== undefined && variable !== null) {
+                  const value = getValueByAttributePath(optionValue, variable)
+                  if (value !== undefined && value !== null)
+                    attr.value = value
                 }
               })
+              this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
+              this.STYLE_STATE = StyleState.recovered
+              return
             } else {
               let newOption = SetValueAndAttributePathFromKey(this.curComponent.data.option, attributePath, cssData)
               newOption = setJsonAttribute(newOption, attributePath, cssData)
               eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
+              this.STYLE_STATE = StyleState.latest
+              this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
+              return
             }
-            this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
           }
-          return
         }
       }
 
-      if (JSON.stringify(this.curStyle) === "{}")
-        return
       if (this.curStyle.type === "css") {
         this.isSwitchToStyle = false
       } else if (this.curStyle.type === "chart") {
         let optionValue = getValueByAttributePath(this.curComponent.data.option, attributePath)
+
         if (optionValue === undefined || optionValue === null) {
           optionValue = {}
           optionValue = { ...cssData }
@@ -605,26 +733,42 @@ export default class StyleListBase extends tsc<Vue> {
             return
           // 绑定图形option数据
           this.curStyle.attrList.forEach((attr: any) => {
-
-            let variable = attr["variable"]
-            if (variable === undefined || undefined === null)
+            let variable = attr.variable
+            if (variable === undefined || variable === null)
               return
+
             variable = variable.startsWith("@") ? variable.substring(1).trim() : variable.trim()
-            if (optionValue[variable] !== undefined && optionValue[variable] !== null && attr["value"] !== optionValue[variable])
-              attr["value"] = optionValue[variable]
+            const value = getValueByAttributePath(optionValue, variable)
+            if (value !== undefined && value !== null && attr.value !== value) {
+              if (attr.type === "color-picker" && value.type === "linear") {
+                attr.options.gradientType = "linear"
+                attr.options.value.x = value.x
+                attr.options.value.x2 = value.x2
+                attr.options.value.y = value.y
+                attr.options.value.y2 = value.y2
+                attr.options.value.colorStops = value.colorStops
+                attr.options.iconList[1].show = true
+                attr.options.iconList[2].show = true
+              } else {
+                attr.value = value
+              }
+            }
           })
           this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
+          this.STYLE_STATE = StyleState.recovered
         }
         this.isSwitchToStyle = false
       }
+
     }, { deep: true, immediate: false })
+
+
+
 
 
     this.$watch('curSelector', (val: any, old) => {
 
       console.log("选择器改变", val);
-      console.log("选择器改变", this.selectorList);
-
     }, { deep: true });
 
 
@@ -643,7 +787,6 @@ export default class StyleListBase extends tsc<Vue> {
         return;
       }
 
-
       if (this.curComponent.component.startsWith("v-")) {
 
       }
@@ -653,7 +796,6 @@ export default class StyleListBase extends tsc<Vue> {
       this.handleStyleChange(this.getHierarchy(style.hierarchy));
       this.switchToStyle(style);
       this.isSwitchToStyle = false;
-
 
     }, { deep: true, immediate: true });
 
@@ -743,8 +885,6 @@ export default class StyleListBase extends tsc<Vue> {
     }
     return undefined
   }
-
-
 
   // 获取当前样式的层级
   getHierarchy(hierarchy: string) {
@@ -842,7 +982,6 @@ export default class StyleListBase extends tsc<Vue> {
     console.log("样式数据发生改变", args) // 显示一个对象的所有属性和方法
 
     // const style = this.addedStyleTags[0];
-    // console.log("样式解析数据0", args, style);
 
     // aaa-0-vc-series-series[1].backgroundStyle~~~series-backgroundStyle.js
     // aaa-0-vc-series-series[0].backgroundStyle~~~series-backgroundStyle.js
@@ -866,6 +1005,15 @@ export default class StyleListBase extends tsc<Vue> {
 
 
   onIconClick(...args: any[]) {
+    args[0].forEach((str: string | undefined) => {
+      if (typeof str !== 'string' || str.trim() === "")
+        return
+      this.executionString(str, args[1])
+    })
+  }
+
+
+  onControlEvent(...args: any[]) {
     args[0].forEach((str: string | undefined) => {
       if (typeof str !== 'string' || str.trim() === "")
         return

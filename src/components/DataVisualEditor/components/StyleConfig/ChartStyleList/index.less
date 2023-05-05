@@ -152,11 +152,18 @@
 
  /deep/ .style-item .el-form-item__label .el-button {
      pointer-events: auto;
+     margin-left: 0px;
+     &:nth-child(n+3){
+        margin-left: -3px;
+     }
  }
 
  /deep/ .style-item .el-form-item__content {
      pointer-events: none;
  }
+
+
+
 
  /deep/ .style-item .el-form-item__content .el-color-picker,
  /deep/ .style-item .el-form-item__content .el-checkbox,

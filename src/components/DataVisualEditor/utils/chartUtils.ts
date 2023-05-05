@@ -86,7 +86,20 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
   // }
 
   const properties = removeWhitespace(attributePath).split(".").map((x: any) => x.trim());
-  let currentObj: any = (from === undefined || from === null || from.constructor.name === 'VueComponent') ? (this) : JSONfn.parse(JSONfn.stringify(from))
+  let currentObj: any = undefined
+
+  if (from.constructor.name === "Window" ||
+    Object.prototype.toString.call(currentObj) === "[object Module]" ||
+    Object.prototype.toString.call(currentObj) === "[object Function]") {
+    currentObj = from
+  } else if (from === undefined || from === null || from.constructor.name === 'VueComponent') {
+    currentObj = this
+  } else {
+    currentObj = JSONfn.parse(JSONfn.stringify(from))
+  }
+
+  if (currentObj === undefined) 
+      throw new Error(`getValueByAttributePath|currentObj数据未定义,attributePath=${attributePath}`);
 
   for (let i = 0; i < properties.length; i++) {
     const property = properties[i];
@@ -109,7 +122,7 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
         if (currentObj[match[1]][index] !== undefined) {
           return currentObj[match[1]][index]
         } else {
-          console.warn(`getValueByAttributePath|from: ${JSONfn.stringify(from)}, attributePath:${attributePath}, 找不到属性`);
+          console.warn(`getValueByAttributePath|from: attributePath:${attributePath}, 找不到属性`);
           return undefined
         }
       }
@@ -121,13 +134,33 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
         if (currentObj[property] !== undefined) {
           return currentObj[property]
         } else {
-          console.warn(`getValueByAttributePath|from: ${JSONfn.stringify(from)}, attributePath:${attributePath}, 找不到属性`)
+          console.warn(`getValueByAttributePath[object Object]|from: attributePath:${attributePath}, property:${property}, 找不到属性`)
+          return undefined
+        }
+      }
+      currentObj = currentObj[property];
+    } else if (Object.prototype.toString.call(currentObj) === "[object Window]" ||
+      Object.prototype.toString.call(currentObj) === "[object Module]" ||
+      Object.prototype.toString.call(currentObj) === "[object Function]"
+    ) {
+
+      if (i === properties.length - 1) {
+        if (currentObj[property] !== undefined) {
+          return currentObj[property]
+        } else {
+          console.warn(`getValueByAttributePath[object ${Object.prototype.toString.call(currentObj)}]|attributePath:${attributePath}, property:${property}, 找不到属性`)
           return undefined
         }
       }
       currentObj = currentObj[property];
     }
+
+    if (currentObj === undefined)  {
+      console.warn(`getValueByAttributePath|currentObj数据未定义,attributePath=${attributePath},property=${property}`);
+      return undefined
+    }
   }
+
   return currentObj
 }
 
@@ -152,7 +185,6 @@ export function SetValueAndAttributePathFromKey(json: string | object, attribute
     const newAttributePath = attributePath + "." + key.substring(0, lastIndex)
     const newData: any = {}
     newData[name] = val
-    console.log("获取数据异常");
     newJson = setJsonAttribute(newJson, newAttributePath, newData)
     delete value[key]
   }
@@ -195,4 +227,30 @@ export enum CRUD {
   delete
 }
 
+
+export function getTypeName(value: never) {
+  let type = "";
+  if (Object.prototype.toString.call(value) === "[object Object]")
+    type = "object";
+  else if (Object.prototype.toString.call(value) === "[object Array]") {
+    type = getTypeName(value[0]) + "[]";
+  } else if (Object.prototype.toString.call(value) === "[object String]")
+    type = "string";
+  else if (Object.prototype.toString.call(value) === "[object Number]")
+    return "number";
+  else if (Object.prototype.toString.call(value) === "[object Boolean]")
+    type = "boolean";
+  else type = "undefined";
+
+  return type;
+}
+
+export function typeEqual(val1: never, val2: never) {
+
+  if (val1 === undefined || val1 === null || val2 === undefined || val2 === null) {
+    return false
+  }
+
+  return getTypeName(val1) === getTypeName(val2)
+}
 

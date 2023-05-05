@@ -93,21 +93,17 @@ export default {
   watch: {
     element: {
       handler: function (val) {
-        console.log("图形配置", val.data.option);
-
+        console.log("element图形配置", val.data.option);
       },
       deep: true,
     },
   },
   created() {
-    console.log("创建组件created");
   },
   mounted() {
-    console.log("创建组件mounted");
   },
   methods: {
     updateDraggable(a) {
-      console.log("拖动", a);
     },
     startDraggable() {
       this.oldSeries = this.element.data.option.series;
@@ -120,7 +116,6 @@ export default {
 
     onActiveSerie(serie, index) {
       this.activeSerieIndex = index;
-      console.log("activeSerie", serie);
     },
   },
 };

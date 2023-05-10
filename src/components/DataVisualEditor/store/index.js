@@ -9,6 +9,10 @@ import layer from './layer'
 import snapshot from './snapshot'
 import lock from './lock'
 import { addStyleListToHead } from '../utils/style'
+import {
+  getValueByAttributePath, setJsonAttribute, SetValueAndAttributePathFromKey, typeEqual
+} from "../utils/chartUtils";
+import eventBus from "../utils/eventBus";
 
 Vue.use(Vuex)
 
@@ -114,13 +118,40 @@ const data = {
     setCanvasComponentAttribute(state, params) {
 
       const attribute = params[0]
-      const componentAttributeDataMap = params[1]
-
+      const name = params[1]
+      const data = params[2]
       for (const component of state.canvasComponentData) {
-        const attributeData = componentAttributeDataMap[component.data.name]
-        if (attributeData) {
-          component[attribute] = { ...component[attribute], ...attributeData }
+        if (component.data.name !== name)
+          continue
+
+        if (component.component.startsWith("vc-")) {
+
+          const keys = Object.keys(data)
+          keys.forEach(key => {
+
+            const value = data[key]
+            const attributeList = key.match(/@\w+/g)
+            if (attributeList !== null) {
+              for (let i = 0; i < attributeList.length; i++) {
+                // todo 替换变量
+              }
+            }
+            let newData = JSON.parse(JSON.stringify(component.data))
+            if (key.includes("@index")) {
+              for (let i = 0; i < value.length; i++) {
+                const pathValue = key.replaceAll("@index", i)
+                newData = setJsonAttribute(newData, pathValue, value[i])
+              }
+            } else {
+              newData = setJsonAttribute(newData, key, value)
+            }
+            eventBus.$emit("SetOption", name, newData.option)
+          })
+
+        } else {
+          component[attribute] = { ...component[attribute], ...data }
         }
+
       }
     },
 

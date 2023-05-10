@@ -854,7 +854,7 @@ const list = [
   // 图片
   {
     uniqueId: '',
-    component: 'Picture',
+    component: 'v-picture',
     label: '图片',
     icon: 'tupian',
     data: {
@@ -1348,7 +1348,205 @@ const list = [
       columns: [],
       tableData: [],
       showBorder: true,
-      editColumnsDialog: false
+      editColumnsDialog: false,
+      showMode: "roll",
+      rollingSpeed: 1, // 滚动速度
+      total: 0,//总条目数
+      currentPage:1,//当前页码
+      pageSize:10, //每页显示条目个数，支持 .sync 修饰符
+    },
+    attrExcludes: [],
+    style: {
+      width: 500,
+      height: 260,
+      fontSize: 14,
+      fontStyle: 2500,
+      fontWeight: 2500,
+      borderRadius: 0,
+      lineHeight: '',
+      letterSpacing: 0,
+      textAlign: '',
+      color: 'rgba(0, 0, 0, 1)',
+      backgroundColor: 'rgba(0,0,0,0)',
+      fontFamily: '宋体'
+    },
+    styleUnit: {
+      top: "px",
+      left: "px",
+      width: 'px',
+      height: 'px',
+      fontSize: 'px',
+    },
+    attrList: [
+      {
+        key: "name",
+        type: "text",
+        label: '名称',
+        bind: 'data'
+      },
+      {
+        key: "left",
+        type: "number",
+        label: 'x 坐标',
+        bind: "style"
+      },
+      {
+        key: "top",
+        type: "number",
+        label: 'y 坐标',
+        bind: "style"
+      },
+      {
+        key: "width",
+        type: "number",
+        label: '宽',
+        bind: "style"
+      },
+      {
+        key: "height",
+        type: "number",
+        label: '高',
+        bind: "style"
+      },
+      {
+        key: "showBorder",
+        type: "select",
+        label: '显示边框',
+        bind: 'data',
+        options: [
+          {
+            label: '是',
+            value: true
+          },
+          {
+            label: '否',
+            value: false,
+          }
+        ]
+      },
+      {
+        key: "showMode",
+        type: "select",
+        label: '显示模式',
+        bind: 'data',
+        options: [
+          {
+            label: '滚动',
+            value: "roll"
+          },
+          {
+            label: '翻页',
+            value: "flip-over",
+          },
+          {
+            label: '分页',
+            value: "paging",
+          }
+        ]
+      },
+      {
+        key: "rollingSpeed",
+        type: "number",
+        label: '滚动速度',
+        bind: "data"
+      },
+      {
+        key: "rotate",
+        type: "number",
+        label: '旋转',
+        bind: "style"
+      },
+      {
+        key: "borderRadius",
+        type: "number",
+        label: '边框半径',
+        bind: 'style'
+      },
+      {
+        type: "eventbus-button",
+        label: '',
+        bind: {
+          label: '编辑表头',
+          click: "onEditColumns",
+          dblclick: "onEditColumns"
+        }
+      },
+
+    ],
+    events: {
+
+      onBeforeCreate: (self, caller) => {
+
+        console.log("生命周期组件onBeforeCreate-self", self);
+        console.log("生命周期组件onBeforeCreate-caller", caller);
+
+        // return new Promise((resolve, reject) => {
+        //   setTimeout(() => {
+        //     console.log("更新之前2");
+        //     caller.$set(self.styleList, 0, {
+        //       value: 'border',
+        //       label: '边框',
+        //       children: [
+        //         {
+        //           type: 'css',
+        //           value: 'fg',
+        //           label: '效果1',
+        //           activeClassList: [],
+        //           style: "{color: red;}",
+        //           img: "",
+        //           attrList: []
+        //         }
+        //       ]
+        //     })
+        //     // self.styleList = textStyleList
+        //     resolve()
+        //   }, 5000);
+        // })
+
+      },
+      onMounted: (self, caller) => {
+        console.log("生命周期组件onMounted-self", self);
+        console.log("生命周期组件onMounted-caller", caller);
+      },
+
+      /**
+       *
+       * @param {*} self 当前的组件配置
+       * @param {*} caller 调用者
+       * @param {*} newData 新数据
+       * @param {*} oldData 旧数据
+       */
+      onDataChange: (self, caller, newData, oldData) => {
+        console.log("数据已经改变");
+      }
+    },
+    selectorList: [
+      //  { label: "奇数行颜色", value: ".el-table tbody tr:nth-child(odd) .cell" },
+    ],
+    styleList: //todo: 已应用的样式列表, 从后台读取组件支持的样式列表
+      [
+        // {
+        //   elementId: "",
+        //   selector: "",
+        //   styleName: "",
+        //   css: ""
+        // }
+      ]
+  },
+   // 视频
+   {
+    uniqueId: '',
+    component: 'v-video',
+    label: '视频',
+    icon: 'wenben',
+    data: {
+      name: "",
+      video: "http://www.emacrosys.cn:8019/file/%E6%96%87%E4%BB%B6%E4%B8%8B%E8%BD%BD%E5%AD%98%E6%94%BE/X5.mp4",
+      poster: "https://img1.baidu.com/it/u=413643897,2296924942&fm=253&fmt=auto&app=138&f=JPEG?w=800&h=500",
+      controls: true,
+      autoplay: false,
+      loop: true,
+      muted: false,
     },
     attrExcludes: [],
     style: {
@@ -1435,9 +1633,9 @@ const list = [
         type: "eventbus-button",
         label: '',
         bind: {
-          label: '编辑表头',
-          click: "onEditColumns",
-          dblclick: "onEditColumns"
+          label: '播放',
+          click: "onPlay",
+          dblclick: "onPlay"
         }
       },
 
@@ -1502,10 +1700,10 @@ const list = [
         // }
       ]
   },
-  // 柱状图
+  // echart
   {
     uniqueId: '',
-    component: 'vc-bar',
+    component: 'vc-chart',
     label: '柱状图',
     icon: 'wenben',
     data: {
@@ -1534,11 +1732,36 @@ const list = [
                   color: '#a90000'
                 }
               },
-              150,
-              80,
-              70,
-              110,
-              130
+              {
+                value: 30,
+                itemStyle: {
+                  color: '#a90000'
+                }
+              },
+              {
+                value: 230,
+                itemStyle: {
+                  color: '#a90000'
+                }
+              },
+              {
+                value: 180,
+                itemStyle: {
+                  color: '#a90000'
+                }
+              },
+              {
+                value: 80,
+                itemStyle: {
+                  color: '#a90000'
+                }
+              },
+              {
+                value: 120,
+                itemStyle: {
+                  color: '#a90000'
+                }
+              },
             ],
             type: 'bar'
           }

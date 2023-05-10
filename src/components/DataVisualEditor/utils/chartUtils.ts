@@ -98,7 +98,7 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
     currentObj = JSONfn.parse(JSONfn.stringify(from))
   }
 
-  if (currentObj === undefined) 
+  if (currentObj === undefined)
       throw new Error(`getValueByAttributePath|currentObj数据未定义,attributePath=${attributePath}`);
 
   for (let i = 0; i < properties.length; i++) {

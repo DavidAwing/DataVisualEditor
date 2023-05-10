@@ -1,66 +1,34 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <div class="container">
-    <el-table
-      :data="element.data.tableData"
-      height="250"
-      :border="false"
-      style="width: 100%"
-    >
+    <el-table :data="element.data.tableData" height="250" :border="element.data.showBorder" style="width: 100%"
+      ref="table">
       <template v-for="(column, index) in element.data.columns">
-        <el-table-column
-          :prop="column.prop"
-          :label="column.label"
-          :align="column.align"
-          :min-width="column.width"
-          v-bind:key="index"
-        >
+        <el-table-column :prop="column.prop" :label="column.label" :align="column.align" :min-width="column.width"
+          v-bind:key="index">
         </el-table-column>
       </template>
     </el-table>
 
-    <top-el-dialog
-      title="表头编辑"
-      :visible.sync="element.data.editColumnsDialog"
-      width="35%"
-      v-el-drag-dialog
-      center
-    >
+    <el-pagination background layout="prev, pager, next" :total="10" v-if="false">
+    </el-pagination>
+
+    <top-el-dialog title="表头编辑" :visible.sync="element.data.editColumnsDialog" width="35%" v-el-drag-dialog center>
       <el-form :inline="true" label-width="80px">
         <el-form-item label="列名" class="full-width">
-          <el-select
-            v-model="selected"
-            clearable
-            filterable
-            placeholder=""
-            autocomplete="off"
-            @blur="addColumn"
-            @clear="removeColumn"
-          >
-            <el-option
-              v-for="(item, index) in element.data.columns"
-              :key="index"
-              :label="item.label"
-              :value="item.prop"
-            >
+          <el-select v-model="selected" clearable filterable placeholder="" autocomplete="off" @blur="addColumn"
+            @clear="removeColumn">
+            <el-option v-for="(item, index) in element.data.columns" :key="index" :label="item.label" :value="item.prop">
             </el-option>
           </el-select>
         </el-form-item>
 
         <el-form-item label="prop" :style="{ width: '100%' }">
-          <el-input
-            v-model="column.prop"
-            autocomplete="off"
-            style="width: 100%"
-          ></el-input>
+          <el-input v-model="column.prop" autocomplete="off" style="width: 100%"></el-input>
         </el-form-item>
 
         <el-form-item label="label" :style="{ width: '100%' }">
-          <el-input
-            v-model="column.label"
-            autocomplete="off"
-            style="width: 100%"
-          ></el-input>
+          <el-input v-model="column.label" autocomplete="off" style="width: 100%"></el-input>
         </el-form-item>
         <el-form-item label="width" :style="{ width: '100%' }">
           <el-input v-model="column.width" autocomplete="off"></el-input>
@@ -78,21 +46,15 @@
       </el-form>
 
       <span slot="footer" class="dialog-footer">
-        <el-button @click="element.data.editColumnsDialog = false"
-          >取 消</el-button
-        >
-        <el-button
-          type="primary"
-          @click="element.data.editColumnsDialog = false"
-          >确 定</el-button
-        >
+        <el-button @click="element.data.editColumnsDialog = false">取 消</el-button>
+        <el-button type="primary" @click="element.data.editColumnsDialog = false">确 定</el-button>
       </span>
     </top-el-dialog>
   </div>
 </template>
 
 <script lang="js">
-  import Vue from "vue";
+import Vue from "vue";
 import { mapState } from "vuex";
 import axios from "axios";
 import { keycodes } from "../../utils/shortcutKey";
@@ -129,6 +91,8 @@ export default {
       },
       column: {},
       selected: "",
+      maxRows: undefined,
+      dom: undefined
 
     };
   },
@@ -146,18 +110,20 @@ export default {
     },
 
     element: {
-      handler: function (val) {
+      handler: function (val, old) {
 
-        if ( this.element.data.editColumnsDialog == true) {
-
+        if (this.element.data.editColumnsDialog === true) {
         }
+
+
+
 
         // if (!val)
         // return
-      // if ((!this.column.label || !this.column.prop) && this.element.data.columns.length > 0) {
-      //   this.column = this.element.data.columns[0]
-      //   this.selected = this.column.prop
-      // }
+        // if ((!this.column.label || !this.column.prop) && this.element.data.columns.length > 0) {
+        //   this.column = this.element.data.columns[0]
+        //   this.selected = this.column.prop
+        // }
 
 
       },
@@ -194,6 +160,37 @@ export default {
     this.$parent.$watch('element', (newValue, oldValue) => {
       console.log('element changed:', newValue, oldValue);
     }, { deep: true });
+
+
+    const getMaxRows = () => {
+      try {
+        const table = this.$refs.table
+        const tableHeight = table.$el.clientHeight  // 表格高度
+        const thHeight = table.$el.children[1].clientHeight // 表头高度
+        const trHeight = table.$el.children[2].children[0].children[1].children[0].clientHeight // 表行高度
+        return (tableHeight - thHeight) / trHeight  //最多显示行数
+      } catch (error) {
+        return Infinity
+      }
+    }
+
+    const setMaxRows = () => {
+      const maxRows = getMaxRows()
+      // console.log("计算结果A", maxRows === Infinity, isNaN(maxRows), isFinite(maxRows), Number.isFinite(maxRows), Number.isFinite(maxRows));
+      if (maxRows === Infinity || Number.isNaN(maxRows)) {
+        setTimeout(() => {
+          setMaxRows()
+        }, 300);
+      } else {
+        this.maxRows = maxRows
+      }
+    }
+
+    setMaxRows()
+
+    if (this.element.data.showMode === "roll")
+      this.rollTable()
+
   },
   updated() {
 
@@ -208,6 +205,67 @@ export default {
     }
   },
   methods: {
+
+    rollTable() {
+
+      const data = this.element.data
+      if (data.tableData === undefined || data.tableData === null) {
+        setTimeout(this.rollTable.bind(this), 300);
+        return
+      }
+      try {
+        this.dom = this.$refs.table.$el.children[2].children[0].children[1]
+        // this.dom.style.transform = "translate3d(0px, 0px, 0px)"
+        this.dom.style.transform = "translateY(0px)"
+      } catch (error) {
+        setTimeout(this.rollTable.bind(this), 300);
+        return
+      }
+
+      const tableHeight = this.$refs.table.$el.clientHeight  // 表格高度
+
+      const rollingSpeed = data.rollingSpeed
+      let fps = 60
+      let fpsInterval = 1000 / fps
+      let last = new Date().getTime() //上次执行的时刻
+      let roll = () => {
+        try {
+
+          if (this.maxRows === Infinity || Number.isNaN(this.maxRows) || this.element.data.tableData.length <= this.maxRows) {
+            setTimeout(() => {
+              window.requestAnimationFrame(roll);
+            }, 2000);
+            return
+          }
+
+          let now = new Date().getTime()
+          let elapsed = now - last;
+          if (elapsed > fpsInterval) {
+
+            let offsetHeight = -this.dom.offsetHeight + this.dom.offsetHeight / 5
+            last = now - (elapsed % fpsInterval); //校正当前时间
+            // translate3d的性能会更好,参考https://stackoverflow.com/questions/22111256/translate3d-vs-translate-performance
+            let domTop = this.dom.style.transform.match(/translateY\(([-+.\d]+)px\)/)[1]
+            // let domTop = this.dom.style.transform.match(/translate3d\(0px,\s*([\d.-]+)px,\s*0px\)/)[1]
+            domTop = Number.parseFloat(domTop)
+            if (domTop < offsetHeight) {
+              // this.dom.style.transform = `translate3d(0px, ${this.dom.offsetHeight}px, 0px)`;
+              this.dom.style.transform = `translateY(${tableHeight}px)`;
+            } else {
+              // this.dom.style.transform = `translate3d(0px, ${domTop - rollingSpeed}px, 0px)`;
+              this.dom.style.transform = `translateY(${domTop - rollingSpeed}px)`;
+            }
+          }
+          window.requestAnimationFrame(roll);
+        } catch (error) {
+          console.log("表格滚动发生了异常", this.dom.style.transform);
+          console.log("表格滚动发生了异常", error);
+        }
+      }
+      window.requestAnimationFrame(roll);
+
+    },
+
     handleInput(event) {
       this.$emit("input", this.element);
     },

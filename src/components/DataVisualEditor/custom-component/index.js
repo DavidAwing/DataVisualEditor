@@ -1,7 +1,7 @@
 import Vue from 'vue'
 
 const components = [
-    'Picture',
+    'VPicture',
     'VText',
     'VButton',
     'Group',
@@ -11,7 +11,8 @@ const components = [
     'VLine',
     'v-table',
     'v-iframe',
-    'vc-bar',
+    'v-video',
+    'vc-chart',
     'vc-bar-MultipleYAxes',
 ]
 

@@ -12,10 +12,26 @@
 
 .full-width {
     width: 100%;
-    display: inline-block; 
+    display: inline-block;
 }
 
 
 .el-dialog__header {
     cursor: move;
+}
+
+
+.container /deep/ .el-table--fit {
+    // position: absolute;
+    // padding: 0px;
+    // padding: 0px 0px 0px 0px;
+    // margin: 77px 0px 0px 190px;
+}
+
+/deep/  .el-table--scrollable-y ::-webkit-scrollbar {
+    display: none;
+}
+
+/deep/ .el-table th{
+    z-index: 1000;
 }

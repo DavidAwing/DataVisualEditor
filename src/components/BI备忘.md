@@ -65,7 +65,7 @@ beforeDestroy destroyed
 @val
 
 函数调用
-@time()
+$time()
 
 
 

@@ -23,22 +23,22 @@ const equal = require('fast-deep-equal')
 
 
 
+type jobFun = () => void
+
 class Job {
 
   static isFlushing = false
-  static queue = new Set<Function>()
+  static queue = new Set<jobFun>()
   static p = Promise.resolve()
 
-  public static queueJob = (job: Function) => {
+  public static queueJob = (job: jobFun) => {
     Job.queue.add(job)
     if (!Job.isFlushing) {
 
       Job.isFlushing = true
       Job.p.then(() => {
         try {
-
-          Job.queue.forEach((job: Function) => job())
-
+          Job.queue.forEach((job) => job())
         } finally {
           Job.isFlushing = false
           Job.queue.clear()
@@ -52,22 +52,17 @@ class Job {
 
 
 
-(window as any)['getArrayLength'] = (arr: any[]) => {
-
-  console.log("数据异常1", arr);
-  console.log("数据异常2", arr.length);
-
-
+(window as any).getArrayLength = (arr: any[]) => {
   return arr.length
 }
 
-(window as any)['setValue'] = (target: any, key: string, value: any) => {
+(window as any).setValue = (target: any, key: string, value: any) => {
   const old = target[key];
   Vue.set(target, key, value)
   return old
 }
 
-(window as any)['echarts'] = echarts
+(window as any).echarts = echarts
 
 
 
@@ -491,7 +486,9 @@ export default class StyleListBase extends tsc<Vue> {
     const key = "styleList:" + this.curComponent.component;
     if (Object.prototype.hasOwnProperty.call(this.styleMap, key)) return this.styleMap[key];
 
-    if (this.isStyleListInterrupt) return [];
+    if (this.isStyleListInterrupt) {
+      return  [];
+    } 
 
     this.isStyleListInterrupt = true;
     axios
@@ -545,8 +542,7 @@ export default class StyleListBase extends tsc<Vue> {
       if (Object.prototype.hasOwnProperty.call(this.styleMap, key)) return this.styleMap[key];
       if (this.isStyleListInterrupt) return [];
       this.isStyleListInterrupt = true;
-      axios
-        .get("/BI/Component/GetSelectorList", {
+      axios.get("/BI/Component/GetSelectorList", {
           params: {
             name: this.curComponent.component,
           },
@@ -623,10 +619,6 @@ export default class StyleListBase extends tsc<Vue> {
           resolve(undefined)
         })
       }
-
-
-
-
 
       let attributePath = this.curStyle.value.split("~~~")[0]
       const cssData: any = {};

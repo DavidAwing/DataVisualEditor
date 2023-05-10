@@ -1,9 +1,10 @@
 import * as DB from "../utils/indexDB";
 import { getRandStr } from "../utils/utils";
+import CronExpressionValidator from "../utils/CronExpressionValidator";
 import axios from 'axios'
+// import cron from 'cron-validate'
 const JSONfn = require("jsonfn").JSONfn;
 const schedule = require("node-schedule");
-
 
 
 const a = `
@@ -52,11 +53,10 @@ http://chat.openai.com/chat/3a780546-a1ba-43e3-8f60-48477bdc7121
 
 `
 
-
 // 解析数据配置表达式
 // // const ttt = `This is a @test(a,b,c) and a @time(  ) expression.  @test2(a,  @b  ,   c)  @_AAAtest22222(a,  bddjj,  cff)  @test22222(a,  bddjj, @cff, ghhh,  @_o99  )  @test77777   @__test77777`;
 // @test(a,b,c) 是函数,  @__test77777是变量
-function extractExpressions(text) {
+const extractExpressions = (text) => {
   // const regex = /(\$|@)[a-zA-Z_]+\s*\((\s*[^),]*\s*,)*(\s*[^),]*\s*)?\)/g;
   const expressions = [];
 
@@ -92,24 +92,22 @@ function extractExpressions(text) {
   return expressions;
 }
 
-
-
-
-
-
-
 function parseText(text) {
 
   const groups = text.split(/\n{2,}/g); // 将文本分割成组
   const list = groups.map((group) => {
 
     const lines = group.trim().split("\n"); // 将组分割成行
-    const obj = { name: [], source: "", type: undefined, cron: undefined, jobName: undefined };
+    const obj = { element: {}, source: "", type: undefined, cron: undefined, jobName: undefined, message: "" };
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
 
-      if (line.startsWith("//") || line.startsWith("#"))
+      if (line.startsWith("//") || line.startsWith("#")) {
+        // obj.annotation += line.trim() + "\n"
         continue
+      }
+
+      // console.log("验证字符串", CronExpressionValidator.validateCronExpression(line), line);
 
       if ((i === 0) && /^\[[^\]]+\]$/.test(line)) {
         obj.jobName = line.substring(1, line.length - 1);
@@ -127,14 +125,22 @@ function parseText(text) {
         // 是sql,http,cron
         obj.source += line.trim() + "\n";
       } else if ((i < 3) &&
-        (/^(\*|[0-5]?\d)(\/\d+)?(\s+(\*|[01]?\d|2[0-3])(\/\d+)?){4}$/.test(line) || /^(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)(\s(\*|[0-9-/,*]+))?$/i.test(line))
+        (/^(\*|[0-5]?\d)(\/\d+)?(\s+(\*|[01]?\d|2[0-3])(\/\d+)?){4}$/.test(line) ||
+          /^(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)(\s(\*|[0-9-/,*]+))?$/i.test(line) ||
+          CronExpressionValidator.validateCronExpression(line)
+        )
       ) {
         // 是cron
         obj.cron = line;
       } else if ((i < 3) &&
         /^[\u4e00-\u9fa5a-zA-Z][\u4e00-\u9fa5a-zA-Z0-9]*(,[\u4e00-\u9fa5a-zA-Z][\u4e00-\u9fa5a-zA-Z0-9]*)*(,)?$/.test(line)) {
         // 是name
-        obj.name = line.split(",");
+        line.split(",").forEach(name => {
+          name = name.trim()
+          if (name === "")
+            return
+          obj.element[name] = {};
+        });
       } else {
         obj.source += line.trim() + "\n";
       }
@@ -157,11 +163,18 @@ function parseText(text) {
     ) {
       // 匹配URL的正则表达式
       obj.type = "http";
+    } else {
+      obj.type = "unknown"
     }
 
     if (obj.jobName === undefined)
-      obj.jobName = getRandStr()
+      obj.jobName = getRandStr()  // todo 不能用随机字符串
     obj.source = obj.source.substring(0, obj.source.length - 1)
+
+    if (obj.cron === undefined) {
+
+    }
+
     return obj;
   });
 
@@ -174,18 +187,23 @@ function testTask(task) {
 
   return new Promise((resolve, reject) => {
 
-    if (task.type === "http") {
-      axios.get(task.source).then(data => {
+    if (task.type === "http" && task.source.startsWith("/")) {
+      axios.get(task.source, {
+        timeout: 1000 * 60 * 3
+      }).then(data => {
         task.type = "get"
         resolve(task)
       }).catch(error => {
         const errorResponse = JSON.parse(JSON.stringify(error))
-        if (errorResponse.status === 405)
+        if (errorResponse.status === 405) {
           task.type = "post"
-        else
-          task.type = ""
+        } else {
+          task.message = errorResponse
+        }
         resolve(task)
       })
+    } else {
+      resolve(task)
     }
 
   })
@@ -194,32 +212,27 @@ function testTask(task) {
 
 function commitData(store, task, response) {
 
-  if (!task.componentType)
-    return
+  console.log("绑定数据", response);
+
+  const data = response.data.data
+
+  if (Array.isArray(data)) {
+
+    data.forEach(({ attributeName, name, data }) => {
+      store.commit("setCanvasComponentAttribute", [
+        attributeName,
+        name,
+        data
+      ]);
+
+    })
+  }
+
 
   // todo: 匹配data中的name
-  if (task.name.length == 0) {
 
 
-  } else {
 
-    console.log("数据2", task.componentType);
-
-    for (let i = 0; i < task.name.length; i++) {
-      const name = task.name[i];
-      if (task.componentType === 'v-text') {
-        store.commit("setCanvasComponentAttribute", [
-          "data",
-          {
-            [name]: {
-              text: response.data
-            },
-          },
-        ]);
-      }
-    }
-
-  }
 
 }
 
@@ -230,24 +243,19 @@ export function requestCanvasData(canvasName) {
     canvasName = this.canvasName
 
   if (canvasName === undefined) {
-    alert("未指定看板名称")
+    alert("requestCanvasData|未指定看板名称")
     return
   }
 
   // 这里一定要设置名称
   this.$store.commit("setCanvasName", canvasName);
 
-  this.$nextTick(() => {
-
-    setTimeout(() => {
-    }, 1000);
-
-  })
-
   const getCanvasData = async (name) => {
 
     const canvasList = await DB.getAllItemByType("Canvas-Data");
     for (const data of canvasList) {
+
+      // console.log("执行任务2");
 
       if (data.name == name) {
         const canvasComponentData = JSONfn.parse(data.canvasComponentData);
@@ -260,83 +268,196 @@ export function requestCanvasData(canvasName) {
         this.$store.commit("setCanvasData", canvasData);
         const dataSource = canvasData.dataSource
         const sourceList = parseText(dataSource.parameters)
-        console.log("任务列表", sourceList, canvasComponentData);
-
+        // console.log("任务列表1", sourceList);
         sourceList.forEach(task => {
+
+          // console.log("任务列表D1", task);
 
           for (let i = 0; i < canvasComponentData.length; i++) {
             const component = canvasComponentData[i];
-            for (let j = 0; j < task.name.length; j++) {
-              const name = task.name[j];
-              if (component.data.name === name) {
-                task.componentType = component.component
-                break
-              }
-            }
-          }
-          testTask(task).then((task) => {
+            const element = task.element[component.data.name]
+            if (element === undefined)
+              continue
+            element.componentType = component.component
+            if (element.componentType === "vc-chart") {
 
-            if (task.componentType === undefined)
-              return
+              // element.series = [
+              //   {
+              //     name: 'Line 1',
+              //     type: 'line',
+              //     stack: 'Total',
+              //     smooth: true,
+              //     lineStyle: {
+              //       width: 0
+              //     },
+              //     showSymbol: false,
+              //     areaStyle: {
+              //       opacity: 0.8
+              //     },
+              //     emphasis: {
+              //       focus: 'series'
+              //     },
+              //     data: [140, 232, 101, 264, 90, 340, 250]
+              //   },
+              //   {
+              //     name: 'Line 2',
+              //     type: 'line',
+              //     stack: 'Total',
+              //     smooth: true,
+              //     lineStyle: {
+              //       width: 0
+              //     },
+              //     showSymbol: false,
+              //     areaStyle: {
+              //       opacity: 0.8
+              //     },
+              //     emphasis: {
+              //       focus: 'series'
+              //     },
+              //     data: [120, 282, 111, 234, 220, 340, 310]
+              //   },
+              //   {
+              //     name: 'Line 3',
+              //     type: 'line',
+              //     stack: 'Total',
+              //     smooth: true,
+              //     lineStyle: {
+              //       width: 0
+              //     },
+              //     showSymbol: false,
+              //     areaStyle: {
+              //       opacity: 0.8
+              //     },
+              //     emphasis: {
+              //       focus: 'series'
+              //     },
+              //     data: [320, 132, 201, 334, 190, 130, 220]
+              //   },
+              //   {
+              //     name: 'Line 4',
+              //     type: 'line',
+              //     stack: 'Total',
+              //     smooth: true,
+              //     lineStyle: {
+              //       width: 0
+              //     },
+              //     showSymbol: false,
+              //     areaStyle: {
+              //       opacity: 0.8
+              //     },
+              //     emphasis: {
+              //       focus: 'series'
+              //     },
+              //     data: [220, 402, 231, 134, 190, 230, 120]
+              //   },
+              //   {
+              //     name: 'Line 5',
+              //     type: 'line',
+              //     stack: 'Total',
+              //     smooth: true,
+              //     lineStyle: {
+              //       width: 0
+              //     },
+              //     showSymbol: false,
+              //     label: {
+              //       show: true,
+              //       position: 'top'
+              //     },
+              //     areaStyle: {
+              //       opacity: 0.8
+              //     },
+              //     emphasis: {
+              //       focus: 'series'
+              //     },
+              //     data: [220, 302, 181, 234, 210, 290, 150]
+              //   }
+              // ].map((item) => {
+              //   return {
+              //     name: item.name,
+              //     type: item.type
+              //   }
+              // })
+
+
+              console.log("图表组件22", component);
+              console.log("图表组件33", component.data.option.series);
+            }
+
+          }
+
+          // 合并任务
+          // console.log("任务列表2", task);
+
+          testTask(task).then((task) => {
 
             if (task.cron === undefined)
               task.cron = dataSource.cron
+
+            if (task.type === "get") {
+              task.call = () => {
+                console.log("执行任务AA1", task);
+                axios.get(task.source).then(response => {
+                  if (response.status !== 200 || !response) {
+                    console.error(task, response);
+                    return
+                  }
+                  commitData(this.$store, task, response)
+                }).catch(error => {
+                  const errorResponse = JSON.parse(JSON.stringify(error))
+                  console.warn("任务执行报错", task, errorResponse);
+                })
+              }
+            } else if (task.type === "post") {
+
+              task.call = () => {
+
+                console.log("执行任务AA2", task);
+                axios.post(task.source).then(response => {
+                  if (response.status !== 200 || !response) {
+                    console.error(task, response);
+                    return
+                  }
+                  commitData(this.$store, task, response)
+                }).catch(error => {
+                  const errorResponse = JSON.parse(JSON.stringify(error))
+                  console.warn("任务执行报错", task, errorResponse);
+                })
+
+              }
+
+            } else {
+
+              task.call = () => {
+
+                axios.post("/BI/CronJob/RequestData", task).then(response => {
+                  if (response === undefined || response === null || response.status !== 200) {
+                    console.error("任务执行报错1", task, response);
+                    return
+                  }
+                  commitData(this.$store, task, response)
+                }).catch(error => {
+                  const errorResponse = JSON.parse(JSON.stringify(error))
+                  console.warn("任务执行报错2", task, errorResponse);
+                })
+
+              }
+
+            }
+
             schedule.cancelJob(task.jobName);
             const job = schedule.scheduleJob(
               task.jobName,
               task.cron,
-              () => {
-
-                if (task.type === "get" && task.source.startsWith("/")) {
-
-                  axios.get(task.source).then(response => {
-                    if (response.status !== 200 || !response) {
-                      console.error(task, response);
-                      return
-                    }
-                    commitData(this.$store, task, response)
-                  }).catch(error => {
-                    const errorResponse = JSON.parse(JSON.stringify(error))
-                    console.warn("任务执行报错", task, errorResponse);
-                  })
-                } else if (task.type === "post" && task.source.startsWith("/")) {
-
-                  axios.post(task.source).then(response => {
-
-                    if (response.status !== 200 || !response) {
-                      console.error(task, response);
-                      return
-                    }
-                    commitData(this.$store, task, response)
-                  }).catch(error => {
-                    const errorResponse = JSON.parse(JSON.stringify(error))
-                    console.warn("任务执行报错", task, errorResponse);
-                  })
-                } else if (task.type === "sql") {
-
-                  console.log("执行sql");
-
-                }
-
-                // // 设置组件数据
-                // this.$store.commit("setCanvasComponentAttribute", [
-                //   "data",
-                //   {
-                //     [task.name[0]]: {
-                //       text: task.name[0] + "==>" + new Date().toJSON()
-                //     },
-                //   },
-                // ]);
-
-              }
+              task.call
             )
 
-            if (job != null) {
+            if (job !== null && job !== undefined) {
               job.invoke();
               jobList.push(job)
             }
 
           })
+
         });
 
         // const job = schedule.scheduleJob(

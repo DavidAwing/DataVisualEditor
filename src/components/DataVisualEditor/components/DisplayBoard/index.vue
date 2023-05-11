@@ -72,7 +72,9 @@ export default {
 
     DB.CallbackMap.onOpenSucceedEventList.push(() => {
       // 数据库开启后渲染数据
-      requestCanvasData.bind(this)(canvasName);
+      requestCanvasData.bind(this)(canvasName, (isSuccess, data) => {
+        toast(data.message);
+      });
     });
 
     this.id = this.$route.query.id;

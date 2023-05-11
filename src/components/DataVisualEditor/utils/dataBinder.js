@@ -2,6 +2,7 @@ import * as DB from "../utils/indexDB";
 import { getRandStr } from "../utils/utils";
 import CronExpressionValidator from "../utils/CronExpressionValidator";
 import axios from 'axios'
+import toast from "./toast";
 // import cron from 'cron-validate'
 const JSONfn = require("jsonfn").JSONfn;
 const schedule = require("node-schedule");
@@ -232,256 +233,270 @@ function commitData(store, task, response) {
   // todo: 匹配data中的name
 
 
-
-
 }
 
 // 数据绑定器
-export function requestCanvasData(canvasName) {
-
-  if (canvasName === undefined)
-    canvasName = this.canvasName
+export function requestCanvasData(canvasName, callback) {
 
   if (canvasName === undefined) {
-    alert("requestCanvasData|未指定看板名称")
+    console.warn("未设置看板名称");
     return
   }
 
   // 这里一定要设置名称
   this.$store.commit("setCanvasName", canvasName);
 
-  const getCanvasData = async (name) => {
+  const getCanvasData = async (name, callback) => {
 
     const canvasList = await DB.getAllItemByType("Canvas-Data");
-    for (const data of canvasList) {
 
-      // console.log("执行任务2");
+    let hasName = false
+    if (canvasList !== undefined && canvasList !== null && canvasList.length > 0) {
+      for (const data of canvasList) {
+        if (data.name === name) {
+          hasName = true
+          const canvasComponentData = JSONfn.parse(data.canvasComponentData);
+          const canvasData = JSONfn.parse(data.canvasData);
+          // 恢复画布
+          this.$store.commit(
+            "setCanvasComponentData",
+            this.resetID(canvasComponentData)
+          );
+          this.$store.commit("setCanvasData", canvasData);
+          const dataSource = canvasData.dataSource
+          const sourceList = parseText(dataSource.parameters)
+          // console.log("任务列表1", sourceList);
+          sourceList.forEach(task => {
+            // console.log("任务列表D1", task);
+            for (let i = 0; i < canvasComponentData.length; i++) {
+              const component = canvasComponentData[i];
+              const element = task.element[component.data.name]
+              if (element === undefined)
+                continue
+              element.componentType = component.component
+              if (element.componentType === "vc-chart") {
 
-      if (data.name == name) {
-        const canvasComponentData = JSONfn.parse(data.canvasComponentData);
-        const canvasData = JSONfn.parse(data.canvasData);
-        // 恢复画布
-        this.$store.commit(
-          "setCanvasComponentData",
-          this.resetID(canvasComponentData)
-        );
-        this.$store.commit("setCanvasData", canvasData);
-        const dataSource = canvasData.dataSource
-        const sourceList = parseText(dataSource.parameters)
-        // console.log("任务列表1", sourceList);
-        sourceList.forEach(task => {
-
-          // console.log("任务列表D1", task);
-
-          for (let i = 0; i < canvasComponentData.length; i++) {
-            const component = canvasComponentData[i];
-            const element = task.element[component.data.name]
-            if (element === undefined)
-              continue
-            element.componentType = component.component
-            if (element.componentType === "vc-chart") {
-
-              // element.series = [
-              //   {
-              //     name: 'Line 1',
-              //     type: 'line',
-              //     stack: 'Total',
-              //     smooth: true,
-              //     lineStyle: {
-              //       width: 0
-              //     },
-              //     showSymbol: false,
-              //     areaStyle: {
-              //       opacity: 0.8
-              //     },
-              //     emphasis: {
-              //       focus: 'series'
-              //     },
-              //     data: [140, 232, 101, 264, 90, 340, 250]
-              //   },
-              //   {
-              //     name: 'Line 2',
-              //     type: 'line',
-              //     stack: 'Total',
-              //     smooth: true,
-              //     lineStyle: {
-              //       width: 0
-              //     },
-              //     showSymbol: false,
-              //     areaStyle: {
-              //       opacity: 0.8
-              //     },
-              //     emphasis: {
-              //       focus: 'series'
-              //     },
-              //     data: [120, 282, 111, 234, 220, 340, 310]
-              //   },
-              //   {
-              //     name: 'Line 3',
-              //     type: 'line',
-              //     stack: 'Total',
-              //     smooth: true,
-              //     lineStyle: {
-              //       width: 0
-              //     },
-              //     showSymbol: false,
-              //     areaStyle: {
-              //       opacity: 0.8
-              //     },
-              //     emphasis: {
-              //       focus: 'series'
-              //     },
-              //     data: [320, 132, 201, 334, 190, 130, 220]
-              //   },
-              //   {
-              //     name: 'Line 4',
-              //     type: 'line',
-              //     stack: 'Total',
-              //     smooth: true,
-              //     lineStyle: {
-              //       width: 0
-              //     },
-              //     showSymbol: false,
-              //     areaStyle: {
-              //       opacity: 0.8
-              //     },
-              //     emphasis: {
-              //       focus: 'series'
-              //     },
-              //     data: [220, 402, 231, 134, 190, 230, 120]
-              //   },
-              //   {
-              //     name: 'Line 5',
-              //     type: 'line',
-              //     stack: 'Total',
-              //     smooth: true,
-              //     lineStyle: {
-              //       width: 0
-              //     },
-              //     showSymbol: false,
-              //     label: {
-              //       show: true,
-              //       position: 'top'
-              //     },
-              //     areaStyle: {
-              //       opacity: 0.8
-              //     },
-              //     emphasis: {
-              //       focus: 'series'
-              //     },
-              //     data: [220, 302, 181, 234, 210, 290, 150]
-              //   }
-              // ].map((item) => {
-              //   return {
-              //     name: item.name,
-              //     type: item.type
-              //   }
-              // })
+                // element.series = [
+                //   {
+                //     name: 'Line 1',
+                //     type: 'line',
+                //     stack: 'Total',
+                //     smooth: true,
+                //     lineStyle: {
+                //       width: 0
+                //     },
+                //     showSymbol: false,
+                //     areaStyle: {
+                //       opacity: 0.8
+                //     },
+                //     emphasis: {
+                //       focus: 'series'
+                //     },
+                //     data: [140, 232, 101, 264, 90, 340, 250]
+                //   },
+                //   {
+                //     name: 'Line 2',
+                //     type: 'line',
+                //     stack: 'Total',
+                //     smooth: true,
+                //     lineStyle: {
+                //       width: 0
+                //     },
+                //     showSymbol: false,
+                //     areaStyle: {
+                //       opacity: 0.8
+                //     },
+                //     emphasis: {
+                //       focus: 'series'
+                //     },
+                //     data: [120, 282, 111, 234, 220, 340, 310]
+                //   },
+                //   {
+                //     name: 'Line 3',
+                //     type: 'line',
+                //     stack: 'Total',
+                //     smooth: true,
+                //     lineStyle: {
+                //       width: 0
+                //     },
+                //     showSymbol: false,
+                //     areaStyle: {
+                //       opacity: 0.8
+                //     },
+                //     emphasis: {
+                //       focus: 'series'
+                //     },
+                //     data: [320, 132, 201, 334, 190, 130, 220]
+                //   },
+                //   {
+                //     name: 'Line 4',
+                //     type: 'line',
+                //     stack: 'Total',
+                //     smooth: true,
+                //     lineStyle: {
+                //       width: 0
+                //     },
+                //     showSymbol: false,
+                //     areaStyle: {
+                //       opacity: 0.8
+                //     },
+                //     emphasis: {
+                //       focus: 'series'
+                //     },
+                //     data: [220, 402, 231, 134, 190, 230, 120]
+                //   },
+                //   {
+                //     name: 'Line 5',
+                //     type: 'line',
+                //     stack: 'Total',
+                //     smooth: true,
+                //     lineStyle: {
+                //       width: 0
+                //     },
+                //     showSymbol: false,
+                //     label: {
+                //       show: true,
+                //       position: 'top'
+                //     },
+                //     areaStyle: {
+                //       opacity: 0.8
+                //     },
+                //     emphasis: {
+                //       focus: 'series'
+                //     },
+                //     data: [220, 302, 181, 234, 210, 290, 150]
+                //   }
+                // ].map((item) => {
+                //   return {
+                //     name: item.name,
+                //     type: item.type
+                //   }
+                // })
 
 
-              console.log("图表组件22", component);
-              console.log("图表组件33", component.data.option.series);
+                console.log("图表组件22", component);
+                console.log("图表组件33", component.data.option.series);
+              }
             }
 
-          }
+            // 合并任务
+            // console.log("任务列表2", task);
 
-          // 合并任务
-          // console.log("任务列表2", task);
+            testTask(task).then((task) => {
 
-          testTask(task).then((task) => {
+              if (task.cron === undefined)
+                task.cron = dataSource.cron
 
-            if (task.cron === undefined)
-              task.cron = dataSource.cron
+              if (task.type === "get") {
+                task.call = () => {
+                  console.log("执行任务AA1", task);
+                  axios.get(task.source).then(response => {
+                    if (response.status !== 200 || !response) {
+                      console.error(task, response);
+                      return
+                    }
+                    commitData(this.$store, task, response)
+                  }).catch(error => {
+                    const errorResponse = JSON.parse(JSON.stringify(error))
+                    console.warn("任务执行报错", task, errorResponse);
+                  })
+                }
+              } else if (task.type === "post") {
 
-            if (task.type === "get") {
-              task.call = () => {
-                console.log("执行任务AA1", task);
-                axios.get(task.source).then(response => {
-                  if (response.status !== 200 || !response) {
-                    console.error(task, response);
-                    return
-                  }
-                  commitData(this.$store, task, response)
-                }).catch(error => {
-                  const errorResponse = JSON.parse(JSON.stringify(error))
-                  console.warn("任务执行报错", task, errorResponse);
-                })
-              }
-            } else if (task.type === "post") {
+                task.call = () => {
 
-              task.call = () => {
+                  console.log("执行任务AA2", task);
+                  axios.post(task.source).then(response => {
+                    if (response.status !== 200 || !response) {
+                      console.error(task, response);
+                      return
+                    }
+                    commitData(this.$store, task, response)
+                  }).catch(error => {
+                    const errorResponse = JSON.parse(JSON.stringify(error))
+                    console.warn("任务执行报错", task, errorResponse);
+                  })
+                }
 
-                console.log("执行任务AA2", task);
-                axios.post(task.source).then(response => {
-                  if (response.status !== 200 || !response) {
-                    console.error(task, response);
-                    return
-                  }
-                  commitData(this.$store, task, response)
-                }).catch(error => {
-                  const errorResponse = JSON.parse(JSON.stringify(error))
-                  console.warn("任务执行报错", task, errorResponse);
-                })
-
-              }
-
-            } else {
-
-              task.call = () => {
-
-                axios.post("/BI/CronJob/RequestData", task).then(response => {
-                  if (response === undefined || response === null || response.status !== 200) {
-                    console.error("任务执行报错1", task, response);
-                    return
-                  }
-                  commitData(this.$store, task, response)
-                }).catch(error => {
-                  const errorResponse = JSON.parse(JSON.stringify(error))
-                  console.warn("任务执行报错2", task, errorResponse);
-                })
-
+              } else {
+                task.call = () => {
+                  axios.post("/BI/CronJob/RequestData", task).then(response => {
+                    if (response === undefined || response === null || response.status !== 200) {
+                      console.error("任务执行报错1", task, response);
+                      return
+                    }
+                    commitData(this.$store, task, response)
+                  }).catch(error => {
+                    const errorResponse = JSON.parse(JSON.stringify(error))
+                    console.warn("任务执行报错2", task, errorResponse);
+                  })
+                }
               }
 
-            }
+              schedule.cancelJob(task.jobName);
+              const job = schedule.scheduleJob(
+                task.jobName,
+                task.cron,
+                task.call
+              )
 
-            schedule.cancelJob(task.jobName);
-            const job = schedule.scheduleJob(
-              task.jobName,
-              task.cron,
-              task.call
-            )
+              if (job !== null && job !== undefined) {
+                job.invoke();
+                jobList.push(job)
+              }
 
-            if (job !== null && job !== undefined) {
-              job.invoke();
-              jobList.push(job)
-            }
+            })
 
-          })
+          });
 
-        });
+          // const job = schedule.scheduleJob(
+          //   jobName,
+          //   dataSource.cron,
+          //   () => {
+          //     console.log("todo请求数据,绑定数据");
+          //     // 设置组件数据
+          //     this.$store.commit("setCanvasComponentAttribute", [
+          //       "data",
+          //       {
+          //         aaa: {
+          //           text: new Date().toJSON()
+          //         },
+          //       },
+          //     ]);
+          //     console.log(new Date().toJSON() + "  定时任务运行完毕!  " + this.canvasName);
+          //   }
+          // );
 
-        // const job = schedule.scheduleJob(
-        //   jobName,
-        //   dataSource.cron,
-        //   () => {
-        //     console.log("todo请求数据,绑定数据");
-        //     // 设置组件数据
-        //     this.$store.commit("setCanvasComponentAttribute", [
-        //       "data",
-        //       {
-        //         aaa: {
-        //           text: new Date().toJSON()
-        //         },
-        //       },
-        //     ]);
-        //     console.log(new Date().toJSON() + "  定时任务运行完毕!  " + this.canvasName);
-        //   }
-        // );
-
-        return;
+          return;
+        }
       }
+    }
+
+    if (!hasName) {
+      axios.get(`/BI/Component/GetCanvasTemplate`, {
+        params: {
+          name: name,
+        },
+        timeout: 1000 * 60 * 30,
+      })
+        .then(({ data }) => {
+          if (data.state !== 200) {
+            callback(false, data)
+            return
+          }
+          DB.setItem(name, JSON.parse(data.data)).then(() => {
+            getCanvasData(name);
+          }).catch((error) => {
+            toast("浏览器数据保存异常")
+            console.error("getCanvasData|浏览器数据保存异常", error);
+          })
+        })
+        .catch((error) => {
+          console.error("getCanvasData|indexDB保存数据异常", JSON.stringify(error));
+          callback(false, error)
+        });
     }
   };
 
-  getCanvasData(canvasName);
+  getCanvasData(canvasName, callback);
 }

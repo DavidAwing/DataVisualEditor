@@ -4,10 +4,11 @@
       <div class="canvas-config" style="margin-right: 10px; margin-left: 0">
         <span>名称</span>
 
+        <!--   @blur="inputCanvaName($event)" -->
         <el-select
           style="padding: 6px; width: 120px"
           v-model="currentCanvasName"
-          @blur="inputCanvaName($event)"
+          @keyup.enter.native="inputCanvaName"
           clearable
           filterable
           placeholder=""
@@ -147,6 +148,8 @@ import * as DB from "../utils/indexDB";
 const LZ = require("lz-string");
 const JSONfn = require("jsonfn").JSONfn;
 import TestCanvas from "./TestCanvas";
+import axios from "axios";
+import { requestCanvasData } from "../utils/dataBinder";
 
 export default {
   components: { Preview, ComponentListViewer },
@@ -511,6 +514,10 @@ export default {
         )
           continue;
 
+        // todo 去除组件的服务端数据
+        if (component.component === "") {
+        }
+
         const componentName = component["data"]["name"].trim();
         if (componentNameList.indexOf(componentName) !== -1) {
           toast("组件名称重复: " + componentName);
@@ -527,14 +534,32 @@ export default {
         name: this.currentCanvasName,
         canvasComponentData: canvasComponentData,
         canvasData: canvasData,
+        systemVersion: "t0.01",
+        modifyTime: new Date().toString(),
       };
 
-      console.log("保存数据", canvasEditorData);
-
       DB.setItem(this.currentCanvasName, canvasEditorData);
-
+      axios
+        .post(
+          `/BI/Component/SaveCanvasTemplate?name=${this.currentCanvasName}`,
+          canvasEditorData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        )
+        .then((response) => {
+          if (response.status == 200) {
+            toast("模板保存成功", "success");
+            return;
+          }
+        })
+        .catch((error) => {
+          const errorResponse = JSON.parse(JSON.stringify(error));
+          console.warn("保存数据异常", errorResponse);
+        });
       eventBus.$emit("saveEvent", this.currentCanvasName, canvasEditorData);
-
       return true;
     },
 
@@ -575,9 +600,21 @@ export default {
     },
 
     inputCanvaName(event) {
-      if (!event.target.value || !event.target.value.trim()) return;
+
+      if (event.target.value  === undefined || event.target.value === null || event.target.value.trim() === "") return;
       this.currentCanvasName = event.target.value;
+
+      try {
+        requestCanvasData.bind(this)(this.currentCanvasName);
+      } catch (error) {
+      }
+
     },
+
+    // inputCanvaName(event) {
+    //   if (!event.target.value || !event.target.value.trim()) return;
+
+    // },
   },
 };
 </script>

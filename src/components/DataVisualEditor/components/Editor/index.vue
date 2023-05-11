@@ -117,7 +117,8 @@ export default {
     },
     canvasName: {
       handler: function (val, old) {
-        requestCanvasData.bind(this)();
+        if (this.canvasName === undefined || this.canvasName === null || this.canvasName.trim() === "")
+          return
       },
       deep: false,
       immediate: true,

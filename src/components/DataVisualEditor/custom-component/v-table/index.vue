@@ -215,8 +215,8 @@ export default {
       }
       try {
         this.dom = this.$refs.table.$el.children[2].children[0].children[1]
-        // this.dom.style.transform = "translate3d(0px, 0px, 0px)"
-        this.dom.style.transform = "translateY(0px)"
+        this.dom.style.transform = "translate3d(0px, 0px, 0px)"
+        // this.dom.style.transform = "translateY(0px)"
       } catch (error) {
         setTimeout(this.rollTable.bind(this), 300);
         return
@@ -228,10 +228,13 @@ export default {
       let fps = 60
       let fpsInterval = 1000 / fps
       let last = new Date().getTime() //上次执行的时刻
+
+
+
       let roll = () => {
         try {
 
-          if (this.maxRows === Infinity || Number.isNaN(this.maxRows) || this.element.data.tableData.length <= this.maxRows) {
+          if (/*this.maxRows === Infinity || Number.isNaN(this.maxRows) || */ this.element.data.tableData.length <= this.maxRows) {
             setTimeout(() => {
               window.requestAnimationFrame(roll);
             }, 2000);
@@ -243,17 +246,18 @@ export default {
           if (elapsed > fpsInterval) {
 
             let offsetHeight = -this.dom.offsetHeight + this.dom.offsetHeight / 5
+
             last = now - (elapsed % fpsInterval); //校正当前时间
             // translate3d的性能会更好,参考https://stackoverflow.com/questions/22111256/translate3d-vs-translate-performance
-            let domTop = this.dom.style.transform.match(/translateY\(([-+.\d]+)px\)/)[1]
-            // let domTop = this.dom.style.transform.match(/translate3d\(0px,\s*([\d.-]+)px,\s*0px\)/)[1]
+            // let domTop = this.dom.style.transform.match(/translateY\(([-+.\d]+)px\)/)[1]
+            let domTop = this.dom.style.transform.match(/translate3d\(0px,\s*([\d.-]+)px,\s*0px\)/)[1]
             domTop = Number.parseFloat(domTop)
             if (domTop < offsetHeight) {
-              // this.dom.style.transform = `translate3d(0px, ${this.dom.offsetHeight}px, 0px)`;
-              this.dom.style.transform = `translateY(${tableHeight}px)`;
+              this.dom.style.transform = `translate3d(0px, ${tableHeight / 2}px, 0px)`;
+              // this.dom.style.transform = `translateY(${tableHeight}px)`;
             } else {
-              // this.dom.style.transform = `translate3d(0px, ${domTop - rollingSpeed}px, 0px)`;
-              this.dom.style.transform = `translateY(${domTop - rollingSpeed}px)`;
+              this.dom.style.transform = `translate3d(0px, ${domTop - rollingSpeed}px, 0px)`;
+              // this.dom.style.transform = `translateY(${domTop - rollingSpeed}px)`;
             }
           }
           window.requestAnimationFrame(roll);

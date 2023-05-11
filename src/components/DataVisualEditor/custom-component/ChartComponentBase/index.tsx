@@ -291,8 +291,10 @@ export default class ChartsComponentBase extends ComponentBase {
     });
 
     this.$watch('activeSerie', (val: any, old) => {
+      // this.element.data.activeSerieType = "vc-" + val.type
+      Vue.set(this.element.data, "activeSerieType", "vc-" + val.type)
       this.chart.setOption(this.option, true)
-    }, { deep: true });
+    }, { deep: true, immediate: true });
 
   }
 

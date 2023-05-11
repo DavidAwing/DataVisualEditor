@@ -89,6 +89,7 @@ export default class StyleListBase extends tsc<Vue> {
   selectedStyle: any = null
   STYLE_STATE: StyleState = StyleState.created
 
+
   getComputedValue(computedName: string, parameters: any) {
 
     if (!computedName.startsWith("#"))
@@ -481,20 +482,27 @@ export default class StyleListBase extends tsc<Vue> {
 
   }
 
+  private get ComponentStyleType() {
+
+    const component = this.curComponent.component
+    const data = this.curComponent.data
+    return component.startsWith("vc-") ? data.activeSerieType : component
+  }
+
+
   get styleList() {
 
-    const key = "styleList:" + this.curComponent.component;
+    const componentStyleType = this.ComponentStyleType
+
+    const key = "styleList:" + componentStyleType;
     if (Object.prototype.hasOwnProperty.call(this.styleMap, key)) return this.styleMap[key];
-
-    if (this.isStyleListInterrupt) {
-      return  [];
-    } 
-
+    if (this.isStyleListInterrupt || componentStyleType === undefined || componentStyleType === "")
+      return []
     this.isStyleListInterrupt = true;
     axios
       .get("/BI/Component/GetStyleList", {
         params: {
-          name: this.curComponent.component,
+          name: componentStyleType,
         },
         timeout: 1000 * 60,
       })
@@ -543,11 +551,11 @@ export default class StyleListBase extends tsc<Vue> {
       if (this.isStyleListInterrupt) return [];
       this.isStyleListInterrupt = true;
       axios.get("/BI/Component/GetSelectorList", {
-          params: {
-            name: this.curComponent.component,
-          },
-          timeout: 1000 * 60,
-        })
+        params: {
+          name: this.curComponent.component,
+        },
+        timeout: 1000 * 60,
+      })
         .then(({ data }) => {
           this.isStyleListInterrupt = false;
           if (Object.prototype.hasOwnProperty.call(this.styleMap, key)) return;
@@ -795,9 +803,6 @@ export default class StyleListBase extends tsc<Vue> {
     }, { deep: true, immediate: false })
 
 
-
-
-
     this.$watch('curSelector', (val: any, old) => {
 
       console.log("选择器改变", val);
@@ -807,7 +812,6 @@ export default class StyleListBase extends tsc<Vue> {
     this.$watch('styleList', (val, old) => {
 
       console.log("样式改变");
-
 
       // if (!this.isSwitchToStyle) return;
       if (
@@ -842,6 +846,17 @@ export default class StyleListBase extends tsc<Vue> {
     this.$watch('componentStyleList', (val, old) => {
 
       console.log("当前样式修改解析数据0", this.curStyle.attrList);
+
+    }, { deep: true, immediate: true })
+
+
+    this.$watch('curComponent.data', (val, old) => {
+
+
+      console.log("当前组件修改了", val);
+
+
+
 
     }, { deep: true, immediate: true })
 

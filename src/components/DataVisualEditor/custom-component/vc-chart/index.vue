@@ -96,7 +96,7 @@ export default {
         console.log("element图形配置", val.data.option);
       },
       deep: true,
-    },
+    }
   },
   created() {
   },
@@ -109,6 +109,7 @@ export default {
       this.oldSeries = this.element.data.option.series;
       console.log("拖动A", this.element.data.option.series);
     },
+
     endDraggable(dragEvent) {
       this.activeSerieIndex = dragEvent.newIndex;
       eventBus.$emit("endDraggable", dragEvent);

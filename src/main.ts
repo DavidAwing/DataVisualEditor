@@ -5,6 +5,9 @@ import router from './router'
 import store from './store'
 // import store from './components/LabelDesigner/store'
 
+import { VuePlugin } from 'vuera'
+
+
 import ElementUI, { Dialog } from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 
@@ -18,6 +21,7 @@ import '@/components/DataVisualEditor/styles/reset.css'
 import './components/DataVisualEditor/mock';
 
 
+Vue.use(VuePlugin)
 Vue.use(ElementUI, { size: 'small' });
 
 

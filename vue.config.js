@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const axios = require('axios').default;
 const path = require('path')
 // const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
-
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 
 function resolve(dir) {
   return path.join(__dirname, dir)

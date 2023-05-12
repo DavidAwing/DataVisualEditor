@@ -36,7 +36,8 @@ const data = {
       dataSource: {
         cron: "*/30 * * * * *",
         parameters: "select * from user\n\nhttp"
-      }
+      },
+      deviceType: "pc" // pc,tab,mobile
     },
     isInEdiotr: false, // 是否在编辑器中，用于判断复制、粘贴组件时是否生效，如果在编辑器外，则无视这些操作
     canvasComponentData: [], // 画布组件数据

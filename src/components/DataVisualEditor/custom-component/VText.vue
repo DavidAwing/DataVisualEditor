@@ -34,6 +34,8 @@ import { keycodes } from "../utils/shortcutKey";
 import ComponentBase from "./ComponentBase";
 import { getRandStr } from "../utils/utils";
 
+// todo 文字支持超链接
+
 export default {
   extends: ComponentBase,
   props: {

@@ -483,7 +483,6 @@ export default class StyleListBase extends tsc<Vue> {
   }
 
   private get ComponentStyleType() {
-
     const component = this.curComponent.component
     const data = this.curComponent.data
     return component.startsWith("vc-") ? data.activeSerieType : component
@@ -846,17 +845,6 @@ export default class StyleListBase extends tsc<Vue> {
     this.$watch('componentStyleList', (val, old) => {
 
       console.log("当前样式修改解析数据0", this.curStyle.attrList);
-
-    }, { deep: true, immediate: true })
-
-
-    this.$watch('curComponent.data', (val, old) => {
-
-
-      console.log("当前组件修改了", val);
-
-
-
 
     }, { deep: true, immediate: true })
 

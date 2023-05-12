@@ -29,8 +29,18 @@
       <el-button @click="" @click="canvasConfigDialogVisible = true"
         >配置</el-button
       >
+
+      <el-select
+        v-model="canvasData.deviceType"
+        style="width: 70px; min-width: 70px"
+        class="canvas-config"
+      >
+        <el-option key="pc" label="pc" value="pc"> </el-option>
+        <el-option key="mobile" label="mobile" value="mobile"></el-option>
+      </el-select>
+
       <!-- <el-button @click="redo" style="margin-left: 10px">其他</el-button> -->
-      <el-button @click="isShowPreview = true">预览</el-button>
+      <el-button @click="preview" v-if="false">预览</el-button>
       <el-button @click="undo">撤消</el-button>
       <el-button @click="redo">重做</el-button>
       <label for="input" class="insert" v-if="false">插入图片</label>
@@ -600,15 +610,17 @@ export default {
     },
 
     inputCanvaName(event) {
-
-      if (event.target.value  === undefined || event.target.value === null || event.target.value.trim() === "") return;
+      if (
+        event.target.value === undefined ||
+        event.target.value === null ||
+        event.target.value.trim() === ""
+      )
+        return;
       this.currentCanvasName = event.target.value;
 
       try {
         requestCanvasData.bind(this)(this.currentCanvasName);
-      } catch (error) {
-      }
-
+      } catch (error) {}
     },
 
     // inputCanvaName(event) {

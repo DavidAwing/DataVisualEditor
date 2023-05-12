@@ -16,7 +16,11 @@
           @mousedown="handleMouseDown"
           @mouseup="deselectCurComponent"
         >
-          <Editor />
+          <Editor v-show="canvasData.deviceType === 'pc'" />
+          <MobilePreview
+            ref="MobilePreview"
+            v-if="canvasData.deviceType !== 'pc'"
+          />
         </div>
         <div class="canvas-hint" v-html="hint"></div>
       </section>
@@ -28,8 +32,14 @@
             <p v-else class="placeholder">请选择组件</p>
           </el-tab-pane>
           <el-tab-pane label="样式" name="style">
-            <StyleList v-if="curComponent && curComponent.component.startsWith('v-')" />
-            <ChartStyleList v-else-if="curComponent && curComponent.component.startsWith('vc-')" />
+            <StyleList
+              v-if="curComponent && curComponent.component.startsWith('v-')"
+            />
+            <ChartStyleList
+              v-else-if="
+                curComponent && curComponent.component.startsWith('vc-')
+              "
+            />
             <p v-else class="placeholder">请选择组件</p>
           </el-tab-pane>
           <el-tab-pane label="动画" name="animation">
@@ -51,9 +61,10 @@ import Editor from "../../components/DataVisualEditor/components/Editor/index";
 import ComponentList from "../../components/DataVisualEditor/components/ComponentList"; // 左侧列表组件
 import AttrList from "../../components/DataVisualEditor/components/AttrList"; // 右侧属性列表
 import StyleList from "../../components/DataVisualEditor/components/StyleConfig/CssStyleList"; // 右侧样式列表
-import ChartStyleList from  "../../components/DataVisualEditor/components/StyleConfig/ChartStyleList"; // 右侧图表样式列表
+import ChartStyleList from "../../components/DataVisualEditor/components/StyleConfig/ChartStyleList"; // 右侧图表样式列表
 import AnimationList from "../../components/DataVisualEditor/components/AnimationList"; // 右侧动画列表
 import EventList from "../../components/DataVisualEditor/components/EventList"; // 右侧事件列表
+import MobilePreview from "../../components/DataVisualEditor/components/MobilePreview"; // 图片
 import componentList, {
   getComponentSharedData,
 } from "../../components/DataVisualEditor/custom-component/component-list"; // 左侧列表数据
@@ -86,6 +97,7 @@ export default {
     Toolbar,
     StyleList,
     ChartStyleList,
+    MobilePreview,
   },
   data() {
     return {
@@ -108,6 +120,9 @@ export default {
   watch: {
     canvasData: {
       handler: function (val, old) {
+        if (val.deviceType !== "pc")
+          this.loadMobileUrl();
+
         this.$nextTick(() => {
           const ele = document.getElementById("editor");
           this.$store.commit(
@@ -123,6 +138,9 @@ export default {
       setTimeout(() => {
         this.hint = "";
       }, 360000);
+    },
+    canvasName: function (val) {
+      this.loadMobileUrl();
     },
   },
   beforeCreate() {},
@@ -147,10 +165,20 @@ export default {
     var demo1_h = window.getComputedStyle(ele).getPropertyValue("height");
   },
   methods: {
+    loadMobileUrl() {
+
+      if (this.$refs.MobilePreview === undefined) {
+        setTimeout(() => {
+          this.loadMobileUrl()
+        }, 200);
+        return
+      }
+      const mobileUrl = `/sub01/#/viewer?name=${this.canvasName}`;
+      this.$refs.MobilePreview.load(this.canvasData.deviceType, mobileUrl);
+    },
+
     isShowStyle(type, curComponent) {
       if (!curComponent) return false;
-
-      console.log("数据", curComponent);
 
       if (type === "css" && curComponent.component.startsWith("v-")) {
         return true;

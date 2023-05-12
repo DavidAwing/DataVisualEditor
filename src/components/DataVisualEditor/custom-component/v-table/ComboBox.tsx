@@ -2,9 +2,13 @@
 import { defineComponent } from '@vue/composition-api'
 
 
+// import { applyPureReactInVue, applyPureVueInReact } from 'veaury'
+
+
 // 输入框支持搜索
 //
 export default defineComponent({
+  components: {  },
   data() {
     return {
       msg: "default",

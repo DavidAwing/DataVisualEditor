@@ -11,7 +11,7 @@ const routes: Array<RouteConfig> = [
   {
     path: '/',
     name: 'home',
-    redirect: "/DisplayBoardDesigner"
+    redirect: "/editor"
   },
   {
     path: '/login',
@@ -24,13 +24,13 @@ const routes: Array<RouteConfig> = [
     component: () => import('@/views/test/index.vue')
   },
   {
-    path: '/DisplayBoardDesigner',
-    name: 'DisplayBoardDesigner',
+    path: '/editor',
+    name: 'editor',
     component: () => import('@/views/DisplayBoardDesigner/index.vue')
   },
   {
-    path: '/DisplayBoardViewer',
-    name: 'DisplayBoardViewer',
+    path: '/viewer',
+    name: 'viewer',
     component: () => import('@/views/DisplayBoardViewer/index.vue')
   },
   {

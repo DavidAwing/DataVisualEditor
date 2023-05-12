@@ -1,6 +1,8 @@
 <template>
   <div class="container" id="test222">
 
+    <MobilePreview />
+
     <button @click="testpz()">测试拍照</button>
 
     <div id="test">
@@ -22,6 +24,7 @@
 
 <script>
 
+import MobilePreview from '@/components/DataVisualEditor/components/MobilePreview'
 import CssEditor from '@/components/DataVisualEditor/components/CssEditor'
 import { getRandStr } from '@/components/DataVisualEditor/utils/utils'
 import {
@@ -67,7 +70,7 @@ const fontFamilyOpts = [
 
 
 export default {
-  components: { CssEditor },
+  components: { CssEditor, MobilePreview },
   name: "test",
   data() {
     return {

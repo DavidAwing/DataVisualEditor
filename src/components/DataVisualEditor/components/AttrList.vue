@@ -21,16 +21,16 @@
           v-else-if="type == 'number'"
           style="display: flex; width: 100%; position: relative"
         >
-          <el-input v-model.number="curComponent[bind][key]" type="number" />
+          <el-input v-model.number="curComponent[bind][key]" type="number" step="0.1"/>
           <el-select
             v-if="curComponent.styleUnit[key]"
             v-model="curComponent.styleUnit[key]"
             style="width: 100px; margin-left: 6px"
           >
+            <el-option key="px" label="px" value="px"></el-option>
             <el-option key="vw" label="vw" value="vw"></el-option>
             <el-option key="vh" label="vh" value="vh"></el-option>
-            <el-option key="px" label="px" value="px"></el-option>
-            <el-option key="%" label="%" value="%"></el-option>
+            <!-- <el-option key="%" label="%" value="%"></el-option> -->
           </el-select>
         </div>
 

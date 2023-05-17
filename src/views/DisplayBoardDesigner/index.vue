@@ -173,7 +173,7 @@ export default {
         }, 200);
         return
       }
-      const mobileUrl = `/sub01/#/viewer?name=${this.canvasName}`;
+      const mobileUrl = `${process.env.VUE_APP_BASE_URL}#/viewer?name=${this.canvasName}`;
       this.$refs.MobilePreview.load(this.canvasData.deviceType, mobileUrl);
     },
 

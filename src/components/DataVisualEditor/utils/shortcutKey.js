@@ -56,6 +56,7 @@ let isCtrlOrCommandDown = false
 // 全局监听按键操作并执行相应命令
 export function listenGlobalKeyDown() {
   window.onkeydown = (e) => {
+
     if (!store.state.isInEdiotr) return
 
     const { curComponent } = store.state
@@ -65,6 +66,8 @@ export function listenGlobalKeyDown() {
     } else if (keyCode == deleteKey && curComponent) {
       store.commit('deleteComponent')
       store.commit('recordSnapshot')
+    } else if (e.keyCode === 9) {
+      e.preventDefault()
     } else if (isCtrlOrCommandDown) {
       if (unlockMap[keyCode] && (!curComponent || !curComponent.isLock)) {
         e.preventDefault()
@@ -77,9 +80,17 @@ export function listenGlobalKeyDown() {
   }
 
   window.onkeyup = (e) => {
+
     if (e.keyCode === ctrlKey || e.keyCode === commandKey) {
       isCtrlOrCommandDown = false
     }
+
+    // Tab切换激活的组件
+    if (e.keyCode === 9) {
+      e.preventDefault()
+      eventBus.$emit("SwitchNextComponent", e)
+    }
+
   }
 
   window.onmousedown = () => {

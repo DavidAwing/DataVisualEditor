@@ -25,11 +25,10 @@
 <script>
 import eventBus from "../../utils/eventBus";
 import runAnimation from "../../utils/runAnimation";
+import { pxToVw, pxToVh, vwToPx, vhToPx } from "../../utils/style";
 import { mapState } from "vuex";
 import calculateComponentPositonAndSize from "../../utils/calculateComponentPositonAndSize";
 import { mod360 } from "../../utils/translate";
-
-const ratio = 15;
 
 export default {
   props: {
@@ -40,7 +39,7 @@ export default {
     element: {
       require: true,
       type: Object,
-      default: () => {},
+      default: (val, old) => {},
     },
     defaultStyle: {
       require: true,
@@ -125,6 +124,8 @@ export default {
       // 如果元素没有移动，则不保存快照
       let hasMove = false;
       const move = (moveEvent) => {
+        console.log("移动组件AAA");
+
         hasMove = true;
         const curX = moveEvent.clientX;
         const curY = moveEvent.clientY;
@@ -152,6 +153,8 @@ export default {
     },
 
     getPointStyle(point) {
+      console.log("移动组件IIOO");
+
       const { width, height } = this.defaultStyle;
       const hasT = /t/.test(point);
       const hasB = /b/.test(point);
@@ -195,7 +198,19 @@ export default {
         }
       }
 
-      this.element.styleUnit;
+      // this.element.styleUnit;
+
+      // if (leftUnit === "vw") {
+      //   newLeft = pxToVw(newLeft);
+      // } else if (leftUnit === "vh") {
+      //   newLeft = pxToVw(newLeft);
+      // }
+
+      // if (topUnit === "vw") {
+      //   newTop = pxToVw(newTop);
+      // } else if (topUnit === "vh") {
+      //   newTop = pxToVw(newTop);
+      // }
 
       const style = {
         marginLeft: "-4px",
@@ -222,13 +237,11 @@ export default {
           const angleLimit = angleToCursor[lastMatchIndex];
           if (angle < 23 || angle >= 338) {
             result[point] = "nw-resize";
-
             return;
           }
 
           if (angleLimit.start <= angle && angle < angleLimit.end) {
             result[point] = angleLimit.cursor + "-resize";
-
             return;
           }
         }
@@ -238,11 +251,12 @@ export default {
     },
 
     handleMouseDownOnShape(e) {
+
       this.$store.commit("setInEditorStatus", true);
       this.$store.commit("setClickComponentStatus", true);
       if (
         this.element.component != "v-text" &&
-        this.element.component != "rect-shape"
+        this.element.component != "v-rect-shape"
       ) {
         e.preventDefault();
       }
@@ -270,23 +284,29 @@ export default {
         const curX = moveEvent.clientX;
         const curY = moveEvent.clientY;
 
-        if (this.element.styleUnit.left !== "px") {
-          pos.left = (curX - startX) / ratio + startLeft;
+        if (this.element.styleUnit.left === "vw") {
+          pos.left = pxToVw(curX - startX) + startLeft;
+        } else if (this.element.styleUnit.left === "vh") {
+          pos.left = pxToVh(curX - startX) + startLeft;
         } else {
           pos.left = curX - startX + startLeft;
         }
 
-        if (this.element.styleUnit.top !== "px") {
-          pos.top = (curY - startY) / ratio + startTop;
+        if (this.element.styleUnit.top === "vw") {
+          pos.top = pxToVw(curY - startY) + startTop;
+        } else if (this.element.styleUnit.top === "vh") {
+          pos.top = pxToVh(curY - startY) + startTop;
         } else {
           pos.top = curY - startY + startTop;
         }
 
         // 修改当前组件样式
         this.$store.commit("setShapeStyle", pos);
+
         // 等更新完当前组件的样式并绘制到屏幕后再判断是否需要吸附
         // 如果不使用 $nextTick，吸附后将无法移动
         this.$nextTick(() => {
+          if (this.curComponent.data.constraintType === "free") return;
           // 触发元素移动事件，用于显示标线、吸附功能
           // 后面两个参数代表鼠标移动方向
           // curY - startY > 0 true 表示向下移动 false 表示向上移动
@@ -314,7 +334,28 @@ export default {
       this.$store.commit("hideContextMenu");
     },
 
+    getElementCenter(element) {
+      const elementContainerRect = element.parentNode.getBoundingClientRect();
+      const elementParentRect =
+        element.parentNode.parentNode.getBoundingClientRect();
+
+      const centerX =
+        elementContainerRect.left -
+        elementParentRect.left +
+        elementContainerRect.width / 2;
+      const centerY =
+        elementContainerRect.top -
+        elementParentRect.top +
+        elementContainerRect.height / 2;
+
+      return {
+        x: centerX,
+        y: centerY,
+      };
+    },
+
     handleMouseDownOnPoint(point, e) {
+
       this.$store.commit("setInEditorStatus", true);
       this.$store.commit("setClickComponentStatus", true);
       e.stopPropagation();
@@ -322,14 +363,23 @@ export default {
 
       const style = { ...this.defaultStyle };
 
+      const prevLeft = style.left;
+      const prevTop = style.top;
+      const prevWidth = style.width;
+      const prevHeight = style.height;
+
       // 组件宽高比
       const proportion = style.width / style.height;
 
-      // 组件中心点
-      const center = {
-        x: style.left + style.width / 2,
-        y: style.top + style.height / 2,
-      };
+      // 组件中心点, 对于vw等单位计算错误
+      // const center = {
+      //   x: style.left + style.width / 2,
+      //   y: style.top + style.height / 2,
+      // };
+
+      const center = this.getElementCenter(
+        document.getElementById("component" + this.curComponent.id)
+      );
 
       // 获取画布位移信息
       const editorRectInfo = this.editor.getBoundingClientRect();
@@ -373,6 +423,8 @@ export default {
           y: moveEvent.clientY - editorRectInfo.top,
         };
 
+        const curComponent = this.curComponent;
+
         calculateComponentPositonAndSize(
           point,
           style,
@@ -385,6 +437,75 @@ export default {
             symmetricPoint,
           }
         );
+
+        if (curComponent.styleUnit.top === "vw") {
+          style.top = pxToVw(style.top);
+        } else if (curComponent.styleUnit.top === "vh") {
+          style.top = pxToVh(style.top);
+        }
+
+        if (curComponent.styleUnit.left === "vw") {
+          style.left = pxToVw(style.left);
+        } else if (curComponent.styleUnit.left === "vh") {
+          style.left = pxToVh(style.left);
+        }
+
+        if (curComponent.styleUnit.width === "vw") {
+          style.width = pxToVw(style.width);
+        } else if (curComponent.styleUnit.width === "vh") {
+          style.width = pxToVh(style.width);
+        }
+
+        if (curComponent.styleUnit.height === "vw") {
+          style.height = pxToVw(style.height);
+        } else if (curComponent.styleUnit.height === "vh") {
+          style.height = pxToVh(style.height);
+        }
+
+        // lt rt rb lb
+        if (point === "rb") {
+          // OK
+          delete style["left"];
+          delete style["top"];
+        } else if (point === "lt") {
+
+        } else if (point === "r") {
+          // OK
+          delete style["top"];
+          delete style["left"];
+          delete style["height"];
+        } else if (point === "l") {
+          // OK
+          if (
+            curComponent.styleUnit.width.startsWith("v") &&
+            curComponent.styleUnit.left.startsWith("v")
+          ) {
+            const correction = prevLeft - style.left;
+            style.left = prevLeft - correction;
+            style.width = prevWidth + correction;
+          }
+
+          delete style["top"];
+          delete style["height"];
+        } else if (point === "t") {
+          // OK
+          if (
+            curComponent.styleUnit.height.startsWith("v") &&
+            curComponent.styleUnit.top.startsWith("v")
+          ) {
+            const correction = prevTop - style.top;
+            style.top = prevTop - correction;
+            style.height = prevHeight + correction;
+          }
+
+          delete style["width"];
+          delete style["left"];
+        } else if (point === "b") {
+          // OK
+          delete style["top"];
+          delete style["width"];
+          delete style["left"];
+        }
 
         this.$store.commit("setShapeStyle", style);
       };

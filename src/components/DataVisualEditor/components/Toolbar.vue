@@ -130,12 +130,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="canvasConfigDialogVisible = false">取 消</el-button>
-        <el-button
-          type="primary"
-          @click="
-            canvasConfigDialogVisible = false;
-            save();
-          "
+        <el-button type="primary" @click="canvasConfigDialogVisible = false"
           >确 定</el-button
         >
       </div>
@@ -159,6 +154,7 @@ const LZ = require("lz-string");
 const JSONfn = require("jsonfn").JSONfn;
 import TestCanvas from "./TestCanvas";
 import axios from "axios";
+import md5 from "blueimp-md5";
 import { requestCanvasData } from "../utils/dataBinder";
 
 export default {
@@ -215,19 +211,71 @@ export default {
 
         for (const data of this.canvasList) {
           if (data.name == val) {
-            const canvasComponentData = data.canvasComponentData;
-            const canvasData = data.canvasData;
-            // 恢复画布
-            this.$store.commit(
-              "setCanvasComponentData",
-              this.resetID(JSONfn.parse(canvasComponentData))
-            );
-            this.$store.commit("setCanvasData", JSONfn.parse(canvasData));
-            eventBus.$emit(
-              "restoreEvent",
-              this.currentCanvasName,
-              canvasComponentData
-            );
+            const name = val;
+            axios
+              .get(`/BI/Component/GetCanvasCheckCode?name=${name}`)
+              .then(({ data }) => {
+                if (data.state !== 200) {
+                  console.warn("currentCanvasName|获取校验码发生错误", data);
+                  return;
+                }
+                const code = data.data;
+                if (data.checkCode === code) {
+                  const canvasComponentData = data.canvasComponentData;
+                  const canvasData = data.canvasData;
+                  // 恢复画布
+                  this.$store.commit(
+                    "setCanvasComponentData",
+                    this.resetID(JSONfn.parse(canvasComponentData))
+                  );
+                  this.$store.commit("setCanvasData", JSONfn.parse(canvasData));
+                  eventBus.$emit(
+                    "restoreEvent",
+                    this.currentCanvasName,
+                    canvasComponentData
+                  );
+                } else {
+                  // 从后台请求数据
+
+                  axios
+                    .get(`/BI/Component/GetCanvasTemplate`, {
+                      params: {
+                        name: name,
+                      },
+                      timeout: 1000 * 60 * 30,
+                    })
+                    .then(({ data }) => {
+                      if (data.state !== 200) {
+                        console.warn(
+                          "currentCanvasName|GetCanvasTemplate发生错误",
+                          data
+                        );
+                        return;
+                      }
+                      data = JSONfn.parse(data.data);
+                      const canvasComponentData = data.canvasComponentData;
+                      const canvasData = data.canvasData;
+                      // 恢复画布
+                      this.$store.commit(
+                        "setCanvasComponentData",
+                        this.resetID(JSONfn.parse(canvasComponentData))
+                      );
+                      this.$store.commit(
+                        "setCanvasData",
+                        JSONfn.parse(canvasData)
+                      );
+                      eventBus.$emit(
+                        "restoreEvent",
+                        this.currentCanvasName,
+                        canvasComponentData
+                      );
+                    })
+                    .catch((error) => {
+                      console.error("currentCanvasName|发生错误", error);
+                    });
+                }
+              });
+
             return;
           }
         }
@@ -539,13 +587,19 @@ export default {
       const canvasComponentData = JSONfn.stringify(this.canvasComponentData);
       const canvasData = JSONfn.stringify(this.canvasData);
 
+      const systemVersion = "t0.01";
+      const checkCode = md5(
+        canvasComponentData + "@|||@" + canvasData + "@|||@" + systemVersion
+      );
+
       const canvasEditorData = {
         type: "Canvas-Data",
         name: this.currentCanvasName,
         canvasComponentData: canvasComponentData,
         canvasData: canvasData,
-        systemVersion: "t0.01",
+        systemVersion: systemVersion,
         modifyTime: new Date().toString(),
+        checkCode: checkCode,
       };
 
       DB.setItem(this.currentCanvasName, canvasEditorData);

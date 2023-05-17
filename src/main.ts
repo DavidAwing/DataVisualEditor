@@ -5,6 +5,7 @@ import router from './router'
 import store from './store'
 // import store from './components/LabelDesigner/store'
 
+
 import { VuePlugin } from 'vuera'
 
 

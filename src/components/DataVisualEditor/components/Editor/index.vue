@@ -19,6 +19,7 @@
       :element="item"
       :index="index"
       :class="{ lock: item.isLock }"
+      v-show="item.data.show"
     >
       <component
         :is="item.component"
@@ -101,6 +102,7 @@ export default {
       "canvasData",
       "editor",
       "canvasName",
+      "curComponentIndex",
     ]),
     canvasStyle() {
       return getCanvasStyle(this.canvasData);
@@ -117,8 +119,12 @@ export default {
     },
     canvasName: {
       handler: function (val, old) {
-        if (this.canvasName === undefined || this.canvasName === null || this.canvasName.trim() === "")
-          return
+        if (
+          this.canvasName === undefined ||
+          this.canvasName === null ||
+          this.canvasName.trim() === ""
+        )
+          return;
       },
       deep: false,
       immediate: true,
@@ -133,6 +139,37 @@ export default {
       this.hideArea();
     });
 
+    eventBus.$on("SwitchNextComponent", (e) => {
+
+      if (
+        this.canvasComponentData === undefined ||
+        this.canvasComponentData === null ||
+        this.canvasComponentData.length === 0
+      )
+        return;
+
+      let component = null;
+      let index = 0;
+      if (this.curComponent === undefined || this.curComponent === null) {
+        component = this.canvasComponentData[0];
+      } else {
+        for (let i = 0; i < this.canvasComponentData.length; i++) {
+          if (this.canvasComponentData[i].id === this.curComponent.id) {
+            index = i + 1;
+            if (index >= this.canvasComponentData.length)
+              index = 0
+            component = this.canvasComponentData[index];
+            break
+          }
+        }
+      }
+
+      this.$store.commit("setCurComponent", {
+        component: this.canvasComponentData[index],
+        index: index,
+      });
+    });
+
     DB.CallbackMap.onOpenSucceedEventList.push(async () => {
       console.log("数据库开启成功...");
     });
@@ -145,11 +182,14 @@ export default {
     resetID,
 
     handleMouseDown(e) {
+
+      console.log("选中组件...");
+
       // 如果没有选中组件 在画布上点击时需要调用 e.preventDefault() 防止触发 drop 事件
       if (
         !this.curComponent ||
         (this.curComponent.component != "v-text" &&
-          this.curComponent.component != "rect-shape")
+          this.curComponent.component != "v-rect-shape")
       ) {
         e.preventDefault();
       }
@@ -169,6 +209,9 @@ export default {
       this.isShowArea = true;
 
       const move = (moveEvent) => {
+
+        console.log("移动组件889");
+
         this.width = Math.abs(moveEvent.clientX - startX);
         this.height = Math.abs(moveEvent.clientY - startY);
         if (moveEvent.clientX < startX) {
@@ -353,7 +396,7 @@ export default {
       const newHeight = (text.split("<br>").length - 1) * lineHeight * fontSize;
       return height > newHeight ? height : newHeight;
     },
-  }
+  },
 };
 </script>
 

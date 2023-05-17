@@ -254,9 +254,20 @@ export function requestCanvasData(canvasName, callback) {
     if (canvasList !== undefined && canvasList !== null && canvasList.length > 0) {
       for (const data of canvasList) {
         if (data.name === name) {
+          if (data.checkCode !== undefined) {
+            const response = await axios.get(`/BI/Component/GetCanvasCheckCode?name=${name}`)
+            if (response !== undefined && response.data !== undefined) {
+              const code = response.data.data
+              if (data.checkCode !== code) {
+                hasName = false
+                break
+              }
+            }
+          }
           hasName = true
-          const canvasComponentData = JSONfn.parse(data.canvasComponentData);
           const canvasData = JSONfn.parse(data.canvasData);
+          const canvasComponentData = JSONfn.parse(data.canvasComponentData);
+
           // 恢复画布
           this.$store.commit(
             "setCanvasComponentData",
@@ -473,6 +484,7 @@ export function requestCanvasData(canvasName, callback) {
     }
 
     if (!hasName) {
+
       axios.get(`/BI/Component/GetCanvasTemplate`, {
         params: {
           name: name,

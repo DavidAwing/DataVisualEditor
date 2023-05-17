@@ -488,11 +488,9 @@ export default class StyleListBase extends tsc<Vue> {
     return component.startsWith("vc-") ? data.activeSerieType : component
   }
 
-
   get styleList() {
 
     const componentStyleType = this.ComponentStyleType
-
     const key = "styleList:" + componentStyleType;
     if (Object.prototype.hasOwnProperty.call(this.styleMap, key)) return this.styleMap[key];
     if (this.isStyleListInterrupt || componentStyleType === undefined || componentStyleType === "")
@@ -503,15 +501,14 @@ export default class StyleListBase extends tsc<Vue> {
         params: {
           name: componentStyleType,
         },
-        timeout: 1000 * 60,
+        timeout: 1000 * 6,
       })
       .then(({ data }) => {
         this.isStyleListInterrupt = false;
         if (Object.prototype.hasOwnProperty.call(this.styleMap, key)) return;
-        if (data.data === undefined || data.data === null || data.data.length === 0) {
-          console.warn("组件未配置样式");
-          Vue.set(this.styleMap, key, []);
-          return;
+        if (data.data.length === 0) {
+          // Vue.set(this.styleMap, key, []);
+          console.warn("组件未配置样式", key, this.styleMap);
         }
         Vue.set(this.styleMap, key, data.data);
       })
@@ -553,14 +550,13 @@ export default class StyleListBase extends tsc<Vue> {
         params: {
           name: this.curComponent.component,
         },
-        timeout: 1000 * 60,
+        timeout: 1000 * 6,
       })
         .then(({ data }) => {
           this.isStyleListInterrupt = false;
           if (Object.prototype.hasOwnProperty.call(this.styleMap, key)) return;
-          if (data.data === undefined || data.data === null || data.data.length == 0) {
+          if (data.data.length == 0) {
             console.warn("组件未配置选择器");
-            return;
           }
           Vue.set(this.styleMap, key, data.data);
         })
@@ -580,6 +576,28 @@ export default class StyleListBase extends tsc<Vue> {
   }
 
   public created() {
+
+
+
+    const test1 = `(a, b) => {
+    console.log("当前组件1", b);
+      console.log("当前组件2", this, a + 3);
+      return 7 + a
+    }`
+
+    const codeString = `
+      console.log("当前组件1", b);
+        console.log("当前组件2", this, a + 3);
+        return 7 + a
+      `
+
+    const p = ["a", "b"]
+    const func = new Function(...p, codeString);
+    const res = func.bind(this)(1, 5)
+    console.log("当前组件1返回数据", res);
+
+
+
 
     this.isStyleListInterrupt = false;
     // this.isSwitchToStyle = false;
@@ -706,6 +724,23 @@ export default class StyleListBase extends tsc<Vue> {
             this.STYLE_STATE = StyleState.recovered
           }
           // this.isSwitchToStyle = false
+        } else if (this.curStyle.type === "css") {
+ 
+          let findStyle = null
+          // 从选择器中选择了样式
+          for (let i = 0; i < this.addedStyleTags.length; i++) {
+            const style = this.addedStyleTags[i];
+            if (style.hierarchy === this.curStyle.hierarchy &&  style.selector === this.curSelector) {
+              findStyle = style
+              break
+            } else if (style.hierarchy === this.curStyle.hierarchy) {
+              findStyle = style
+            }
+          }
+          if (findStyle !== null) {
+            this.handleStyleChange(this.getHierarchy(findStyle.hierarchy));
+            this.switchToStyle(findStyle);
+          }
         }
 
       } else {
@@ -830,9 +865,9 @@ export default class StyleListBase extends tsc<Vue> {
       }
 
       // todo, 需要切换到组件最后一次编辑的项
-      const style = this.addedStyleTags[0];
-      this.handleStyleChange(this.getHierarchy(style.hierarchy));
-      this.switchToStyle(style);
+      // const style = this.addedStyleTags[0];
+      // this.handleStyleChange(this.getHierarchy(style.hierarchy));
+      // this.switchToStyle(style);
       // this.isSwitchToStyle = false;
 
     }, { deep: true, immediate: true });

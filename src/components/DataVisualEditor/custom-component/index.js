@@ -5,7 +5,7 @@ const components = [
     'VText',
     'VButton',
     'Group',
-    'RectShape',
+    'VRectShape',
     'VBarcode',
     'VQrcode',
     'VLine',

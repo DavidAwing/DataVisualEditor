@@ -44,6 +44,9 @@ export default {
       }
 
       document.onmousemove = function (e) {
+
+        console.log("移动组件999");
+
         // 通过事件委托，计算移动的距离
         let left = e.clientX - disX
         let top = e.clientY - disY

@@ -60,7 +60,8 @@ export default {
 
       this.hideLine();
       components.forEach((component) => {
-        if (component == this.curComponent) return;
+        if (component.data.show === false || component === this.curComponent)
+          return;
         const componentStyle = getComponentRotatedStyle(component.style);
         const { top, left, bottom, right } = componentStyle;
         const componentHalfwidth = componentStyle.width / 2;

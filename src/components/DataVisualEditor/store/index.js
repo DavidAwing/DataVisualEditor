@@ -8,7 +8,7 @@ import event from './event'
 import layer from './layer'
 import snapshot from './snapshot'
 import lock from './lock'
-import { addStyleListToHead } from '../utils/style'
+import { addStyleListToHead, pxToVw, pxToVh, vwToPx, vhToPx } from '../utils/style'
 import {
   getValueByAttributePath, setJsonAttribute, SetValueAndAttributePathFromKey, typeEqual
 } from "../utils/chartUtils";

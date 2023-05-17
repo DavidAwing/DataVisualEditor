@@ -147,7 +147,9 @@ const list = [
     data: {
       text: "文本222",
       verticalAlign: "",
-      writingMode: "horizontal"
+      writingMode: "horizontal",
+      show: true,
+      constraintType: "align"
     },
     attrExcludes: [],
     style: {
@@ -180,6 +182,28 @@ const list = [
         bind: "data"
       },
       {
+        key: "show",
+        type: "checkbox",
+        label: '显示',
+        bind: "data"
+      },
+      {
+        key: "constraintType",
+        type: "select",
+        label: '约束',
+        bind: 'data',
+        options: [
+          {
+            label: '对齐',
+            value: 'align'
+          },
+          {
+            label: '自由',
+            value: 'free'
+          }
+        ]
+      },
+      {
         key: "left",
         type: "number",
         label: 'x 坐标',
@@ -195,6 +219,12 @@ const list = [
         key: "width",
         type: "number",
         label: '宽',
+        bind: "style"
+      },
+      {
+        key: "height",
+        type: "number",
+        label: '高',
         bind: "style"
       },
       {
@@ -860,7 +890,8 @@ const list = [
     data: {
       name: "",
       image: require('../assets/img-default.webp'),
-      fit: "scale-down"
+      fit: "scale-down",
+      show: true
     },
     attrExcludes: [],
     style: {
@@ -889,6 +920,12 @@ const list = [
         key: "name",
         type: "text",
         label: '名称',
+        bind: "data"
+      },
+      {
+        key: "show",
+        type: "checkbox",
+        label: '显示',
         bind: "data"
       },
       {
@@ -1090,28 +1127,29 @@ const list = [
   },
   // 矩形
   {
-    component: 'rect-shape',
-    label: '矩形',
+    component: 'v-rect-shape',
+    label: '边框',
     data: {
-      text: "",
-      verticalAlign: "top"
+      name: "",
+      type: "dv-border-box-1",
+      show: true
     },
     icon: 'juxing',
     style: {
       width: 200,
       height: 200,
-      fontSize: 14,
-      fontWeight: 500,
-      lineHeight: '',
-      letterSpacing: 0,
-      textAlign: 'center',
-      color: 'rgba(0, 0, 0, 1)',
-      borderColor: '#000',
-      borderWidth: 1,
-      backgroundColor: '',
-      borderStyle: 'solid',
-      borderRadius: '',
-      verticalAlign: 'middle',
+      // fontSize: 14,
+      // fontWeight: 500,
+      // lineHeight: '',
+      // letterSpacing: 0,
+      // textAlign: 'center',
+      // color: 'rgba(0, 0, 0, 1)',
+      // borderColor: '#000',
+      // borderWidth: 1,
+      // backgroundColor: '',
+      // borderStyle: 'solid',
+      // borderRadius: '',
+      // verticalAlign: 'middle',
     },
     styleUnit: {
       top: "px",
@@ -1121,16 +1159,22 @@ const list = [
     },
     attrList: [
       {
-        key: "id",
+        key: "name",
         type: "text",
-        label: 'id',
+        label: '名称',
         events: {
-          onInput: function (self, value) { }
+
         },
         bind: "data",
         options: {
-          showAlpha: false
+
         }
+      },
+      {
+        key: "show",
+        type: "checkbox",
+        label: '显示',
+        bind: "data"
       },
       {
         key: "left",
@@ -1170,12 +1214,72 @@ const list = [
         }
       },
       {
+        key: "type",
+        type: "select",
+        label: '边框类型',
+        bind: 'data',
+        options: [
+          {
+            label: '边框1',
+            value: 'dv-border-box-1',
+          },
+          {
+            label: '边框2',
+            value: 'dv-border-box-2',
+          },
+          {
+            label: '边框3',
+            value: 'dv-border-box-3',
+          },
+          {
+            label: '边框4',
+            value: 'dv-border-box-4',
+          },
+          {
+            label: '边框5',
+            value: 'dv-border-box-5',
+          },
+          {
+            label: '边框6',
+            value: 'dv-border-box-6',
+          },
+          {
+            label: '边框7',
+            value: 'dv-border-box-7',
+          },
+          {
+            label: '边框8',
+            value: 'dv-border-box-8',
+          },
+          {
+            label: '边框9',
+            value: 'dv-border-box-9',
+          },
+          {
+            label: '边框10',
+            value: 'dv-border-box-10',
+          },
+          {
+            label: '边框11',
+            value: 'dv-border-box-11',
+          },
+          {
+            label: '边框12',
+            value: 'dv-border-box-12',
+          },
+          {
+            label: '边框13',
+            value: 'dv-border-box-13',
+          }
+        ]
+      },
+      {
         key: "color",
         type: "color-picker",
         label: '颜色',
         bind: 'style',
         options: {
-          showAlpha: false
+          showAlpha: true
         }
       },
       {
@@ -1194,67 +1298,10 @@ const list = [
         bind: 'style'
       },
       {
-        key: "fontSize",
-        type: "number",
-        label: '字体大小',
-        bind: 'style'
-      },
-      {
-        key: "fontWeight",
-        type: "number",
-        label: '字体粗细',
-        bind: 'style'
-      },
-      {
-        key: "lineHeight",
-        type: "number",
-        label: '行高',
-        bind: 'style'
-      },
-      {
-        key: "letterSpacing",
-        type: "number",
-        label: '字间距',
-        bind: 'style'
-      },
-      {
-        key: "textAlign",
-        type: "select",
-        label: '水平对齐',
-        bind: 'style',
-        options: [
-          {
-            label: '左对齐',
-            value: 'left'
-          },
-          {
-            label: '居中',
-            value: 'center',
-          },
-          {
-            label: '右对齐',
-            value: 'right',
-          }
-        ]
-      },
-      {
         key: "opacity",
         type: "number",
         label: '透明度',
         bind: 'style'
-      },
-      {
-        key: "fontFamily",
-        type: "select",
-        label: '字体',
-        options: fontFamilyOpts,
-        bind: 'style'
-      },
-      {
-        key: "text",
-        type: "textarea",
-        label: '文本',
-        bind: "data"
       }
     ]
   },
@@ -1352,8 +1399,9 @@ const list = [
       showMode: "roll",
       rollingSpeed: 1, // 滚动速度
       total: 0,//总条目数
-      currentPage:1,//当前页码
-      pageSize:10, //每页显示条目个数，支持 .sync 修饰符
+      currentPage: 1,//当前页码
+      pageSize: 10, //每页显示条目个数，支持 .sync 修饰符
+      show: true
     },
     attrExcludes: [],
     style: {
@@ -1383,6 +1431,12 @@ const list = [
         type: "text",
         label: '名称',
         bind: 'data'
+      },
+      {
+        key: "show",
+        type: "checkbox",
+        label: '显示',
+        bind: "data"
       },
       {
         key: "left",
@@ -1533,8 +1587,8 @@ const list = [
         // }
       ]
   },
-   // 视频
-   {
+  // 视频
+  {
     uniqueId: '',
     component: 'v-video',
     label: '视频',
@@ -1547,6 +1601,7 @@ const list = [
       autoplay: false,
       loop: true,
       muted: false,
+      show: true
     },
     attrExcludes: [],
     style: {
@@ -1708,6 +1763,7 @@ const list = [
     icon: 'wenben',
     data: {
       chartId: "",
+      show: true,
       option:
       {
         xAxis: {
@@ -1841,6 +1897,12 @@ const list = [
         key: "name",
         type: "text",
         label: '名称',
+        bind: "data"
+      },
+      {
+        key: "show",
+        type: "checkbox",
+        label: '显示',
         bind: "data"
       },
       {
@@ -1985,6 +2047,7 @@ const list = [
       verticalAlignment: "",
       iframeWidth: "100%",
       iframeHeight: "100%",
+      show: true
     },
     attrExcludes: [],
     style: {
@@ -2001,11 +2064,16 @@ const list = [
     },
     type: "line",
     attrList: [
-
       {
         key: "name",
         type: "text",
         label: '名称'
+      },
+      {
+        key: "show",
+        type: "checkbox",
+        label: '显示',
+        bind: "data"
       },
       {
         key: "left",

@@ -59,6 +59,24 @@ export function getStyle(style, styleUnit, filter = []) {
   return result
 }
 
+
+export function pxToVw(px) {
+  return px / window.outerWidth * 100
+}
+
+export function pxToVh(px) {
+  return px / window.outerHeight * 100
+}
+
+export function vwToPx(vw) {
+  return vw * window.outerWidth / 100
+}
+
+export function vhToPx(vh) {
+  return vh * window.outerHeight / 100
+}
+
+
 // 获取一个组件旋转 rotate 后的样式
 export function getComponentRotatedStyle(style) {
   style = { ...style }

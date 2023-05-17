@@ -4,19 +4,25 @@ import NProgress from 'nprogress'
 import { Message } from 'element-ui'
 import HomeView from '../views/HomeView.vue'
 import Login from '../views/login/index.vue'
+import Home from '../views/Home/index.vue'
 
 Vue.use(VueRouter)
 
 const routes: Array<RouteConfig> = [
   {
     path: '/',
-    name: 'home',
+    name: 'default',
     redirect: "/editor"
   },
   {
     path: '/login',
     name: 'login',
     component: Login
+  },
+  {
+    path: '/home',
+    name: 'home',
+    component: Home
   },
   {
     path: '/test',

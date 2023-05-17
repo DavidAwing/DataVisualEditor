@@ -11,6 +11,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@jiaminghi/data-view": "^2.10.0",
     "@tweenjs/tween.js": "^18.6.4",
     "@types/js-cookie": "^3.0.1",
     "@types/nprogress": "^0.2.0",
@@ -38,6 +39,7 @@
     "jsbarcode": "^3.11.5",
     "jsonfn": "^0.31.0",
     "jspdf": "^2.5.1",
+    "lodash-es": "^4.17.21",
     "lz-string": "^1.4.4",
     "mathjs": "^10.6.1",
     "md5": "^2.3.0",
@@ -62,6 +64,7 @@
     "v-resize": "^0.1.1",
     "vue": "^2.7.14",
     "vue-class-component": "^7.2.3",
+    "vue-demi": "^0.14.1",
     "vue-echarts": "^6.0.2",
     "vue-html2pdf": "^1.8.0",
     "vue-print-nb": "^1.7.5",

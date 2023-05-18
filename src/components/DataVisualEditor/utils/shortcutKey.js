@@ -49,16 +49,20 @@ const unlockMap = {
   [bKey]: decompose,
   [dKey]: deleteComponent,
   [deleteKey]: deleteComponent,
-  [lKey]: lock,
+  [lKey]: lock
 }
 
 let isCtrlOrCommandDown = false
+
+
+export function isCtrlDown() {
+  return isCtrlOrCommandDown
+}
+
 // 全局监听按键操作并执行相应命令
 export function listenGlobalKeyDown() {
   window.onkeydown = (e) => {
-
     if (!store.state.isInEdiotr) return
-
     const { curComponent } = store.state
     const { keyCode } = e
     if (keyCode === ctrlKey || keyCode === commandKey) {
@@ -93,7 +97,7 @@ export function listenGlobalKeyDown() {
 
   }
 
-  window.onmousedown = () => {
+  window.onmousedown = (e) => {
     store.commit('setInEditorStatus', false)
   }
 }

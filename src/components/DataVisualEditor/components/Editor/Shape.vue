@@ -26,9 +26,11 @@
 import eventBus from "../../utils/eventBus";
 import runAnimation from "../../utils/runAnimation";
 import { pxToVw, pxToVh, vwToPx, vhToPx } from "../../utils/style";
+import { getElementCenter } from "../../utils/domUtils";
 import { mapState } from "vuex";
 import calculateComponentPositonAndSize from "../../utils/calculateComponentPositonAndSize";
 import { mod360 } from "../../utils/translate";
+import { isCtrlDown } from "../../utils/shortcutKey";
 
 export default {
   props: {
@@ -80,7 +82,7 @@ export default {
       cursors: {},
     };
   },
-  computed: mapState(["curComponent", "editor"]),
+  computed: mapState(["curComponent", "editor", "activeComponentList"]),
   mounted() {
     // 用于 Group 组件
     if (this.curComponent) {
@@ -124,8 +126,6 @@ export default {
       // 如果元素没有移动，则不保存快照
       let hasMove = false;
       const move = (moveEvent) => {
-        console.log("移动组件AAA");
-
         hasMove = true;
         const curX = moveEvent.clientX;
         const curY = moveEvent.clientY;
@@ -153,8 +153,6 @@ export default {
     },
 
     getPointStyle(point) {
-      console.log("移动组件IIOO");
-
       const { width, height } = this.defaultStyle;
       const hasT = /t/.test(point);
       const hasB = /b/.test(point);
@@ -251,7 +249,6 @@ export default {
     },
 
     handleMouseDownOnShape(e) {
-
       this.$store.commit("setInEditorStatus", true);
       this.$store.commit("setClickComponentStatus", true);
       if (
@@ -260,8 +257,29 @@ export default {
       ) {
         e.preventDefault();
       }
-
       e.stopPropagation();
+
+      if (isCtrlDown() && e.button === 0) {
+        if (
+          this.curComponent !== null &&
+          !this.activeComponentList.includes(this.curComponent.id)
+        )
+          this.$store.commit("addActiveComponent", this.curComponent.id);
+
+        if (this.activeComponentList.includes(this.element.id)) {
+          this.$store.commit("deleteActiveComponent", this.element.id);
+        } else {
+          this.$store.commit("addActiveComponent", this.element.id);
+        }
+        this.$store.commit("setCurComponent", {
+          component: null,
+          index: null,
+        });
+        return;
+      }
+
+      if (e.button === 0) this.$store.commit("clearActiveComponent");
+
       this.$store.commit("setCurComponent", {
         component: this.element,
         index: this.index,
@@ -306,7 +324,7 @@ export default {
         // 等更新完当前组件的样式并绘制到屏幕后再判断是否需要吸附
         // 如果不使用 $nextTick，吸附后将无法移动
         this.$nextTick(() => {
-          if (this.curComponent.data.constraintType === "free") return;
+          if (this.curComponent.data.isAlign === false) return;
           // 触发元素移动事件，用于显示标线、吸附功能
           // 后面两个参数代表鼠标移动方向
           // curY - startY > 0 true 表示向下移动 false 表示向上移动
@@ -334,28 +352,9 @@ export default {
       this.$store.commit("hideContextMenu");
     },
 
-    getElementCenter(element) {
-      const elementContainerRect = element.parentNode.getBoundingClientRect();
-      const elementParentRect =
-        element.parentNode.parentNode.getBoundingClientRect();
-
-      const centerX =
-        elementContainerRect.left -
-        elementParentRect.left +
-        elementContainerRect.width / 2;
-      const centerY =
-        elementContainerRect.top -
-        elementParentRect.top +
-        elementContainerRect.height / 2;
-
-      return {
-        x: centerX,
-        y: centerY,
-      };
-    },
+    getElementCenter,
 
     handleMouseDownOnPoint(point, e) {
-
       this.$store.commit("setInEditorStatus", true);
       this.$store.commit("setClickComponentStatus", true);
       e.stopPropagation();
@@ -468,7 +467,6 @@ export default {
           delete style["left"];
           delete style["top"];
         } else if (point === "lt") {
-
         } else if (point === "r") {
           // OK
           delete style["top"];

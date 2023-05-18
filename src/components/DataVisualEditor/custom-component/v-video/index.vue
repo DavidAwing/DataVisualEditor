@@ -90,9 +90,6 @@ export default {
   },
   mounted() {
 
-    this.$parent.$watch('element', (newValue, oldValue) => {
-      console.log('element changed:', newValue, oldValue);
-    }, { deep: true });
   },
   updated() {
 

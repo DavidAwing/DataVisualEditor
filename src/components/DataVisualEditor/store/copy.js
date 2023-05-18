@@ -1,7 +1,7 @@
 import store from './index'
 import toast from '../utils/toast'
 import generateID from '../utils/generateID'
-import { deepCopy } from '../utils/utils'
+import { deepCopy, getRandStr } from '../utils/utils'
 
 export default {
   state: {
@@ -40,14 +40,13 @@ export default {
       }
 
       data.id = generateID()
+      data.data.name = getRandStr()
       // Group 的子组件根节点的 id 是通过组件的 id 生成的，必须重新生成 id，否则拆分 Group 的时候获取根节点不正确
       if (data.component === 'Group') {
         data.propValue.forEach(component => {
           component.id = generateID()
         })
       }
-
-      console.log("添加组件", data);
 
       store.commit('addComponent', { component: deepCopy(data) })
       if (state.isCut) {
@@ -74,8 +73,6 @@ export default {
 // 恢复上一次剪切的数据
 function restorePreCutData(state) {
 
-  console.log("bug在哪里");
-
   if (state.isCut && state.copyData) {
     const data = deepCopy(state.copyData.data)
     const index = state.copyData.index
@@ -89,7 +86,6 @@ function restorePreCutData(state) {
 }
 
 function copyData(state) {
-  console.log("bug在哪里1111");
   state.copyData = {
     data: deepCopy(state.curComponent),
     index: state.curComponentIndex,

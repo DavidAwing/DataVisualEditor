@@ -35,7 +35,7 @@ const data = {
       unit: 'viewport',
       dataSource: {
         cron: "*/30 * * * * *",
-        parameters: "select * from user\n\nhttp"
+        parameters: "http://172.16.2.40:9096/#/project"
       },
       deviceType: "pc" // pc,tab,mobile
     },
@@ -49,7 +49,8 @@ const data = {
     isClickComponent: false,
     editorHint: "",
     currentPrintIndex: 0,
-    canvasName: ""
+    canvasName: "",
+    activeComponentList: [] // 激活的组件列表
   },
   mutations: {
     ...animation.mutations,
@@ -158,6 +159,24 @@ const data = {
 
     setListData(state, listData = []) {
       Vue.set(state, 'listData', listData)
+    },
+
+    addActiveComponent(state, id) {
+
+      state.activeComponentList.push(id)
+    },
+
+    deleteActiveComponent(state, id) {
+
+      const i = state.activeComponentList.indexOf(id)
+      if (i === -1) {
+        return
+      }
+      Vue.delete(state.activeComponentList, i)
+    },
+
+    clearActiveComponent(state) {
+      Vue.set(state, "activeComponentList", [])
     },
 
     addComponent(state, { component, index }) {

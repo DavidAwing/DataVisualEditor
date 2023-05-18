@@ -28,7 +28,9 @@
       <section class="right">
         <el-tabs v-model="activeName">
           <el-tab-pane label="属性" name="attr">
-            <AttrList v-if="curComponent" />
+            <LayoutList v-if="activeComponentList.length > 1" />
+            <GroupAttrList v-else-if="curComponent && curComponent.component === 'Group'" />
+            <AttrList v-else-if="curComponent" />
             <p v-else class="placeholder">请选择组件</p>
           </el-tab-pane>
           <el-tab-pane label="样式" name="style">
@@ -60,6 +62,8 @@
 import Editor from "../../components/DataVisualEditor/components/Editor/index";
 import ComponentList from "../../components/DataVisualEditor/components/ComponentList"; // 左侧列表组件
 import AttrList from "../../components/DataVisualEditor/components/AttrList"; // 右侧属性列表
+import GroupAttrList from "../../components/DataVisualEditor/components/GroupAttrList";
+import LayoutList from "../../components/DataVisualEditor/components/LayoutList";
 import StyleList from "../../components/DataVisualEditor/components/StyleConfig/CssStyleList"; // 右侧样式列表
 import ChartStyleList from "../../components/DataVisualEditor/components/StyleConfig/ChartStyleList"; // 右侧图表样式列表
 import AnimationList from "../../components/DataVisualEditor/components/AnimationList"; // 右侧动画列表
@@ -92,12 +96,14 @@ export default {
     Editor,
     ComponentList,
     AttrList,
+    LayoutList,
     AnimationList,
     EventList,
     Toolbar,
     StyleList,
     ChartStyleList,
     MobilePreview,
+    GroupAttrList,
   },
   data() {
     return {
@@ -116,12 +122,12 @@ export default {
     "editor",
     "editorHint",
     "canvasName",
+    "activeComponentList",
   ]),
   watch: {
     canvasData: {
       handler: function (val, old) {
-        if (val.deviceType !== "pc")
-          this.loadMobileUrl();
+        if (val.deviceType !== "pc") this.loadMobileUrl();
 
         this.$nextTick(() => {
           const ele = document.getElementById("editor");
@@ -166,12 +172,11 @@ export default {
   },
   methods: {
     loadMobileUrl() {
-
       if (this.$refs.MobilePreview === undefined) {
         setTimeout(() => {
-          this.loadMobileUrl()
+          this.loadMobileUrl();
         }, 200);
-        return
+        return;
       }
       const mobileUrl = `${process.env.VUE_APP_BASE_URL}#/viewer?name=${this.canvasName}`;
       this.$refs.MobilePreview.load(this.canvasData.deviceType, mobileUrl);

@@ -578,6 +578,15 @@ export function getCanvasStyle(canvasData) {
 
 export function addStyleListToHead(component, canvasName) {
 
+  if (component.component === "Group") {
+    for (let i = 0; i < component.propValue.length; i++) {
+      const child = component.propValue[i];
+      if (child.component.startsWith("v-"))
+        addStyleListToHead(child, canvasName)
+    }
+    return
+  }
+
   if (!component.styleList) {
     console.warn("addStyleListToHead|组件样式不存在");
     return
@@ -634,10 +643,9 @@ export function addStyleListToHead(component, canvasName) {
       //   !selectorStr.trim().endsWith(",")
       //     ? (selectorStr = selectorStr + "," + selector)
       //     : (selectorStr = selectorStr + selector);
-      console.log("更新样式...", selector);
+
       updateStyle(id, selector + css); // 更新样式和选择器
     } else {
-      console.log("添加样式...", selector);
       addStyleToHead(id, selector + css, canvasName);
     }
   });

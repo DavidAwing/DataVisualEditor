@@ -149,7 +149,7 @@ const list = [
       verticalAlign: "",
       writingMode: "horizontal",
       show: true,
-      constraintType: "align"
+      isAlign: true
     },
     attrExcludes: [],
     style: {
@@ -188,20 +188,10 @@ const list = [
         bind: "data"
       },
       {
-        key: "constraintType",
-        type: "select",
-        label: '约束',
-        bind: 'data',
-        options: [
-          {
-            label: '对齐',
-            value: 'align'
-          },
-          {
-            label: '自由',
-            value: 'free'
-          }
-        ]
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
       },
       {
         key: "left",
@@ -456,7 +446,9 @@ const list = [
     data: {
       text: "文本222",
       verticalAlign: "",
-      writingMode: "horizontal"
+      writingMode: "horizontal",
+      show: true,
+      isAlign: true
     },
     attrExcludes: [],
     style: {
@@ -487,6 +479,18 @@ const list = [
         type: "text",
         label: '名称',
         bind: "data"
+      },
+      {
+        key: "show",
+        type: "checkbox",
+        label: '显示',
+        bind: 'data'
+      },
+      {
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
       },
       {
         key: "left",
@@ -891,7 +895,8 @@ const list = [
       name: "",
       image: require('../assets/img-default.webp'),
       fit: "scale-down",
-      show: true
+      show: true,
+      isAlign: true
     },
     attrExcludes: [],
     style: {
@@ -927,6 +932,12 @@ const list = [
         type: "checkbox",
         label: '显示',
         bind: "data"
+      },
+      {
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
       },
       {
         key: "left",
@@ -1132,7 +1143,8 @@ const list = [
     data: {
       name: "",
       type: "dv-border-box-1",
-      show: true
+      show: true,
+      isAlign: true
     },
     icon: 'juxing',
     style: {
@@ -1175,6 +1187,12 @@ const list = [
         type: "checkbox",
         label: '显示',
         bind: "data"
+      },
+      {
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
       },
       {
         key: "left",
@@ -1317,6 +1335,8 @@ const list = [
       length: 100,
       color: "rgba(0, 0, 0, 1)",
       lineStyle: "solid", // dotted solid double dashed
+      show: true,
+      isAlign: true
     },
     attrExcludes: [],
     style: {
@@ -1401,7 +1421,8 @@ const list = [
       total: 0,//总条目数
       currentPage: 1,//当前页码
       pageSize: 10, //每页显示条目个数，支持 .sync 修饰符
-      show: true
+      show: true,
+      isAlign: true
     },
     attrExcludes: [],
     style: {
@@ -1437,6 +1458,12 @@ const list = [
         type: "checkbox",
         label: '显示',
         bind: "data"
+      },
+      {
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
       },
       {
         key: "left",
@@ -1601,7 +1628,8 @@ const list = [
       autoplay: false,
       loop: true,
       muted: false,
-      show: true
+      show: true,
+      isAlign: true
     },
     attrExcludes: [],
     style: {
@@ -1637,6 +1665,12 @@ const list = [
         type: "number",
         label: 'x 坐标',
         bind: "style"
+      },
+      {
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
       },
       {
         key: "top",
@@ -1764,6 +1798,7 @@ const list = [
     data: {
       chartId: "",
       show: true,
+      isAlign: true,
       option:
       {
         xAxis: {
@@ -1906,6 +1941,12 @@ const list = [
         bind: "data"
       },
       {
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
+      },
+      {
         key: "left",
         type: "number",
         label: 'x 坐标',
@@ -2035,6 +2076,7 @@ const list = [
         // }
       ]
   },
+  // 网页
   {
     component: 'v-iframe',
     label: '网页',
@@ -2047,7 +2089,8 @@ const list = [
       verticalAlignment: "",
       iframeWidth: "100%",
       iframeHeight: "100%",
-      show: true
+      show: true,
+      isAlign: true
     },
     attrExcludes: [],
     style: {
@@ -2074,6 +2117,12 @@ const list = [
         type: "checkbox",
         label: '显示',
         bind: "data"
+      },
+      {
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
       },
       {
         key: "left",
@@ -2105,7 +2154,6 @@ const list = [
         label: '网址',
         bind: "data"
       }
-
     ]
   }
 ]

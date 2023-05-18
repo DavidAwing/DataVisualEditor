@@ -29,6 +29,7 @@ export default {
     },
 
     compose({ canvasComponentData, areaData, editor }) {
+
       const components = []
       areaData.components.forEach(component => {
         if (component.component != 'Group') {
@@ -56,6 +57,15 @@ export default {
           ...areaData.style,
         },
         propValue: components,
+        data: {
+          show: true
+        },
+        styleUnit: {
+          top: "px",
+          left: "px",
+          width: 'px',
+          height: 'px',
+        }
       }
 
       createGroupStyle(groupComponent)

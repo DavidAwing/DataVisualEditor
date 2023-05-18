@@ -15,7 +15,10 @@
       :key="item.id"
       :default-style="item.style"
       :style="getShapeStyle(item.style, item.styleUnit)"
-      :active="item.id === (curComponent || {}).id"
+      :active="
+        item.id === (curComponent || {}).id ||
+        activeComponentList.includes(item.id)
+      "
       :element="item"
       :index="index"
       :class="{ lock: item.isLock }"
@@ -102,6 +105,7 @@ export default {
       "canvasData",
       "editor",
       "canvasName",
+      "activeComponentList",
       "curComponentIndex",
     ]),
     canvasStyle() {
@@ -111,9 +115,6 @@ export default {
   watch: {
     canvasComponentData: {
       handler: function (val, old) {
-        // val.forEach((component) => {
-        //   addStyleListToHead(component, this.canvasName);
-        // });
       },
       deep: false,
     },
@@ -140,7 +141,6 @@ export default {
     });
 
     eventBus.$on("SwitchNextComponent", (e) => {
-
       if (
         this.canvasComponentData === undefined ||
         this.canvasComponentData === null ||
@@ -156,10 +156,9 @@ export default {
         for (let i = 0; i < this.canvasComponentData.length; i++) {
           if (this.canvasComponentData[i].id === this.curComponent.id) {
             index = i + 1;
-            if (index >= this.canvasComponentData.length)
-              index = 0
+            if (index >= this.canvasComponentData.length) index = 0;
             component = this.canvasComponentData[index];
-            break
+            break;
           }
         }
       }
@@ -182,7 +181,6 @@ export default {
     resetID,
 
     handleMouseDown(e) {
-
       console.log("选中组件...");
 
       // 如果没有选中组件 在画布上点击时需要调用 e.preventDefault() 防止触发 drop 事件
@@ -209,9 +207,6 @@ export default {
       this.isShowArea = true;
 
       const move = (moveEvent) => {
-
-        console.log("移动组件889");
-
         this.width = Math.abs(moveEvent.clientX - startX);
         this.height = Math.abs(moveEvent.clientY - startY);
         if (moveEvent.clientX < startX) {

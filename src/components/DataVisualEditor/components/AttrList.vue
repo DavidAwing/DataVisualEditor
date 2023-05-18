@@ -21,7 +21,11 @@
           v-else-if="type == 'number'"
           style="display: flex; width: 100%; position: relative"
         >
-          <el-input v-model.number="curComponent[bind][key]" type="number" step="0.1"/>
+          <el-input
+            v-model.number="curComponent[bind][key]"
+            type="number"
+            step="0.1"
+          />
           <el-select
             v-if="curComponent.styleUnit[key]"
             v-model="curComponent.styleUnit[key]"
@@ -96,7 +100,9 @@
 
         <div v-else-if="type == 'eventbus-button'">
           <el-button
-            @click="eventBus.$emit(bind['click'], curComponent.data.name, $event)"
+            @click="
+              eventBus.$emit(bind['click'], curComponent.data.name, $event)
+            "
           >
             {{ bind["label"] }}</el-button
           >

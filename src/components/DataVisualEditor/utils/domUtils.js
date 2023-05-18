@@ -36,3 +36,26 @@ function hasScrolled(element, direction = 'vertical') {
     return element.scrollWidth > element.clientWidth;
   }
 }
+
+
+// 获取元素中心点
+export function getElementCenter(element) {
+  const elementContainerRect = element.parentNode.getBoundingClientRect();
+  const elementParentRect =
+    element.parentNode.parentNode.getBoundingClientRect();
+
+  const centerX =
+    elementContainerRect.left -
+    elementParentRect.left +
+    elementContainerRect.width / 2;
+  const centerY =
+    elementContainerRect.top -
+    elementParentRect.top +
+    elementContainerRect.height / 2;
+
+  return {
+    x: centerX,
+    y: centerY,
+  };
+}
+

@@ -86,7 +86,6 @@
         <el-option key="viewport" label="viewport" value="viewport">
         </el-option>
         <el-option key="px" label="px" value="px"></el-option>
-        <el-option key="%" label="%" value="%"> </el-option>
       </el-select>
       <div class="canvas-config">
         <span>画布比例</span>

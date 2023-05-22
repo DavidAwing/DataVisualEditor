@@ -82,7 +82,12 @@ export default {
       cursors: {},
     };
   },
-  computed: mapState(["curComponent", "editor", "activeComponentList"]),
+  computed: mapState([
+    "curComponent",
+    "editor",
+    "activeComponentList",
+    "canvasComponentData",
+  ]),
   mounted() {
     // 用于 Group 组件
     if (this.curComponent) {
@@ -275,6 +280,17 @@ export default {
           component: null,
           index: null,
         });
+
+        if (this.activeComponentList.length > 0) {
+          const activeComponentList = [];
+          this.activeComponentList.forEach((id) => {
+            const item = this.canvasComponentData.find(
+              (item) => item.id === id
+            );
+            activeComponentList.push(item);
+          });
+          eventBus.$emit("createGroup", activeComponentList);
+        }
         return;
       }
 

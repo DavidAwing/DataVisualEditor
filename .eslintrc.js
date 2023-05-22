@@ -48,7 +48,7 @@ module.exports = {
     'yoda': 'off',
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
-    'no-lone-blocks': 'off'
+    'no-lone-blocks': 'off',
   },
   overrides: [
     {

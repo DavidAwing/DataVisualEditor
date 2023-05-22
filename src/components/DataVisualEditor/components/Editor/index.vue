@@ -114,8 +114,7 @@ export default {
   },
   watch: {
     canvasComponentData: {
-      handler: function (val, old) {
-      },
+      handler: function (val, old) {},
       deep: false,
     },
     canvasName: {
@@ -135,6 +134,10 @@ export default {
   mounted() {
     // 获取编辑器元素
     this.$store.commit("getEditor");
+
+    eventBus.$on("createGroup", (areaData) => {
+      this.createGroup(areaData)
+    });
 
     eventBus.$on("hideArea", () => {
       this.hideArea();
@@ -181,8 +184,6 @@ export default {
     resetID,
 
     handleMouseDown(e) {
-      console.log("选中组件...");
-
       // 如果没有选中组件 在画布上点击时需要调用 e.preventDefault() 防止触发 drop 事件
       if (
         !this.curComponent ||
@@ -227,7 +228,8 @@ export default {
           return;
         }
 
-        this.createGroup();
+        const areaData = this.getSelectArea();
+        this.createGroup(areaData);
       };
 
       document.addEventListener("mousemove", move);
@@ -250,9 +252,8 @@ export default {
       });
     },
 
-    createGroup() {
+    createGroup(areaData) {
       // 获取选中区域的组件数据
-      const areaData = this.getSelectArea();
       if (areaData.length <= 1) {
         this.hideArea();
         return;
@@ -366,7 +367,7 @@ export default {
     },
 
     getComponentStyle(component) {
-      return getStyle(component.style, component.styleUnit, [
+      return getStyle(component.style, component.styleUnit, this.canvasData.scale / 100, [
         "top",
         "left",
         "width",
@@ -400,7 +401,7 @@ export default {
   position: absolute;
   background: #fff;
   margin: auto;
-  overflow: auto;
+  overflow: hidden;
 
   left: 3px;
   top: 3px;

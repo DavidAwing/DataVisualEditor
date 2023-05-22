@@ -1,6 +1,6 @@
 import { sin, cos, changeStyleWithScale } from './translate'
 import generateID from "./generateID";
-
+import BigNumber from "bignumber.js";
 
 import { strToBase64, isArrayInclude } from "../utils/utils";
 
@@ -27,7 +27,7 @@ export const styleData = [
   { key: 'opacity', label: '透明度' },
 ]
 
-export function getStyle(style, styleUnit, filter = []) {
+export function getStyle(style, styleUnit, scale, filter = []) {
 
   const needUnit = [
     'fontSize',
@@ -40,15 +40,20 @@ export function getStyle(style, styleUnit, filter = []) {
     'borderRadius',
   ]
 
+  console.log("缩放", scale);
+
+  if (scale === undefined)
+    scale = 1
   const result = {}
 
   Object.keys(style).forEach(key => {
     if (!filter.includes(key)) {
       if (key != 'rotate') {
-        result[key] = style[key]
-
         if (needUnit.includes(key)) {
+          result[key] = new BigNumber(style[key]).multipliedBy(scale)
           result[key] += (styleUnit ? styleUnit[key] : 'px')
+        } else {
+          result[key] = style[key]
         }
       } else {
         result.transform = key + '(' + style[key] + 'deg)'
@@ -579,11 +584,10 @@ export function getCanvasStyle(canvasData) {
 export function addStyleListToHead(component, canvasName) {
 
   if (component.component === "Group") {
-    for (let i = 0; i < component.propValue.length; i++) {
-      const child = component.propValue[i];
+    component.propValue.forEach(child => {
       if (child.component.startsWith("v-"))
         addStyleListToHead(child, canvasName)
-    }
+    })
     return
   }
 

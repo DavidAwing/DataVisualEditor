@@ -4419,6 +4419,11 @@
   "resolved" "https://registry.npmmirror.com/big.js/-/big.js-5.2.2.tgz"
   "version" "5.2.2"
 
+"bignumber.js@^9.1.1":
+  "integrity" "sha512-pHm4LsMJ6lzgNGVfZHjMoO8sdoRhOzOH4MLmY65Jg70bpxCKu5iOHNJyfF6OyvYw7t8Fpf35RuzUyqnQsj8Vig=="
+  "resolved" "https://registry.npmmirror.com/bignumber.js/-/bignumber.js-9.1.1.tgz"
+  "version" "9.1.1"
+
 "bin-links@^1.1.2", "bin-links@^1.1.8":
   "integrity" "sha512-KgmVfx+QqggqP9dA3iIc5pA4T1qEEEL+hOhOhNPaUm77OTrJoOXE/C05SJLNJe6m/2wUK7F1tDSou7n5TfCDzQ=="
   "resolved" "https://registry.npmmirror.com/bin-links/-/bin-links-1.1.8.tgz"

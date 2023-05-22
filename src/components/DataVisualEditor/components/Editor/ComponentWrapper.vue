@@ -16,6 +16,7 @@
 import { getStyle } from "../../utils/style";
 import runAnimation from "../../utils/runAnimation";
 import { mixins } from "../../utils/events";
+import { mapState } from "vuex";
 
 export default {
   mixins: [mixins],
@@ -25,6 +26,11 @@ export default {
       require: true,
       default: () => {},
     },
+  },
+  computed: {
+    ...mapState([
+      "canvasData"
+    ])
   },
   mounted() {
     try {
@@ -36,7 +42,7 @@ export default {
   },
   methods: {
     getComponentStyle() {
-      return getStyle(this.config.style, this.config.styleUnit);
+      return getStyle(this.config.style, this.config.styleUnit,  this.canvasData.scale / 100);
     },
 
     handleClick() {

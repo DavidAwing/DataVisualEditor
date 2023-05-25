@@ -12,7 +12,7 @@
 import ComponentBase from "./ComponentBase";
 import eventBus from "../utils/eventBus";
 import { mapState } from "vuex";
-import { getUnit } from "../utils/style";
+// import {  } from "../utils/style";
 import { changeStyleWithScale } from "../utils/translate";
 
 export default {
@@ -45,18 +45,18 @@ export default {
       if (value === "fill") {
         this.element.style.top = 0;
         this.element.style.left = 0;
-        this.element.style.width = this.canvasData.width;
-        this.element.styleUnit.width = getUnit("width", this.canvasData.unit);
-        this.element.style.height = this.canvasData.height;
-        this.element.styleUnit.height = getUnit("height", this.canvasData.unit);
+        this.element.style.width = 100;
+        this.element.styleUnit.width = "%";
+        this.element.style.height = 100;
+        this.element.styleUnit.height = "%";
       } else if (value === "horizontal") {
         this.element.style.left = 0;
-        this.element.style.width = this.canvasData.width;
-        this.element.styleUnit.width = getUnit("width", this.canvasData.unit);
+        this.element.style.width = 100;
+        this.element.styleUnit.width = "%";
       } else if (value === "vertical") {
         this.element.style.top = 0;
-        this.element.style.height = this.canvasData.height;
-        this.element.styleUnit.height = getUnit("height", this.canvasData.unit);
+        this.element.style.height = 100;
+        this.element.styleUnit.height = "%";
       }
     });
   },

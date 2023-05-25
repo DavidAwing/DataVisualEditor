@@ -1,3 +1,4 @@
+import html2canvas from 'html2canvas';
 
 // 获取滚动条宽度
 export const getScrollBarWidth = () => {
@@ -17,7 +18,7 @@ export const getScrollBarWidth = () => {
 }
 
 // 计算滚动条宽度的方法：新建一个带有滚动条的DIV元素，再计算该元素offsetWidth和clientWidth的差值。
-function getScrollbarWidth() {
+function getScrollbarWidth2() {
 
   const scrollDiv = document.createElement("div");
   scrollDiv.style.cssText = 'width: 99px; height: 99px; overflow: scroll; position: absolute; top: -9999px;';
@@ -28,14 +29,6 @@ function getScrollbarWidth() {
   return scrollbarWidth;
 }
 
-// 是否有滚动条
-function hasScrolled(element, direction = 'vertical') {
-  if (direction === 'vertical') {
-    return element.scrollHeight > element.clientHeight;
-  } else if (direction === 'horizontal') {
-    return element.scrollWidth > element.clientWidth;
-  }
-}
 
 
 // 获取元素中心点
@@ -89,3 +82,21 @@ export function getElementRect(element) {
   };
 
 }
+
+export function toImage(ele) {
+
+  return new Promise((resolve, reject) => {
+    html2canvas(ele, {
+      dpi: 96,     //分辨率
+      scale: 1,    //设置缩放
+      useCORS: true,  //允许canvas画布内 可以跨域请求外部链接图片, 允许跨域请求。,
+      //backgroundColor:'#ffffff',这样背景还是黑的
+      bgcolor: '#ffffff',//应该这样写
+      logging: false   //打印日志用的 可以不加默认为false
+    }).then((canvas) => {
+      let base64Str = canvas.toDataURL('image/png');
+      resolve(base64Str)
+    }).catch(error => reject(error))
+  })
+}
+

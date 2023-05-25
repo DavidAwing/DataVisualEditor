@@ -5,6 +5,7 @@ import decomposeComponent from '../utils/decomposeComponent'
 import { $ } from '../utils/utils'
 import { commonStyle, commonAttr } from '../custom-component/component-list'
 import createGroupStyle from '../utils/createGroupStyle'
+import { getElementRect } from '../utils/domUtils'
 
 export default {
   state: {
@@ -28,11 +29,33 @@ export default {
       state.areaData = data
     },
 
+
+    // todo 这里不同的尺寸之间要重新计算,但是又不能改变原有的尺寸
     compose({ canvasComponentData, areaData, editor }) {
 
       const components = []
+
+      let isResizeGroupRect = false
       areaData.components.forEach(component => {
         if (component.component != 'Group') {
+
+          if (component.styleUnit.left !== "px" || component.styleUnit.top !== "px" || component.styleUnit.width !== "px" || component.styleUnit.height !== "px") {
+            const element = document.getElementById("component" + component.id);
+            const rect = getElementRect(element);
+
+            // component.style.width = rect.width
+            // component.style.height = rect.height
+            // component.style.left = rect.left
+            // component.style.top = rect.top
+
+            // component.styleUnit.width = "px"
+            // component.styleUnit.height = "px"
+            // component.styleUnit.left = "px"
+            // component.styleUnit.top = "px"
+
+            isResizeGroupRect = true
+          }
+
           components.push(component)
         } else {
           // 如果要组合的组件中，已经存在组合数据，则需要提前拆分
@@ -69,6 +92,10 @@ export default {
       }
 
       createGroupStyle(groupComponent)
+      if (isResizeGroupRect) {
+
+      }
+
 
       store.commit('addComponent', {
         component: groupComponent,

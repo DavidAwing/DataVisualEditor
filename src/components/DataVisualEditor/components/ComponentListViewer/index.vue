@@ -31,7 +31,7 @@
 
 const cloneWithStyles = require("clone-with-styles");
 
-import { getUnit } from "../../utils/style";
+import { getCanvasStyle } from "../../utils/style";
 import { mapState } from "vuex";
 import ComponentWrapper from "../Editor/ComponentWrapper";
 import { changeStyleWithScale } from "../../utils/translate";
@@ -99,7 +99,7 @@ export default {
     },
     ...mapState([
       "canvasComponentData",
-      "canvasStyleData",
+      "canvasData",
       "listData",
       "currentPrintIndex",
     ]),
@@ -214,24 +214,14 @@ export default {
     getPageStyle(pageIndex) {
       if (this.printType.toLowerCase() === "pdf") {
         return {
-          width:
-            changeStyleWithScale(this.canvasStyleData.width) +
-            getUnit("width", this.canvasStyleData.unit),
-          height:
-            changeStyleWithScale(this.canvasStyleData.height) +
-            getUnit("height", this.canvasStyleData.unit),
+          ...getCanvasStyle(this.canvasData),
           // 'page-break-after': pageIndex == 0 ? "auto" : "always",
           // 'break-before': 'page',
           "margin-top": pageIndex == 0 ? "0px" : "15px",
         };
       } else if (this.printType.toLowerCase() === "label") {
         return {
-          width:
-            changeStyleWithScale(this.canvasStyleData.width) +
-            getUnit("width", this.canvasStyleData.unit),
-          height:
-            changeStyleWithScale(this.canvasStyleData.height) +
-            getUnit("height", this.canvasStyleData.unit),
+          ...getCanvasStyle(this.canvasData),
           "margin-top": 0,
         };
       }

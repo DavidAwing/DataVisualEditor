@@ -43,6 +43,11 @@ const routes: Array<RouteConfig> = [
     path: '/DisplayBoardAdmin',
     name: 'DisplayBoardAdmin',
     component: () => import('@/views/DisplayBoardAdmin/index.vue')
+  },
+  {
+    path: '/DeviceInformation',
+    name: 'DeviceInformation',
+    component: () => import('@/views/DeviceInformation/index.vue')
   }
 ]
 

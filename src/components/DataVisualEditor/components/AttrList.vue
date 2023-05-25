@@ -32,9 +32,10 @@
             style="width: 100px; margin-left: 6px"
           >
             <el-option key="px" label="px" value="px"></el-option>
-            <el-option key="vw" label="vw" value="vw"></el-option>
-            <el-option key="vh" label="vh" value="vh"></el-option>
-            <!-- <el-option key="%" label="%" value="%"></el-option> -->
+            <el-option key="%" label="%" value="%"></el-option>
+            <!-- <el-option key="mm" label="mm" value="mm"></el-option> -->
+            <!-- <el-option key="vw" label="vw" value="vw"></el-option>
+            <el-option key="vh" label="vh" value="vh"></el-option> -->
           </el-select>
         </div>
 

@@ -3,7 +3,7 @@
     id="editor"
     class="editor"
     :class="{ edit: isEdit }"
-    :style="canvasStyle"
+    :style="getCanvasStyle(canvasData)"
     @contextmenu="handleContextMenu"
     @mousedown="handleMouseDown"
   >
@@ -60,7 +60,6 @@ import Shape from "./Shape";
 import {
   getStyle,
   getComponentRotatedStyle,
-  getUnit,
   getCanvasStyle,
   addStyleListToHead,
 } from "../../utils/style";
@@ -69,6 +68,7 @@ import ContextMenu from "./ContextMenu";
 import MarkLine from "./MarkLine";
 import Area from "./Area";
 import eventBus from "../../utils/eventBus";
+import { getElementRect, getScrollBarWidth } from "../../utils/domUtils";
 import Grid from "./Grid.vue";
 import { changeStyleWithScale } from "../../utils/translate";
 import { getComponentSharedData } from "../../custom-component/component-list"; // 左侧列表数据
@@ -108,9 +108,6 @@ export default {
       "activeComponentList",
       "curComponentIndex",
     ]),
-    canvasStyle() {
-      return getCanvasStyle(this.canvasData);
-    },
   },
   watch: {
     canvasComponentData: {
@@ -136,7 +133,7 @@ export default {
     this.$store.commit("getEditor");
 
     eventBus.$on("createGroup", (areaData) => {
-      this.createGroup(areaData)
+      this.createGroup(areaData);
     });
 
     eventBus.$on("hideArea", () => {
@@ -176,12 +173,50 @@ export default {
       console.log("数据库开启成功...");
     });
   },
+  updated() {
+    setTimeout(() => {
+      const editor = document.getElementById("editor");
+      const content = document.getElementsByClassName("content")[0];
+      const editorRect = editor.getClientRects()[0];
+      const contentRect = content.getClientRects()[0];
+      if (
+        editorRect.width < contentRect.width &&
+        editorRect.height < contentRect.height
+      ) {
+        const x = (contentRect.width - editorRect.width) / 2;
+        const y = (contentRect.height - editorRect.height) / 2;
+        document.getElementById(
+          "editor"
+        ).style.transform = `translate(${x}px, ${y}px)`;
+      } else if (
+        editorRect.width < contentRect.width &&
+        editorRect.height > contentRect.height
+      ) {
+        const x =
+          (contentRect.width - editorRect.width - getScrollBarWidth()) / 2;
+        document.getElementById(
+          "editor"
+        ).style.transform = `translate(${x}px, 0)`;
+      } else if (
+        editorRect.height < contentRect.height &&
+        editorRect.width > contentRect.width
+      ) {
+        const y =
+          (contentRect.height - editorRect.height - getScrollBarWidth()) / 2;
+        document.getElementById(
+          "editor"
+        ).style.transform = `translate(0, ${y}px)`;
+      } else {
+        document.getElementById("editor").style.transform = "translate(0, 0)";
+      }
+    }, 10);
+  },
   methods: {
     changeStyleWithScale,
 
-    getUnit,
-
     resetID,
+
+    getCanvasStyle,
 
     handleMouseDown(e) {
       // 如果没有选中组件 在画布上点击时需要调用 e.preventDefault() 防止触发 drop 事件
@@ -367,13 +402,12 @@ export default {
     },
 
     getComponentStyle(component) {
-      return getStyle(component.style, component.styleUnit, this.canvasData.scale / 100, [
-        "top",
-        "left",
-        "width",
-        "height",
-        "rotate",
-      ]);
+      return getStyle(
+        component.style,
+        component.styleUnit,
+        this.canvasData.scale / 100,
+        ["top", "left", "width", "height", "rotate"]
+      );
     },
 
     handleInput(element, value) {
@@ -401,7 +435,7 @@ export default {
   position: absolute;
   background: #fff;
   margin: auto;
-  overflow: hidden;
+  overflow: auto;
 
   left: 3px;
   top: 3px;

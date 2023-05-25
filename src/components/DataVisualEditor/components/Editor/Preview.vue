@@ -4,14 +4,7 @@
     <div class="canvas-container">
       <div
         class="canvas"
-        :style="{
-          width:
-            changeStyleWithScale(canvasData.width) +
-            getUnit('width', this.canvasData.unit),
-          height:
-            changeStyleWithScale(canvasData.height) +
-            getUnit('height', this.canvasData.unit),
-        }"
+        :style="getCanvasStyle(canvasData)"
       >
         <ComponentWrapper
           v-for="(item, index) in canvasComponentData"
@@ -24,7 +17,7 @@
 </template>
 
 <script>
-import { getUnit } from "../../utils/style";
+import { getCanvasStyle } from "../../utils/style";
 import { mapState } from "vuex";
 import ComponentWrapper from "./ComponentWrapper";
 import { changeStyleWithScale } from "../../utils/translate";
@@ -43,17 +36,11 @@ export default {
   },
   computed: mapState(["canvasComponentData", "canvasData"]),
   methods: {
+    getCanvasStyle,
     changeStyleWithScale,
-
-    getUnit,
 
     close() {
       this.$emit("change", false);
-    },
-
-    getCanvasStyle() {
-      console.log("todo: 此处需要修改");
-      return "120" + this.canvasData.unit;
     },
   },
 };

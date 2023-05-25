@@ -14,6 +14,7 @@
           @drop="handleDrop"
           @dragover="handleDragOver"
           @mousedown="handleMouseDown"
+          @mousemove="handleMouseMove"
           @mouseup="deselectCurComponent"
         >
           <Editor v-show="canvasData.deviceType === 'pc'" />
@@ -22,14 +23,17 @@
             v-if="canvasData.deviceType !== 'pc'"
           />
         </div>
-        <div class="canvas-hint" v-html="hint"></div>
+
+        <div class="canvas-hint" v-html="editorHint"></div>
       </section>
       <!-- 右侧属性列表 -->
       <section class="right">
         <el-tabs v-model="activeName">
           <el-tab-pane label="属性" name="attr">
             <LayoutList v-if="activeComponentList.length > 0" />
-            <GroupAttrList v-else-if="curComponent && curComponent.component === 'Group'" />
+            <GroupAttrList
+              v-else-if="curComponent && curComponent.component === 'Group'"
+            />
             <AttrList v-else-if="curComponent" />
             <p v-else class="placeholder">请选择组件</p>
           </el-tab-pane>
@@ -109,7 +113,6 @@ export default {
     return {
       activeName: "attr",
       reSelectAnimateIndex: undefined,
-      hint: "",
       saveConfig: {},
     };
   },
@@ -138,12 +141,6 @@ export default {
         });
       },
       deep: true,
-    },
-    editorHint: function (val) {
-      this.hint = this.editorHint;
-      setTimeout(() => {
-        this.hint = "";
-      }, 360000);
     },
     canvasName: function (val) {
       this.loadMobileUrl();
@@ -298,10 +295,15 @@ export default {
       event.dataTransfer.dropEffect = "copy";
     },
 
-    handleMouseDown(e) {
-      e.stopPropagation();
+    handleMouseDown(event) {
+      console.log("handleMouseDown", event.offsetX, event.offsetY);
+      event.stopPropagation();
       this.$store.commit("setClickComponentStatus", false);
       this.$store.commit("setInEditorStatus", true);
+    },
+
+    handleMouseMove(event) {
+      // console.log("移动", event);
     },
 
     deselectCurComponent(e) {
@@ -352,6 +354,9 @@ export default {
       height: 100%;
       padding: 0px;
       overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
       .canvas-hint {
         position: absolute;

@@ -32,7 +32,7 @@ const data = {
       width: 100,
       height: 100,
       scale: 100,
-      unit: 'viewport',
+      unit: '%',
       dataSource: {
         cron: "*/30 * * * * *",
         parameters: "http://172.16.2.40:9096/#/project"
@@ -68,6 +68,9 @@ const data = {
 
     setEditorHint(state, hint) {
       state.editorHint = hint
+      setTimeout(() => {
+        state.editorHint = ""
+      }, 10000);
     },
 
     setCurrentPrintIndex(state, index) {

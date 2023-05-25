@@ -83,9 +83,9 @@
         style="width: 70px; min-width: 70px"
         class="canvas-config"
       >
-        <el-option key="viewport" label="viewport" value="viewport">
-        </el-option>
+        <el-option key="%" label="%" value="%"></el-option>
         <el-option key="px" label="px" value="px"></el-option>
+        <!-- <el-option key="mm" label="mm" value="mm"></el-option> -->
       </el-select>
       <div class="canvas-config">
         <span>画布比例</span>
@@ -149,6 +149,7 @@ import eventBus from "../utils/eventBus";
 import { deepCopy, selectFile, saveText, closeWindow } from "../utils/utils";
 import { divide, multiply } from "mathjs";
 import * as DB from "../utils/indexDB";
+import { toImage } from "../utils/domUtils";
 const LZ = require("lz-string");
 const JSONfn = require("jsonfn").JSONfn;
 import TestCanvas from "./TestCanvas";
@@ -591,9 +592,11 @@ export default {
         canvasComponentData + "@|||@" + canvasData + "@|||@" + systemVersion
       );
 
+      const currentCanvasName = this.currentCanvasName;
+
       const canvasEditorData = {
         type: "Canvas-Data",
-        name: this.currentCanvasName,
+        name: currentCanvasName,
         canvasComponentData: canvasComponentData,
         canvasData: canvasData,
         systemVersion: systemVersion,
@@ -601,10 +604,10 @@ export default {
         checkCode: checkCode,
       };
 
-      DB.setItem(this.currentCanvasName, canvasEditorData);
+      DB.setItem(currentCanvasName, canvasEditorData);
       axios
         .post(
-          `/BI/Component/SaveCanvasTemplate?name=${this.currentCanvasName}`,
+          `/BI/Component/SaveCanvasTemplate?name=${currentCanvasName}`,
           canvasEditorData,
           {
             headers: {
@@ -622,7 +625,21 @@ export default {
           const errorResponse = JSON.parse(JSON.stringify(error));
           console.warn("保存数据异常", errorResponse);
         });
-      eventBus.$emit("saveEvent", this.currentCanvasName, canvasEditorData);
+
+      // 保存图片
+      toImage(document.getElementById("editor")).then((image) => {
+        axios.post(
+          `/BI/Component/SaveCanvasTemplateImage?name=${currentCanvasName}`,
+          image.substring("data:image/png;base64,".length),
+          {
+            headers: {
+              "Content-Type": "text/plain",
+            },
+          }
+        );
+      });
+
+      eventBus.$emit("saveEvent", currentCanvasName, canvasEditorData);
       return true;
     },
 

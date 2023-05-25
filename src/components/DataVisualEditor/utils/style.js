@@ -64,7 +64,6 @@ export function getStyle(style, styleUnit, scale, filter = []) {
   return result
 }
 
-
 export function pxToVw(px) {
   return px / window.outerWidth * 100
 }
@@ -80,7 +79,6 @@ export function vwToPx(vw) {
 export function vhToPx(vh) {
   return vh * window.outerHeight / 100
 }
-
 
 // 获取一个组件旋转 rotate 后的样式
 export function getComponentRotatedStyle(style) {
@@ -104,19 +102,6 @@ export function getComponentRotatedStyle(style) {
   }
 
   return style
-}
-
-export function getUnit(attributeName, unit) {
-
-  if (attributeName.toLowerCase().indexOf("width") !== -1 && unit === 'viewport') {
-    return 'vw'
-  } else if (attributeName.toLowerCase().indexOf("height") !== -1 && unit === 'viewport') {
-    return 'vh'
-  } else if (unit === '%') {
-    return 'px'
-  } else {
-    return unit
-  }
 }
 
 // todo 样式转为对象
@@ -569,16 +554,22 @@ export function getCanvasStyle(canvasData) {
     background = canvasData.background
   }
 
+  let width = ""
+  let height = ""
+
+  if (canvasData.unit === "%") {
+    width = changeStyleWithScale(canvasData.width) / 100 * screen.width + "px"
+    height = changeStyleWithScale(canvasData.height) / 100 * screen.height + "px"
+  } else {
+    width = changeStyleWithScale(canvasData.width) + canvasData.unit
+    height = changeStyleWithScale(canvasData.height) + canvasData.unit
+  }
+
   return {
-    width:
-      changeStyleWithScale(canvasData.width) +
-      getUnit("width", canvasData.unit),
-    height:
-      changeStyleWithScale(canvasData.height) +
-      getUnit("height", canvasData.unit),
+    width: width,
+    height: height,
     background: background
   };
-
 }
 
 export function addStyleListToHead(component, canvasName) {

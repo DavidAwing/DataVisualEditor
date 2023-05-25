@@ -87,6 +87,7 @@ export default {
     "editor",
     "activeComponentList",
     "canvasComponentData",
+    "canvasData",
   ]),
   mounted() {
     // 用于 Group 组件
@@ -176,6 +177,13 @@ export default {
 
         if (!hasL) leftUnit = this.element.styleUnit.width;
         if (!hasT) topUnit = this.element.styleUnit.height;
+
+        if (point === "rt" && leftUnit === "%") newLeft = 100;
+        if (point === "rb" && leftUnit === "%") {
+          newLeft = 100;
+          newTop = 100;
+        }
+        if (point === "lb" && topUnit === "%") newTop = 100;
       } else {
         // 上下两点的点，宽度居中
         if (hasT || hasB) {
@@ -191,29 +199,32 @@ export default {
 
         if (point == "t") {
           leftUnit = this.element.styleUnit.width;
+          if (leftUnit === "%") newLeft = 50;
         } else if (point == "l") {
           topUnit = this.element.styleUnit.height;
+          if (topUnit === "%") newTop = 50;
+          else if (topUnit === "vw" || topUnit === "vh")
+            newTop = this.element.style.height / 2;
         } else if (point == "r" || point == "b") {
           leftUnit = this.element.styleUnit.width;
           topUnit = this.element.styleUnit.height;
+
+          if (point === "r" && leftUnit === "%") {
+            newLeft = 100;
+            newTop = 50;
+          } else if (
+            point === "r" &&
+            (leftUnit === "vw" || leftUnit === "vh")
+          ) {
+            newTop = this.element.style.height / 2;
+          } else if (point === "b" && topUnit === "%") {
+            newLeft = 50;
+            newTop = 100;
+          }
         } else {
           console.warn("getPointStyle获取尺寸单位异常");
         }
       }
-
-      // this.element.styleUnit;
-
-      // if (leftUnit === "vw") {
-      //   newLeft = pxToVw(newLeft);
-      // } else if (leftUnit === "vh") {
-      //   newLeft = pxToVw(newLeft);
-      // }
-
-      // if (topUnit === "vw") {
-      //   newTop = pxToVw(newTop);
-      // } else if (topUnit === "vh") {
-      //   newTop = pxToVw(newTop);
-      // }
 
       const style = {
         marginLeft: "-4px",
@@ -276,10 +287,27 @@ export default {
         } else {
           this.$store.commit("addActiveComponent", this.element.id);
         }
-        this.$store.commit("setCurComponent", {
-          component: null,
-          index: null,
-        });
+
+
+        console.log("this.canvasComponentData", this.canvasComponentData);
+
+        const last = this.canvasComponentData.find(
+          (item) =>
+            item.id ===
+            this.activeComponentList[this.activeComponentList.length - 1]
+        );
+
+        if (last !== undefined) {
+          this.$store.commit("setCurComponent", {
+            component: last,
+            index: last.id,
+          });
+        } else {
+          this.$store.commit("setCurComponent", {
+            component: null,
+            index: null,
+          });
+        }
 
         if (this.activeComponentList.length > 0) {
           const activeComponentList = [];
@@ -291,6 +319,7 @@ export default {
           });
           eventBus.$emit("createGroup", activeComponentList);
         }
+
         return;
       }
 
@@ -313,6 +342,11 @@ export default {
 
       // 如果元素没有移动，则不保存快照
       let hasMove = false;
+
+      const editorRect = document
+        .getElementById("editor")
+        .getBoundingClientRect();
+
       const move = (moveEvent) => {
         hasMove = true;
         const curX = moveEvent.clientX;
@@ -322,6 +356,14 @@ export default {
           pos.left = pxToVw(curX - startX) + startLeft;
         } else if (this.element.styleUnit.left === "vh") {
           pos.left = pxToVh(curX - startX) + startLeft;
+        } else if (this.element.styleUnit.left === "%") {
+          pos.left = (curX - startX) / 13 + startLeft;
+
+          // if (this.canvasData.unit === "px") {
+          //   pos.top = moveEvent.offsetX / this.canvasData.width * 100 * (this.canvasData.scale / 100)
+          // } else {
+          //   pos.top = moveEvent.offsetX / screen.width  * 100 * (this.canvasData.scale / 100)
+          // }
         } else {
           pos.left = curX - startX + startLeft;
         }
@@ -330,6 +372,14 @@ export default {
           pos.top = pxToVw(curY - startY) + startTop;
         } else if (this.element.styleUnit.top === "vh") {
           pos.top = pxToVh(curY - startY) + startTop;
+        } else if (this.element.styleUnit.top === "%") {
+          pos.top = (curY - startY) / 9 + startTop;
+
+          // if (this.canvasData.unit === "px") {
+          //   pos.top = moveEvent.clientY / this.canvasData.height * 100 * (this.canvasData.scale / 100)
+          // } else {
+          //   pos.top = moveEvent.clientY / 100 / screen.height  * 100 * (this.canvasData.scale / 100)
+          // }
         } else {
           pos.top = curY - startY + startTop;
         }
@@ -457,23 +507,31 @@ export default {
           style.top = pxToVw(style.top);
         } else if (curComponent.styleUnit.top === "vh") {
           style.top = pxToVh(style.top);
+        } else if (curComponent.styleUnit.top === "%") {
+          style.top = pxToVh(style.top);
         }
 
         if (curComponent.styleUnit.left === "vw") {
           style.left = pxToVw(style.left);
         } else if (curComponent.styleUnit.left === "vh") {
           style.left = pxToVh(style.left);
+        } else if (curComponent.styleUnit.left === "%") {
+          style.left = pxToVw(style.left);
         }
 
         if (curComponent.styleUnit.width === "vw") {
           style.width = pxToVw(style.width);
         } else if (curComponent.styleUnit.width === "vh") {
           style.width = pxToVh(style.width);
+        } else if (curComponent.styleUnit.width === "%") {
+          style.width = pxToVw(style.width);
         }
 
         if (curComponent.styleUnit.height === "vw") {
           style.height = pxToVw(style.height);
         } else if (curComponent.styleUnit.height === "vh") {
+          style.height = pxToVh(style.height);
+        } else if (curComponent.styleUnit.height === "%") {
           style.height = pxToVh(style.height);
         }
 
@@ -491,8 +549,10 @@ export default {
         } else if (point === "l") {
           // OK
           if (
-            curComponent.styleUnit.width.startsWith("v") &&
-            curComponent.styleUnit.left.startsWith("v")
+            (curComponent.styleUnit.width.startsWith("v") &&
+              curComponent.styleUnit.left.startsWith("v")) ||
+            (curComponent.styleUnit.width.startsWith("%") &&
+              curComponent.styleUnit.left.startsWith("%"))
           ) {
             const correction = prevLeft - style.left;
             style.left = prevLeft - correction;
@@ -504,8 +564,10 @@ export default {
         } else if (point === "t") {
           // OK
           if (
-            curComponent.styleUnit.height.startsWith("v") &&
-            curComponent.styleUnit.top.startsWith("v")
+            (curComponent.styleUnit.height.startsWith("v") &&
+              curComponent.styleUnit.top.startsWith("v")) ||
+            (curComponent.styleUnit.height.startsWith("%") &&
+              curComponent.styleUnit.top.startsWith("%"))
           ) {
             const correction = prevTop - style.top;
             style.top = prevTop - correction;

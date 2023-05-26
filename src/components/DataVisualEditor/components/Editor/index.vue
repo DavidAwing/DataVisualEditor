@@ -433,12 +433,13 @@ export default {
 <style lang="less" scoped>
 .editor {
   position: absolute;
-  background: #fff;
-  margin: auto;
-  overflow: auto;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 
-  left: 3px;
-  top: 3px;
+  /* left: 3px;
+  top: 3px; */
 
   .lock {
     opacity: 0.5;

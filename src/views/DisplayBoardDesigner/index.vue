@@ -25,6 +25,7 @@
         </div>
 
         <div class="canvas-hint" v-html="editorHint"></div>
+        <img class="canvas-maximize" src="../../assets/maximize.png" v-show="showMaximize" @click="maximize"></img>
       </section>
       <!-- 右侧属性列表 -->
       <section class="right">
@@ -114,6 +115,7 @@ export default {
       activeName: "attr",
       reSelectAnimateIndex: undefined,
       saveConfig: {},
+      showMaximize: false
     };
   },
   computed: mapState([
@@ -261,7 +263,6 @@ export default {
     resetID,
 
     handleDrop(event) {
-      console.log("移动中...");
       event.preventDefault();
       event.stopPropagation();
       const index = event.dataTransfer.getData("index");
@@ -296,14 +297,25 @@ export default {
     },
 
     handleMouseDown(event) {
-      console.log("handleMouseDown", event.offsetX, event.offsetY);
       event.stopPropagation();
       this.$store.commit("setClickComponentStatus", false);
       this.$store.commit("setInEditorStatus", true);
     },
 
     handleMouseMove(event) {
-      // console.log("移动", event);
+      const content = document.getElementsByClassName("content")[0];
+      const contentRect = content.getClientRects()[0];
+      if (event.offsetY < 30 && event.offsetX > contentRect.width - 50) {
+        this.showMaximize = true
+        setTimeout(() => {
+          this.showMaximize = false
+        }, 3000);
+      }
+    },
+
+    maximize(){
+      const editor = document.getElementById("editor");
+      editor.requestFullscreen()
     },
 
     deselectCurComponent(e) {
@@ -354,9 +366,6 @@ export default {
       height: 100%;
       padding: 0px;
       overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
 
       .canvas-hint {
         position: absolute;
@@ -368,11 +377,15 @@ export default {
         color: rgba(0, 0, 0, 0.6);
       }
 
+      .canvas-maximize {
+        position: absolute;
+        right: 16px;
+        top: 6px;
+        width: 16px;
+      }
+
       .content {
         position: absolute;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         left: 0px;
         top: 0px;
         right: -2px;

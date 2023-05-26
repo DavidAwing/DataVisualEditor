@@ -918,11 +918,6 @@ export default {
       // 填充画布
       const activeComponentList = this.componentList;
       if (val === "space-evenly") {
-        // if (this.canvasData.unit !== "px") {
-        //   toast("画布自动布局只支持px单位");
-        //   return;
-        // }
-
         if (activeComponentList.length < 2) return;
         let list = [];
         activeComponentList.forEach((item) => {
@@ -935,12 +930,12 @@ export default {
         if (
           this.getComponentOrientation(activeComponentList) === "horizontal"
         ) {
+          const canvasWidth = parseFloat(getCanvasStyle(this.canvasData).width);
+
           list.sort((a, b) => {
             return a.left - b.left;
           });
 
-          const canvasWidth =
-            this.canvasData.width * (this.canvasData.scale / 100);
           let space = canvasWidth;
           list.forEach((item) => {
             space = space - item.width;
@@ -952,43 +947,44 @@ export default {
           for (let i = 0; i < list.length; i++) {
             const item = list[i];
             const find = activeComponentList.find((a) => a.id === item.id);
-            find.style.left = space + offset;
 
-            // find.style.width = item.width;
-            // find.styleUnit.left = "px";
-            // find.styleUnit.width = "px";
-            offset += space + item.width;
+            if (find.styleUnit.left === "%") {
+              const spaceByPercentage = ((space + offset) / canvasWidth) * 100;
+              find.style.left = spaceByPercentage;
+              offset += space + item.width;
+            } else {
+              find.style.left = space + offset;
+              offset += space + item.width;
+            }
           }
         } else {
+          const canvasHeight = parseFloat(
+            getCanvasStyle(this.canvasData).height
+          );
           list.sort((a, b) => {
             return a.top - b.top;
           });
-          const canvasHeight =
-            this.canvasData.height * (this.canvasData.scale / 100);
           let space = canvasHeight;
           list.forEach((item) => {
             space = space - item.height;
           });
-
           space = space / (activeComponentList.length + 1);
-
           let offset = 0;
           for (let i = 0; i < list.length; i++) {
             const item = list[i];
             const find = activeComponentList.find((a) => a.id === item.id);
-            find.style.top = space + offset;
-            // find.style.height = item.height;
-            // find.styleUnit.top = "px";
-            // find.styleUnit.height = "px";
-            offset += space + item.height;
+
+            if (find.styleUnit.top === "%") {
+              const spaceByPercentage = ((space + offset) / canvasHeight) * 100;
+              find.style.top = spaceByPercentage;
+              offset += space + item.height;
+            } else {
+              find.style.top = space + offset;
+              offset += space + item.height;
+            }
           }
         }
       } else if (val === "space-between") {
-        // if (this.canvasData.unit !== "px") {
-        //   toast("画布自动布局只支持px单位");
-        //   return;
-        // }
-
         if (activeComponentList.length < 2) return;
         let list = [];
         activeComponentList.forEach((item) => {
@@ -1001,14 +997,14 @@ export default {
         const xList = list
           .map((item) => item.cx)
           .sort((a, b) => {
-            return a.cx - b.cx;
+            return a - b;
           });
         const maxX = xList[xList.length - 1] - xList[0];
 
         const yList = list
           .map((item) => item.cy)
           .sort((a, b) => {
-            return a.cy - b.cy;
+            return a - b;
           });
         const maxY = yList[yList.length - 1] - yList[0];
 
@@ -1017,8 +1013,7 @@ export default {
             return a.left - b.left;
           });
 
-          const canvasWidth =
-            this.canvasData.width * (this.canvasData.scale / 100);
+          const canvasWidth = parseFloat(getCanvasStyle(this.canvasData).width);
           let space = canvasWidth;
           list.forEach((item) => {
             space = space - item.width;
@@ -1030,16 +1025,23 @@ export default {
           for (let i = 0; i < list.length; i++) {
             const item = list[i];
             const find = activeComponentList.find((a) => a.id === item.id);
-            find.style.left = offset;
-            // find.styleUnit.left = "px";
-            offset += space + item.width;
+
+            if (find.styleUnit.left === "%") {
+              find.style.left = (offset / canvasWidth) * 100;
+              offset += space + item.width;
+            } else {
+              find.style.left = offset;
+              offset += space + item.width;
+            }
           }
         } else {
           list.sort((a, b) => {
             return a.top - b.top;
           });
-          const canvasHeight =
-            this.canvasData.height * (this.canvasData.scale / 100);
+          const canvasHeight = parseFloat(
+            getCanvasStyle(this.canvasData).height
+          );
+
           let space = canvasHeight;
           list.forEach((item) => {
             space = space - item.height;
@@ -1049,9 +1051,13 @@ export default {
           for (let i = 0; i < list.length; i++) {
             const item = list[i];
             const find = activeComponentList.find((a) => a.id === item.id);
-            find.style.top = offset;
-            // find.styleUnit.top = "px";
-            offset += space + item.height;
+            if (find.styleUnit.top === "%") {
+              find.style.top = (offset / canvasHeight) * 100;
+              offset += space + item.height;
+            } else {
+              find.style.top = offset;
+              offset += space + item.height;
+            }
           }
         }
       } else if (val === "start") {
@@ -1068,14 +1074,14 @@ export default {
         const xList = list
           .map((item) => item.cx)
           .sort((a, b) => {
-            return a.cx - b.cx;
+            return a - b;
           });
         const maxX = xList[xList.length - 1] - xList[0];
 
         const yList = list
           .map((item) => item.cy)
           .sort((a, b) => {
-            return a.cy - b.cy;
+            return a - b;
           });
         const maxY = yList[yList.length - 1] - yList[0];
 
@@ -1084,25 +1090,34 @@ export default {
             return a.left - b.left;
           });
 
+          const canvasWidth = parseFloat(getCanvasStyle(this.canvasData).width);
           let offset = 0;
           for (let i = 0; i < list.length; i++) {
             const item = list[i];
             const find = activeComponentList.find((a) => a.id === item.id);
-            find.style.left = offset;
-            // find.styleUnit.left = "px";
+            if (find.styleUnit.left === "%") {
+              find.style.left = (offset / canvasWidth) * 100;
+            } else if (find.styleUnit.left === "px") {
+              find.style.left = offset;
+            }
             offset += item.width;
           }
         } else {
           list.sort((a, b) => {
             return a.top - b.top;
           });
-
+          const canvasHeight = parseFloat(
+            getCanvasStyle(this.canvasData).height
+          );
           let offset = 0;
           for (let i = 0; i < list.length; i++) {
             const item = list[i];
             const find = activeComponentList.find((a) => a.id === item.id);
-            find.style.top = offset;
-            // find.styleUnit.top = "px";
+            if (find.styleUnit.top === "%") {
+              find.style.top = (offset / canvasHeight) * 100;
+            } else if (find.styleUnit.top === "px") {
+              find.style.top = offset;
+            }
             offset += item.height;
           }
         }
@@ -1123,25 +1138,37 @@ export default {
           list.sort((a, b) => {
             return b.left - a.left;
           });
-
-          let offset = this.canvasData.width * (this.canvasData.scale / 100);
+          const canvasWidth = parseFloat(getCanvasStyle(this.canvasData).width);
+          let offset = canvasWidth;
           for (let i = 0; i < list.length; i++) {
             const item = list[i];
             const find = activeComponentList.find((a) => a.id === item.id);
-            find.style.left = offset - find.style.width;
-            offset = find.style.left;
+
+            if (find.styleUnit.left === "%") {
+              find.style.left = ((offset - item.width) / canvasWidth) * 100;
+            } else if (find.styleUnit.left === "px") {
+              find.style.left = offset - find.style.width;
+            }
+            offset = offset - item.width;
           }
         } else {
           list.sort((a, b) => {
             return b.top - a.top;
           });
-
-          let offset = this.canvasData.height * (this.canvasData.scale / 100);
+          const canvasHeight = parseFloat(
+            getCanvasStyle(this.canvasData).height
+          );
+          let offset = canvasHeight;
           for (let i = 0; i < list.length; i++) {
             const item = list[i];
             const find = activeComponentList.find((a) => a.id === item.id);
-            find.style.top = offset - find.style.height;
-            offset = find.style.top;
+
+            if (find.styleUnit.left === "%") {
+              find.style.top = ((offset - item.height) / canvasHeight) * 100;
+            } else if (find.styleUnit.left === "px") {
+              find.style.top = offset - find.style.height;
+            }
+            offset = offset - item.height;
           }
         }
       } else if (val === "fill") {
@@ -1149,12 +1176,24 @@ export default {
           const component = activeComponentList[0];
           if (component.style.width > component.style.height) {
             component.style.left = 0;
-            component.style.width = 100;
-            component.styleUnit.width = "%";
+            if (component.styleUnit.width === "%") {
+              component.style.width = 100;
+            } else if (component.styleUnit.width === "px") {
+              const canvasWidth = parseFloat(
+                getCanvasStyle(this.canvasData).width
+              );
+              component.style.width = canvasWidth;
+            }
           } else {
             component.style.top = 0;
-            component.style.height = 100;
-            component.styleUnit.height = "%";
+            if (component.styleUnit.height === "%") {
+              component.style.height = 100;
+            } else if (component.styleUnit.height === "px") {
+              const canvasHeight = parseFloat(
+                getCanvasStyle(this.canvasData).height
+              );
+              component.style.height = canvasHeight;
+            }
           }
           return;
         }
@@ -1174,8 +1213,7 @@ export default {
             return a.left - b.left;
           });
 
-          const canvasWidth =
-            this.canvasData.width * (this.canvasData.scale / 100);
+          const canvasWidth = parseFloat(getCanvasStyle(this.canvasData).width);
 
           let totalWidth = 0;
           list.forEach((item) => {
@@ -1188,19 +1226,34 @@ export default {
               .dividedBy(totalWidth)
               .toNumber();
             const find = activeComponentList.find((a) => a.id === item.id);
-            find.style.width = new BigNumber(canvasWidth)
+            const newWidth = new BigNumber(canvasWidth)
               .multipliedBy(rate)
               .toNumber();
-            find.style.left = offset;
-            offset = find.style.left + find.style.width;
+            if (find.styleUnit.left === "%" && find.styleUnit.width === "%") {
+              find.style.width = new BigNumber(newWidth)
+                .dividedBy(canvasWidth)
+                .multipliedBy(100)
+                .toNumber();
+              find.style.left = (offset / canvasWidth) * 100;
+            } else if (
+              find.styleUnit.left === "px" &&
+              find.styleUnit.width === "px"
+            ) {
+              find.style.width = newWidth;
+              find.style.left = offset;
+            } else {
+              throw new Error("单位不支持");
+            }
+            offset += newWidth;
           });
         } else {
           list.sort((a, b) => {
             return a.top - b.top;
           });
 
-          const canvasHeight =
-            this.canvasData.height * (this.canvasData.scale / 100);
+          const canvasHeight = parseFloat(
+            getCanvasStyle(this.canvasData).height
+          );
 
           let totalHeight = 0;
           list.forEach((item) => {
@@ -1213,11 +1266,27 @@ export default {
               .dividedBy(totalHeight)
               .toNumber();
             const find = activeComponentList.find((a) => a.id === item.id);
-            find.style.height = new BigNumber(canvasHeight)
+            const newHeight = new BigNumber(canvasHeight)
               .multipliedBy(rate)
               .toNumber();
-            find.style.top = offset;
-            offset = find.style.top + find.style.height;
+
+            if (find.styleUnit.top === "%" && find.styleUnit.height === "%") {
+              find.style.height = new BigNumber(newHeight)
+                .dividedBy(canvasHeight)
+                .multipliedBy(100)
+                .toNumber();
+              find.style.top = (offset / canvasHeight) * 100;
+            } else if (
+              find.styleUnit.top === "px" &&
+              find.styleUnit.height === "px"
+            ) {
+              find.style.height = newHeight;
+              find.style.top = offset;
+            } else {
+              throw new Error("单位不支持");
+            }
+
+            offset += newHeight;
           });
         }
       } else if (val === "top") {
@@ -1225,10 +1294,16 @@ export default {
           item.style.top = 0;
         });
       } else if (val === "bottom") {
-        const canvasHeight =
-          this.canvasData.height * (this.canvasData.scale / 100);
+        const canvasHeight = parseFloat(getCanvasStyle(this.canvasData).height);
         activeComponentList.forEach((item) => {
-          item.style.top = canvasHeight - item.style.height;
+          const element = document.getElementById("component" + item.id);
+          const rect = getElementRect(element);
+          const newTop = canvasHeight - rect.height;
+          if (item.styleUnit.top === "%") {
+            item.style.top = (newTop / canvasHeight) * 100;
+          } else if (item.styleUnit.top === "px") {
+            item.style.top = newTop;
+          }
         });
       } else if (val === "left") {
         activeComponentList.forEach((item) => {
@@ -1241,8 +1316,6 @@ export default {
           item.style.left = canvasWidth - item.style.width;
         });
       } else if (val === "horizontal-center") {
-        const rect = this.getComponentListRect(activeComponentList);
-
         let list = [];
         activeComponentList.forEach((item) => {
           const element = document.getElementById("component" + item.id);
@@ -1265,7 +1338,6 @@ export default {
         });
 
         const canvasWidth = parseFloat(getCanvasStyle(this.canvasData).width);
-        //   canvasWidth = this.canvasData.width * (this.canvasData.scale / 100);
         const width = new BigNumber(right).minus(list[0].left).toNumber();
         const centerX = new BigNumber(list[0].left)
           .plus(new BigNumber(width).dividedBy(2).toNumber())
@@ -1317,20 +1389,6 @@ export default {
           .toNumber();
 
         const offsetByPercentage = (offset / canvasHeight) * 100;
-        // const centerY =
-        //   list[0].top +
-        //   new BigNumber(
-        //     list[list.length - 1].top +
-        //       list[list.length - 1].height -
-        //       list[0].top
-        //   )
-        //     .dividedBy(2)
-        //     .toNumber();
-
-        // let offset = new BigNumber(canvasHeight)
-        //   .dividedBy(2)
-        //   .minus(centerY)
-        //   .toNumber();
         activeComponentList.forEach((item) => {
           if (item.styleUnit.top === "%") {
             item.style.top = item.style.top + offsetByPercentage;
@@ -1362,14 +1420,14 @@ export default {
       const xList = list
         .map((item) => item.cx)
         .sort((a, b) => {
-          return a.cx - b.cx;
+          return a - b;
         });
       const maxX = xList[xList.length - 1] - xList[0];
 
       const yList = list
         .map((item) => item.cy)
         .sort((a, b) => {
-          return a.cy - b.cy;
+          return a - b;
         });
       const maxY = yList[yList.length - 1] - yList[0];
 

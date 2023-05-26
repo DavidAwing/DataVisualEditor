@@ -83,8 +83,8 @@
         style="width: 70px; min-width: 70px"
         class="canvas-config"
       >
-        <el-option key="%" label="%" value="%"></el-option>
         <el-option key="px" label="px" value="px"></el-option>
+        <el-option key="%" label="%" value="%"></el-option>
         <!-- <el-option key="mm" label="mm" value="mm"></el-option> -->
       </el-select>
       <div class="canvas-config">

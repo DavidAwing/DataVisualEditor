@@ -39,13 +39,9 @@ export function getStyle(style, styleUnit, scale, filter = []) {
     'letterSpacing',
     'borderRadius',
   ]
-
-  console.log("缩放", scale);
-
   if (scale === undefined)
     scale = 1
   const result = {}
-
   Object.keys(style).forEach(key => {
     if (!filter.includes(key)) {
       if (key != 'rotate') {

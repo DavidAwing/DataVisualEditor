@@ -309,7 +309,7 @@ export default {
         this.showMaximize = true
         setTimeout(() => {
           this.showMaximize = false
-        }, 3000);
+        }, 6000);
       }
     },
 

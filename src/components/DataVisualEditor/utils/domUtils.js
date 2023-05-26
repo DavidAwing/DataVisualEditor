@@ -80,8 +80,38 @@ export function getElementRect(element) {
     top: top,
     left: left,
   };
-
 }
+
+export function getGroupChildElementRect(element) {
+
+  const elementContainerRect = element.getBoundingClientRect();
+  const canvasRect = document.getElementById("editor").getBoundingClientRect();
+
+  const centerX =
+    elementContainerRect.left -
+    canvasRect.left +
+    elementContainerRect.width / 2;
+  const centerY =
+    elementContainerRect.top -
+    canvasRect.top +
+    elementContainerRect.height / 2;
+
+  const width = elementContainerRect.width
+
+  const height = elementContainerRect.height
+  const top = elementContainerRect.top - canvasRect.top
+  const left = elementContainerRect.left - canvasRect.left
+
+  return {
+    cx: centerX,
+    cy: centerY,
+    width: width,
+    height: height,
+    top: top,
+    left: left,
+  };
+}
+
 
 export function toImage(ele) {
 

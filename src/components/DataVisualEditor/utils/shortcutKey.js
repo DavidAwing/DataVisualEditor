@@ -125,16 +125,16 @@ function undo() {
 
 function compose() {
   if (store.state.areaData.components.length) {
-    store.commit('compose')
-    store.commit('recordSnapshot')
+    store.commit("compose")
+    store.commit("recordSnapshot")
   }
 }
 
 function decompose() {
   const curComponent = store.state.curComponent
   if (curComponent && !curComponent.isLock && curComponent.component == 'Group') {
-    store.commit('decompose')
-    store.commit('recordSnapshot')
+    store.commit("decompose")
+    store.commit("recordSnapshot")
   }
 }
 

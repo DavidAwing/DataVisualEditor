@@ -35,27 +35,8 @@ export default {
 
       const components = []
 
-      let isResizeGroupRect = false
       areaData.components.forEach(component => {
         if (component.component != 'Group') {
-
-          if (component.styleUnit.left !== "px" || component.styleUnit.top !== "px" || component.styleUnit.width !== "px" || component.styleUnit.height !== "px") {
-            const element = document.getElementById("component" + component.id);
-            const rect = getElementRect(element);
-
-            // component.style.width = rect.width
-            // component.style.height = rect.height
-            // component.style.left = rect.left
-            // component.style.top = rect.top
-
-            // component.styleUnit.width = "px"
-            // component.styleUnit.height = "px"
-            // component.styleUnit.left = "px"
-            // component.styleUnit.top = "px"
-
-            isResizeGroupRect = true
-          }
-
           components.push(component)
         } else {
           // 如果要组合的组件中，已经存在组合数据，则需要提前拆分
@@ -71,13 +52,43 @@ export default {
         }
       })
 
+      const rectList = []
+      components.forEach(item => {
+        const element = document.getElementById("component" + item.id);
+        const rect = getElementRect(element);
+        rectList.push(rect)
+      })
+
+      rectList.sort((a, b) => { return a.left - b.left })
+      const groupLeft = rectList[0].left
+      let lastRight = rectList[0].left + rectList[0].width
+      rectList.forEach(item => {
+        if (item.left + item.width > lastRight)
+          lastRight = item.left + item.width
+      })
+      const groupWidth = lastRight - groupLeft
+
+      rectList.sort((a, b) => { return a.top - b.top })
+      const groupTop = rectList[0].top
+      let lastBottom = rectList[0].top + rectList[0].height
+      rectList.forEach(item => {
+        if (item.top + item.height > lastBottom)
+          lastBottom = item.top + item.height
+      })
+      const groupHeight = lastBottom - groupTop
+
       const groupComponent = {
         id: generateID(),
         component: 'Group',
         ...commonAttr,
         style: {
           ...commonStyle,
-          ...areaData.style,
+          ...{
+            left: groupLeft,
+            top: groupTop,
+            width: groupWidth,
+            height: groupHeight
+          },
         },
         propValue: components,
         data: {
@@ -90,19 +101,11 @@ export default {
           height: 'px',
         }
       }
-
       createGroupStyle(groupComponent)
-      if (isResizeGroupRect) {
-
-      }
-
-
       store.commit('addComponent', {
         component: groupComponent,
       })
-
       eventBus.$emit('hideArea')
-
       store.commit('batchDeleteComponent', areaData.components)
       store.commit('setCurComponent', {
         component: canvasComponentData[canvasComponentData.length - 1],
@@ -125,10 +128,10 @@ export default {
     },
 
     decompose({ curComponent, editor }) {
+
       const parentStyle = { ...curComponent.style }
       const components = curComponent.propValue
       const editorRect = editor.getBoundingClientRect()
-
       store.commit('deleteComponent')
       components.forEach(component => {
         decomposeComponent(component, editorRect, parentStyle)

@@ -177,10 +177,6 @@ export default {
               value: "to-%",
             },
             {
-              label: "转为mm",
-              value: "to-mm",
-            },
-            {
               label: "自定义转换",
               value: "custom-conversion",
             },
@@ -689,7 +685,7 @@ export default {
           });
         }
 
-        this.componentListCopy = JSON.parse(JSON.stringify(this.componentList));
+        this.reset();
       },
       deep: false,
       immediate: false,
@@ -849,6 +845,8 @@ export default {
           item.styleUnit.height = "vh";
         });
       }
+
+      this.reset();
     },
     left: {
       handler: function (val) {
@@ -917,6 +915,10 @@ export default {
     arrangement(val) {
       // 填充画布
       const activeComponentList = this.componentList;
+
+      {
+      }
+
       if (val === "space-evenly") {
         if (activeComponentList.length < 2) return;
         let list = [];
@@ -1195,99 +1197,100 @@ export default {
               component.style.height = canvasHeight;
             }
           }
-          return;
-        }
-
-        let list = [];
-        activeComponentList.forEach((item) => {
-          const element = document.getElementById("component" + item.id);
-          const rect = getElementRect(element);
-          rect.id = item.id;
-          list.push(rect);
-        });
-
-        if (
-          this.getComponentOrientation(activeComponentList) === "horizontal"
-        ) {
-          list.sort((a, b) => {
-            return a.left - b.left;
-          });
-
-          const canvasWidth = parseFloat(getCanvasStyle(this.canvasData).width);
-
-          let totalWidth = 0;
-          list.forEach((item) => {
-            totalWidth += item.width;
-          });
-
-          let offset = 0;
-          list.forEach((item) => {
-            const rate = new BigNumber(item.width)
-              .dividedBy(totalWidth)
-              .toNumber();
-            const find = activeComponentList.find((a) => a.id === item.id);
-            const newWidth = new BigNumber(canvasWidth)
-              .multipliedBy(rate)
-              .toNumber();
-            if (find.styleUnit.left === "%" && find.styleUnit.width === "%") {
-              find.style.width = new BigNumber(newWidth)
-                .dividedBy(canvasWidth)
-                .multipliedBy(100)
-                .toNumber();
-              find.style.left = (offset / canvasWidth) * 100;
-            } else if (
-              find.styleUnit.left === "px" &&
-              find.styleUnit.width === "px"
-            ) {
-              find.style.width = newWidth;
-              find.style.left = offset;
-            } else {
-              throw new Error("单位不支持");
-            }
-            offset += newWidth;
-          });
         } else {
-          list.sort((a, b) => {
-            return a.top - b.top;
+          let list = [];
+          activeComponentList.forEach((item) => {
+            const element = document.getElementById("component" + item.id);
+            const rect = getElementRect(element);
+            rect.id = item.id;
+            list.push(rect);
           });
 
-          const canvasHeight = parseFloat(
-            getCanvasStyle(this.canvasData).height
-          );
+          if (
+            this.getComponentOrientation(activeComponentList) === "horizontal"
+          ) {
+            list.sort((a, b) => {
+              return a.left - b.left;
+            });
 
-          let totalHeight = 0;
-          list.forEach((item) => {
-            totalHeight += item.height;
-          });
+            const canvasWidth = parseFloat(
+              getCanvasStyle(this.canvasData).width
+            );
 
-          let offset = 0;
-          list.forEach((item) => {
-            const rate = new BigNumber(item.height)
-              .dividedBy(totalHeight)
-              .toNumber();
-            const find = activeComponentList.find((a) => a.id === item.id);
-            const newHeight = new BigNumber(canvasHeight)
-              .multipliedBy(rate)
-              .toNumber();
+            let totalWidth = 0;
+            list.forEach((item) => {
+              totalWidth += item.width;
+            });
 
-            if (find.styleUnit.top === "%" && find.styleUnit.height === "%") {
-              find.style.height = new BigNumber(newHeight)
-                .dividedBy(canvasHeight)
-                .multipliedBy(100)
+            let offset = 0;
+            list.forEach((item) => {
+              const rate = new BigNumber(item.width)
+                .dividedBy(totalWidth)
                 .toNumber();
-              find.style.top = (offset / canvasHeight) * 100;
-            } else if (
-              find.styleUnit.top === "px" &&
-              find.styleUnit.height === "px"
-            ) {
-              find.style.height = newHeight;
-              find.style.top = offset;
-            } else {
-              throw new Error("单位不支持");
-            }
+              const find = activeComponentList.find((a) => a.id === item.id);
+              const newWidth = new BigNumber(canvasWidth)
+                .multipliedBy(rate)
+                .toNumber();
+              if (find.styleUnit.left === "%" && find.styleUnit.width === "%") {
+                find.style.width = new BigNumber(newWidth)
+                  .dividedBy(canvasWidth)
+                  .multipliedBy(100)
+                  .toNumber();
+                find.style.left = (offset / canvasWidth) * 100;
+              } else if (
+                find.styleUnit.left === "px" &&
+                find.styleUnit.width === "px"
+              ) {
+                find.style.width = newWidth;
+                find.style.left = offset;
+              } else {
+                throw new Error("单位不支持");
+              }
+              offset += newWidth;
+            });
+          } else {
+            list.sort((a, b) => {
+              return a.top - b.top;
+            });
 
-            offset += newHeight;
-          });
+            const canvasHeight = parseFloat(
+              getCanvasStyle(this.canvasData).height
+            );
+
+            let totalHeight = 0;
+            list.forEach((item) => {
+              totalHeight += item.height;
+            });
+
+            let offset = 0;
+            list.forEach((item) => {
+              const rate = new BigNumber(item.height)
+                .dividedBy(totalHeight)
+                .toNumber();
+              const find = activeComponentList.find((a) => a.id === item.id);
+              const newHeight = new BigNumber(canvasHeight)
+                .multipliedBy(rate)
+                .toNumber();
+
+              if (find.styleUnit.top === "%" && find.styleUnit.height === "%") {
+                find.style.height = new BigNumber(newHeight)
+                  .dividedBy(canvasHeight)
+                  .multipliedBy(100)
+                  .toNumber();
+                find.style.top = (offset / canvasHeight) * 100;
+              } else if (
+                find.styleUnit.top === "px" &&
+                find.styleUnit.height === "px"
+              ) {
+                find.style.height = newHeight;
+                find.style.top = offset;
+              } else {
+                throw new Error("单位不支持");
+              }
+
+              offset += newHeight;
+            });
+          }
         }
       } else if (val === "top") {
         activeComponentList.forEach((item) => {
@@ -1310,10 +1313,15 @@ export default {
           item.style.left = 0;
         });
       } else if (val === "right") {
-        const canvasWidth =
-          this.canvasData.width * (this.canvasData.scale / 100);
+        const canvasWidth = parseFloat(getCanvasStyle(this.canvasData).width);
         activeComponentList.forEach((item) => {
-          item.style.left = canvasWidth - item.style.width;
+          const element = document.getElementById("component" + item.id);
+          const rect = getElementRect(element);
+          if (item.styleUnit.left === "%") {
+            item.style.left = ((canvasWidth - rect.width) / canvasWidth) * 100;
+          } else if (item.styleUnit.left === "px") {
+            item.style.left = canvasWidth - item.style.width;
+          }
         });
       } else if (val === "horizontal-center") {
         let list = [];
@@ -1398,12 +1406,18 @@ export default {
         });
       }
 
-      this.componentListCopy = JSON.parse(JSON.stringify(this.componentList));
-      this.layoutList.width.value = 0;
-      this.layoutList.height.value = 0;
+      this.reset()
     },
   },
   methods: {
+    reset() {
+      this.componentListCopy = JSON.parse(JSON.stringify(this.componentList));
+      this.layoutList.width.value = 0;
+      this.layoutList.height.value = 0;
+      this.layoutList.left.value = 0;
+      this.layoutList.top.value = 0;
+    },
+
     showAttr(curComponent, key) {
       if (curComponent == null) return false;
       if (curComponent.attrExcludes == null) return true;

@@ -32,9 +32,9 @@
         <el-tabs v-model="activeName">
           <el-tab-pane label="属性" name="attr">
             <LayoutList v-if="activeComponentList.length > 0" />
-            <GroupAttrList
+            <!-- <GroupAttrList
               v-else-if="curComponent && curComponent.component === 'Group'"
-            />
+            /> -->
             <AttrList v-else-if="curComponent" />
             <p v-else class="placeholder">请选择组件</p>
           </el-tab-pane>

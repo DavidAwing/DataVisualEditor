@@ -78,6 +78,9 @@ echart
 动态解析生成可编辑的css
 
 
+// 组合拆分后, 组件的层级要按照面积的大小顺序重排序
+
+
 边框   时间  数据库打通           视频播放     exe      
 
 git remote add origin https://github.com/DavidAwing/DataVisualEditor.git

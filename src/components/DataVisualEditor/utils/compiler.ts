@@ -91,7 +91,6 @@ export function CompileSourcecode(sourceCode: string, sourceType = "module") {
 
   // 处理每个函数节点
   functionNodes.forEach((functionNode) => {
-    debugger
     module[functionNode.id?.name] = stringToFunction(sourceCode.slice(functionNode.start, functionNode.end))
   });
 

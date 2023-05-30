@@ -2,10 +2,11 @@ import store from './index'
 import generateID from '../utils/generateID'
 import eventBus from '../utils/eventBus'
 import decomposeComponent from '../utils/decomposeComponent'
-import { $ } from '../utils/utils'
+import { $, getRandStr } from '../utils/utils'
 import { commonStyle, commonAttr } from '../custom-component/component-list'
 import createGroupStyle from '../utils/createGroupStyle'
 import { getElementRect } from '../utils/domUtils'
+
 
 export default {
   state: {
@@ -92,6 +93,7 @@ export default {
         },
         propValue: components,
         data: {
+          name: getRandStr(),
           show: true
         },
         styleUnit: {
@@ -99,7 +101,65 @@ export default {
           left: "px",
           width: 'px',
           height: 'px',
-        }
+        },
+        attrList: [
+          {
+            key: "name",
+            type: "text",
+            label: '名称',
+            bind: "data",
+            options: {}
+          },
+          {
+            key: "show",
+            type: "checkbox",
+            label: '显示',
+            bind: "data",
+            options: {}
+          },
+          {
+            key: "isAlign",
+            type: "checkbox",
+            label: '对齐',
+            bind: 'data',
+            options: {}
+          },
+          {
+            key: "left",
+            type: "number",
+            label: 'x 坐标',
+            bind: "style",
+            options: {}
+          },
+          {
+            key: "top",
+            type: "number",
+            label: 'y 坐标',
+            bind: "style",
+            options: {}
+          },
+          {
+            key: "width",
+            type: "number",
+            label: '宽',
+            bind: "style",
+            options: {}
+          },
+          {
+            key: "height",
+            type: "number",
+            label: '高',
+            bind: "style",
+            options: {}
+          },
+          {
+            key: "rotate",
+            type: "number",
+            label: '旋转',
+            bind: "style",
+            options: {}
+          },
+        ]
       }
       createGroupStyle(groupComponent)
       store.commit('addComponent', {

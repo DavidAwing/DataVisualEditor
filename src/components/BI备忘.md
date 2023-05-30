@@ -102,6 +102,12 @@ Cron表达式范例：
 https://github.com/DataV-Team/Datav
 http://datav.jiaminghi.com/guide/
 
+
+编译器
+https://babeljs.io/repl/
+https://babeljs.io/docs/
+
+
 地图组件
 
 todo 组件的底部放置菜单按钮,  [控件]  [图层] [配置] [菜单]   

@@ -112,7 +112,6 @@
             closable
             :disable-transitions="false"
             @close="handleStyleTagsClose(style)"
-            style="font-size: 12px"
             v-if="false"
           >
             {{ style.styleName }}
@@ -185,7 +184,7 @@
               </div>
             </el-collapse-item>
 
-            <el-collapse-item title="css & less" name="3">
+            <el-collapse-item title="css & less" name="3" v-if="false">
               <div v-if="curStyle.type === 'css'">
                 <el-form-item label="">
                   <el-input

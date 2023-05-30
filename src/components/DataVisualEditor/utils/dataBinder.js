@@ -280,9 +280,14 @@ export function requestCanvasData(canvasName, callback) {
           sourceList.forEach(task => {
             // console.log("任务列表D1", task);
             for (let i = 0; i < canvasComponentData.length; i++) {
-              const component = canvasComponentData[i];
+
+              let component = canvasComponentData[i];
+              if (component.component === "Group")
+                component = component.propValue.find(item => Object.keys(task.element).includes(item.data.name))
+              if (component === undefined || component === null)
+                continue
               const element = task.element[component.data.name]
-              if (element === undefined)
+              if (element === undefined || element === null)
                 continue
               element.componentType = component.component
               if (element.componentType === "vc-chart") {

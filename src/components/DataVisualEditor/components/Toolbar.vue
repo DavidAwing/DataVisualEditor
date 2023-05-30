@@ -690,7 +690,10 @@ export default {
 
       try {
         requestCanvasData.bind(this)(this.currentCanvasName);
-      } catch (error) {}
+      } catch (error) {
+        console.error("数据绑定异常", error);
+
+      }
     },
 
     // inputCanvaName(event) {

@@ -125,8 +125,12 @@ const data = {
       const attribute = params[0]
       const name = params[1]
       const data = params[2]
-      for (const component of state.canvasComponentData) {
-        if (component.data.name !== name)
+      for (const item of state.canvasComponentData) {
+
+        let component = item
+        if (item.component === "Group")
+          component = component.propValue.find(item => name === item.data.name)
+        if (component === undefined || component === null || component.data.name !== name)
           continue
 
         if (component.component.startsWith("vc-")) {

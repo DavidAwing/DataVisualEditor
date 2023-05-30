@@ -17,15 +17,8 @@
           <el-input v-model="curComponent[bind][key]" type="textarea" />
         </div>
 
-        <div
-          v-else-if="type == 'number'"
-          style="display: flex; width: 100%; position: relative"
-        >
-          <el-input
-            v-model.number="curComponent[bind][key]"
-            type="number"
-            step="0.1"
-          />
+        <div v-else-if="type == 'number'" style="display: flex; width: 100%; position: relative">
+          <el-input v-model.number="curComponent[bind][key]" type="number" step="0.1" />
           <el-select
             v-if="curComponent.styleUnit[key]"
             v-model="curComponent.styleUnit[key]"
@@ -41,22 +34,12 @@
 
         <div v-else-if="type == 'select'">
           <el-select v-model="curComponent[bind][key]" placeholder="">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            >
-            </el-option>
+            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
           </el-select>
         </div>
 
         <div v-else-if="type == 'color-picker'">
-          <el-color-picker
-            v-model="curComponent[bind][key]"
-            :showAlpha="options.showAlpha"
-          >
-          </el-color-picker>
+          <el-color-picker v-model="curComponent[bind][key]" :showAlpha="options.showAlpha"> </el-color-picker>
         </div>
 
         <div
@@ -72,22 +55,11 @@
             cursor: pointer;
           "
         >
-          <img
-            style="margin-left: 10px"
-            src="../assets/上传.svg"
-            width="20"
-            alt=""
-          />
+          <img style="margin-left: 10px" src="../assets/上传.svg" width="20" alt="" />
           <input
             type="file"
             @change="bind(curComponent, $event)"
-            style="
-              position: absolute;
-              left: 0;
-              opacity: 0;
-              height: 100%;
-              width: 100%;
-            "
+            style="position: absolute; left: 0; opacity: 0; height: 100%; width: 100%"
           />
         </div>
 
@@ -100,31 +72,18 @@
         </div>
 
         <div v-else-if="type == 'eventbus-button'">
-          <el-button
-            @click="
-              eventBus.$emit(bind['click'], curComponent.data.name, $event)
-            "
-          >
-            {{ bind["label"] }}</el-button
+          <el-button @click="eventBus.$emit(bind['click'], curComponent.data.name, $event)">
+            {{ bind['label'] }}</el-button
           >
         </div>
 
         <div v-else-if="type == 'eventbus-select'">
           <el-select
             v-model="bind.value"
-            @change="
-              (value) =>
-                eventBus.$emit(bind['change'], curComponent.name, value)
-            "
+            @change="value => eventBus.$emit(bind['change'], curComponent.name, value)"
             placeholder=""
           >
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            >
-            </el-option>
+            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
           </el-select>
         </div>
       </el-form-item>
@@ -133,43 +92,45 @@
 </template>
 
 <script>
-import { styleData } from "../utils/style";
-import eventBus from "../utils/eventBus";
+  import { mapState } from "vuex";
+import { styleData } from '../utils/style';
+import eventBus from '../utils/eventBus';
 
 export default {
   data() {
     return {
-      excludes: ["Group"], // 这些组件不显示内容
+      excludes: ['Group'], // 这些组件不显示内容
       borderStyleOptions: [
         {
-          label: "实线",
-          value: "solid",
+          label: '实线',
+          value: 'solid',
         },
         {
-          label: "虚线",
-          value: "dashed",
+          label: '虚线',
+          value: 'dashed',
         },
       ],
       verticalAlignOptions: [
         {
-          label: "上对齐",
-          value: "top",
+          label: '上对齐',
+          value: 'top',
         },
         {
-          label: "居中对齐",
-          value: "middle",
+          label: '居中对齐',
+          value: 'middle',
         },
         {
-          label: "下对齐",
-          value: "bottom",
+          label: '下对齐',
+          value: 'bottom',
         },
       ],
-      selectKey: ["textAlign", "borderStyle", "verticalAlign"],
+      selectKey: ['textAlign', 'borderStyle', 'verticalAlign'],
       styleData,
       eventBus,
     };
   },
   computed: {
+    ...mapState(['canvasComponentData', 'canvasStyleData', 'listData', 'currentPrintIndex', 'activeComponentList']),
     attrList() {
       let attrList = [];
 
@@ -179,7 +140,6 @@ export default {
       // }
 
       attrList = attrList.concat(this.curComponent.attrList);
-
       return attrList;
     },
     curComponent() {

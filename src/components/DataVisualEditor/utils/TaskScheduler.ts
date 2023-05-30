@@ -16,6 +16,31 @@ enum STATE {
 
 class FunctionUtil {
 
+
+
+  /**
+     const test1 = `(a, b) => {
+    console.log("当前组件1", b);
+      console.log("当前组件2", this, a + 3);
+      return 7 + a
+    }`
+
+    const codeString = `
+      console.log("当前组件1", b);
+        console.log("当前组件2", this, a + 3);
+        return 7 + a
+      `
+
+    const p = ["a", "b"]
+    const func = new Function(...p, codeString);
+    const res = func.bind(this)(1, 5)
+    console.log("当前组件1返回数据", res);
+   */
+
+
+
+
+
   static createFunction(fun: any) {
 
     if (typeof fun === 'function') {

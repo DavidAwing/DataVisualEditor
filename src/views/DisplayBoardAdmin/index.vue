@@ -3,7 +3,7 @@
     <div>
       <el-form>
         <el-form-item label="组件">
-          <el-select v-model="currentComponent" placeholder="" multiple >
+          <el-select v-model="currentComponent" placeholder="" multiple>
             <el-option
               v-for="item in components"
               :key="item.value"

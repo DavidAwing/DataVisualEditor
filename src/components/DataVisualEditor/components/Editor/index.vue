@@ -436,7 +436,7 @@ export default {
   background: transparent;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: auto;
 
   /* left: 3px;
   top: 3px; */

@@ -12,6 +12,7 @@ import {
 } from "@/components/DataVisualEditor/utils/utils";
 import { mapState } from "vuex";
 import eventBus from "../../../utils/eventBus";
+import { stringToFunction } from "../../../utils/compiler";
 import {
   CRUD, getValueByAttributePath, setJsonAttribute, SetValueAndAttributePathFromKey,
   typeEqual
@@ -513,7 +514,7 @@ export default class StyleListBase extends tsc<Vue> {
         Vue.set(this.styleMap, key, data.data);
       })
       .catch((error) => {
-        console.warn("获取样式异常: " + error);
+        console.warn("获取样式异常: ", error);
         this.isStyleListInterrupt = false;
       });
     return [];
@@ -576,28 +577,6 @@ export default class StyleListBase extends tsc<Vue> {
   }
 
   public created() {
-
-
-
-    const test1 = `(a, b) => {
-    console.log("当前组件1", b);
-      console.log("当前组件2", this, a + 3);
-      return 7 + a
-    }`
-
-    const codeString = `
-      console.log("当前组件1", b);
-        console.log("当前组件2", this, a + 3);
-        return 7 + a
-      `
-
-    const p = ["a", "b"]
-    const func = new Function(...p, codeString);
-    const res = func.bind(this)(1, 5)
-    console.log("当前组件1返回数据", res);
-
-
-
 
     this.isStyleListInterrupt = false;
     // this.isSwitchToStyle = false;
@@ -725,12 +704,12 @@ export default class StyleListBase extends tsc<Vue> {
           }
           // this.isSwitchToStyle = false
         } else if (this.curStyle.type === "css") {
- 
+
           let findStyle = null
           // 从选择器中选择了样式
           for (let i = 0; i < this.addedStyleTags.length; i++) {
             const style = this.addedStyleTags[i];
-            if (style.hierarchy === this.curStyle.hierarchy &&  style.selector === this.curSelector) {
+            if (style.hierarchy === this.curStyle.hierarchy && style.selector === this.curSelector) {
               findStyle = style
               break
             } else if (style.hierarchy === this.curStyle.hierarchy) {
@@ -1052,6 +1031,7 @@ export default class StyleListBase extends tsc<Vue> {
 
   // todo 处理属性的数据改变事件
   onStyleAttrValueChange(...args: any[]) {
+
     console.log("样式数据发生改变", args) // 显示一个对象的所有属性和方法
 
     // const style = this.addedStyleTags[0];
@@ -1065,9 +1045,37 @@ export default class StyleListBase extends tsc<Vue> {
     })
 
     args[0].forEach((str: string | undefined) => {
-      if (typeof str !== 'string' || str.trim() === "")
+      if (str === undefined || str === null || typeof str !== 'string' || str.trim() === "")
         return
-      this.executionString(str, args[1])
+      str = str.trim()
+      if (str.startsWith("__SCRIPT__")) {
+
+      //  console.log("获取参数1", getValueByAttributePath(this.curStyle, "attrList[0].options"));
+      //  console.log("获取参数1", (window as any).getArrayLength(this.curComponent.data.option.series));
+
+        axios.get("/BI/Component/GetScript", {
+          params: {
+            name: str.substring("__SCRIPT__".length),
+          },
+          timeout: 1000 * 6,
+        })
+          .then(({ data }) => {
+            if (data.state !== 200) {
+              console.warn("获取脚本异常", data);
+              return
+            }
+            const script = data.data;
+            stringToFunction(script).bind(this)(args[1])
+          })
+          .catch((error) => {
+            console.error(`${str}脚本异常: `, error);
+          });
+
+
+      } else {
+
+        this.executionString(str, args[1])
+      }
     })
 
     // restoreAttrList: 恢复

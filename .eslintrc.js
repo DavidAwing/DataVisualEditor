@@ -47,6 +47,7 @@ module.exports = {
     'no-multi-spaces': 'off',
     'yoda': 'off',
     "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     'no-lone-blocks': 'off',
   },

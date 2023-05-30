@@ -6,6 +6,7 @@ import store from './store'
 // import store from './components/LabelDesigner/store'
 
 
+
 import { VuePlugin } from 'vuera'
 
 
@@ -36,6 +37,8 @@ Vue.component('top-el-dialog', {
     document.body.appendChild(this.$el);
   },
 });
+
+
 
 Vue.config.productionTip = false
 

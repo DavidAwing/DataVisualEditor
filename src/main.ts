@@ -5,8 +5,6 @@ import router from './router'
 import store from './store'
 // import store from './components/LabelDesigner/store'
 
-
-
 import { VuePlugin } from 'vuera'
 
 
@@ -20,8 +18,11 @@ import '@/components/DataVisualEditor/styles/animate.less'
 import '@/components/DataVisualEditor/styles/reset.css'
 
 
-import './components/DataVisualEditor/mock';
+require('@/compiler') ;
+// const babel = require.context('./compiler', true, "babel.min@7.15.4.js");
 
+
+ 
 
 Vue.use(VuePlugin)
 Vue.use(ElementUI, { size: 'small' });

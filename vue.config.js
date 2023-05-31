@@ -35,6 +35,7 @@ module.exports = defineConfig({
     name: "数据可视化编辑器",
     resolve: {
       alias: {
+        compiler: path.resolve(__dirname, 'src/compiler'),
         '@': resolve('src')
       },
       fallback: {
@@ -45,6 +46,7 @@ module.exports = defineConfig({
     plugins: [
       // new MonacoWebpackPlugin(),
       new webpack.ProvidePlugin({
+        Vue: 'vue',
         echarts: 'echarts',
         THREE: 'three',
         jQuery: "jquery",

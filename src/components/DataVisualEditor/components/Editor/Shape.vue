@@ -80,6 +80,7 @@ export default {
         { start: 293, end: 338, cursor: "w" },
       ],
       cursors: {},
+      lastClickDate: undefined
     };
   },
   computed: mapState([
@@ -265,6 +266,9 @@ export default {
     },
 
     handleMouseDownOnShape(e) {
+ 
+      this.lastClickDate = new Date()
+
       this.$store.commit("setInEditorStatus", true);
       this.$store.commit("setClickComponentStatus", true);
       if (
@@ -287,9 +291,6 @@ export default {
         } else {
           this.$store.commit("addActiveComponent", this.element.id);
         }
-
-
-        console.log("this.canvasComponentData", this.canvasComponentData);
 
         const last = this.canvasComponentData.find(
           (item) =>
@@ -319,7 +320,6 @@ export default {
           });
           eventBus.$emit("createGroup", activeComponentList);
         }
-
         return;
       }
 
@@ -348,6 +348,13 @@ export default {
         .getBoundingClientRect();
 
       const move = (moveEvent) => {
+
+        // 防止误拖动
+        const milliseconds =  new Date().getTime() - this.lastClickDate.getTime();
+        if (milliseconds < 200) {
+          return  
+        }
+
         hasMove = true;
         const curX = moveEvent.clientX;
         const curY = moveEvent.clientY;

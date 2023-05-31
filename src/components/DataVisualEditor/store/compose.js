@@ -35,7 +35,6 @@ export default {
     compose({ canvasComponentData, areaData, editor }) {
 
       const components = []
-
       areaData.components.forEach(component => {
         if (component.component != 'Group') {
           components.push(component)
@@ -49,7 +48,8 @@ export default {
             decomposeComponent(component, editorRect, parentStyle)
           })
 
-          components.push(...component.propValue)
+          // components.push(...component.propValue)
+          components.push(...subComponents)
         }
       })
 
@@ -94,7 +94,8 @@ export default {
         propValue: components,
         data: {
           name: getRandStr(),
-          show: true
+          show: true,
+          isAlign: false
         },
         styleUnit: {
           top: "px",

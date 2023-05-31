@@ -12,15 +12,17 @@ import {
 } from "@/components/DataVisualEditor/utils/utils";
 import { mapState } from "vuex";
 import eventBus from "../../../utils/eventBus";
-import { stringToFunction } from "../../../utils/compiler";
+import { stringToFunction, CompileTypescriptToIIFE, CompileToModule } from "../../../utils/compiler";
 import {
   CRUD, getValueByAttributePath, setJsonAttribute, SetValueAndAttributePathFromKey,
   typeEqual
 } from "../../../utils/chartUtils";
 import * as echarts from "echarts";
+import { EsModule } from "vue/types/options";
 
 const JSONfn = require("jsonfn").JSONfn;
 const equal = require('fast-deep-equal')
+
 
 
 
@@ -1029,8 +1031,8 @@ export default class StyleListBase extends tsc<Vue> {
   }
 
 
-  // todo 处理属性的数据改变事件
-  onStyleAttrValueChange(...args: any[]) {
+  // todo 处理属性的事件
+  onStyleAttrEvent(...args: any[]) {
 
     console.log("样式数据发生改变", args) // 显示一个对象的所有属性和方法
 
@@ -1048,14 +1050,18 @@ export default class StyleListBase extends tsc<Vue> {
       if (str === undefined || str === null || typeof str !== 'string' || str.trim() === "")
         return
       str = str.trim()
-      if (str.startsWith("__SCRIPT__")) {
+      if (str.startsWith("AttributeEvent")) {
 
-      //  console.log("获取参数1", getValueByAttributePath(this.curStyle, "attrList[0].options"));
-      //  console.log("获取参数1", (window as any).getArrayLength(this.curComponent.data.option.series));
+        //  console.log("获取参数1", getValueByAttributePath(this.curStyle, "attrList[0].options"));
+        //  console.log("获取参数1", (window as any).getArrayLength(this.curComponent.data.option.series));
+
+        const arr = str.trim().split("@")
+        const scriptPath = arr[0]
+        const methodName = arr[1]
 
         axios.get("/BI/Component/GetScript", {
           params: {
-            name: str.substring("__SCRIPT__".length),
+            name: scriptPath,
           },
           timeout: 1000 * 6,
         })
@@ -1064,8 +1070,31 @@ export default class StyleListBase extends tsc<Vue> {
               console.warn("获取脚本异常", data);
               return
             }
-            const script = data.data;
-            stringToFunction(script).bind(this)(args[1])
+            const code = data.data;
+            if (scriptPath.endsWith("ts")) {
+              const iife = CompileTypescriptToIIFE(code);
+              const instance = new iife();
+
+
+            } else if (scriptPath.endsWith("js")) {
+              CompileToModule(code).then((module: EsModule<any>) => {
+
+                if (Object.prototype.toString.call(module) === "[object Module]") {
+                  if ((methodName === undefined || methodName === null) && module.default !== undefined) {
+                    module.default.bind(this)()
+                  } else if (Object.prototype.toString.call(methodName) === "[object String]" &&
+                    Object.prototype.toString.call(module[methodName]) === "[object Function]") {
+                    module[methodName].bind(this)()
+                  } else {
+
+                  }
+                } else if (Object.prototype.toString.call(module.default) === '[object Function]') {
+                  const instance = new module.default();
+                } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
+                  const instance = module.default;
+                }
+              });
+            }
           })
           .catch((error) => {
             console.error(`${str}脚本异常: `, error);

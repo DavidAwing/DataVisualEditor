@@ -327,7 +327,7 @@
                       v-model="curStyle.attrList[index].value"
                       @change="
                         (val, old) => {
-                          onStyleAttrValueChange([...options['onChange']], {
+                          onStyleAttrEvent([...options['onChange']], {
                             attrIndex: index,
                             attr: curStyle.attrList[index],
                             style: curStyle,
@@ -337,7 +337,7 @@
                       "
                       @input="
                         (val, old) => {
-                          onStyleAttrValueChange([...options['onInput']], {
+                          onStyleAttrEvent([...options['onInput']], {
                             attrIndex: index,
                             attr: curStyle.attrList[index],
                             style: curStyle,
@@ -386,7 +386,7 @@
                       type="number"
                       @change="
                         (val, old) => {
-                          onStyleAttrValueChange([...options['onChange']], {
+                          onStyleAttrEvent([...options['onChange']], {
                             attrIndex: index,
                             attr: curStyle.attrList[index],
                             style: curStyle,

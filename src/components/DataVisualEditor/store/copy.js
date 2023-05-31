@@ -45,6 +45,7 @@ export default {
       if (data.component === 'Group') {
         data.propValue.forEach(component => {
           component.id = generateID()
+          component.data.name = getRandStr()
         })
       }
 

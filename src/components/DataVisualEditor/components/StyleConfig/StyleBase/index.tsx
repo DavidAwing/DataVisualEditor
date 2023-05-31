@@ -1050,14 +1050,14 @@ export default class StyleListBase extends tsc<Vue> {
       if (str === undefined || str === null || typeof str !== 'string' || str.trim() === "")
         return
       str = str.trim()
-      if (str.startsWith("AttributeEvent")) {
+      if (str.startsWith("SCRIPT*")) {
 
         //  console.log("获取参数1", getValueByAttributePath(this.curStyle, "attrList[0].options"));
         //  console.log("获取参数1", (window as any).getArrayLength(this.curComponent.data.option.series));
 
-        const arr = str.trim().split("@")
-        const scriptPath = arr[0]
-        const methodName = arr[1]
+        const arr = str.trim().split("*")
+        const scriptPath = arr[1].trim()
+        const methodName = arr[2]
 
         axios.get("/BI/Component/GetScript", {
           params: {

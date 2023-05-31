@@ -47,6 +47,7 @@
     "lz-string": "^1.4.4",
     "mathjs": "^10.6.1",
     "md5": "^2.3.0",
+    "moment": "^2.29.4",
     "monaco-editor": "^0.37.0-dev.20230328",
     "monaco-editor-webpack-plugin": "^7.0.1",
     "node-polyfill-webpack-plugin": "^2.0.1",

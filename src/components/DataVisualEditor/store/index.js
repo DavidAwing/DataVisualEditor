@@ -14,6 +14,9 @@ import {
 } from "../utils/chartUtils";
 import eventBus from "../utils/eventBus";
 
+
+
+
 Vue.use(Vuex)
 
 const data = {
@@ -122,9 +125,13 @@ const data = {
     // 设置组件的属性
     setCanvasComponentAttribute(state, params) {
 
+
+
+
       const attribute = params[0]
       const name = params[1]
       const data = params[2]
+
       for (const item of state.canvasComponentData) {
 
         let component = item
@@ -158,7 +165,13 @@ const data = {
           })
 
         } else {
-          component[attribute] = { ...component[attribute], ...data }
+          if (component[attribute] === undefined || component[attribute] !== null || attribute.includes(".")) {
+            setJsonAttribute(component, attribute, data, false)
+          } else if (component[attribute] !== undefined && component[attribute] !== null) {
+            component[attribute] = { ...component[attribute], ...data }
+          } else {
+            console.error(`绑定组件数据发送错误,找不到组件属性${attribute}`, component);
+          }
         }
 
       }

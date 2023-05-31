@@ -1,5 +1,6 @@
 import * as DB from "../utils/indexDB";
 import { getRandStr } from "../utils/utils";
+import { CompileToModule, CompileTypescriptToIIFE } from "../utils/compiler";
 import CronExpressionValidator from "../utils/CronExpressionValidator";
 import axios from 'axios'
 import toast from "./toast";
@@ -122,19 +123,23 @@ function parseText(text) {
           /^\/(?!$)[^/]/.test(line) ||
           /^(\d{1,3}\.){3}\d{1,3}/.test(line)) &&
         (!/^(\*|[0-5]?\d)(\/\d+)?(\s+(\*|[01]?\d|2[0-3])(\/\d+)?){4}$/.test(line) &&
-          !/^(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)(\s(\*|[0-9-/,*]+))?$/i.test(line))) {
+          !/^(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)(\s(\*|[0-9-/,*]+))?$/i.test(line)) &&
+        !line.startsWith("SCRIPT*")
+      ) {
         // 是sql,http,cron
         obj.source += line.trim() + "\n";
       } else if ((i < 3) &&
         (/^(\*|[0-5]?\d)(\/\d+)?(\s+(\*|[01]?\d|2[0-3])(\/\d+)?){4}$/.test(line) ||
           /^(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)\s(\*|[0-9-/,*]+)(\s(\*|[0-9-/,*]+))?$/i.test(line) ||
           CronExpressionValidator.validateCronExpression(line)
-        )
+        ) &&
+        !line.startsWith("SCRIPT*")
       ) {
         // 是cron
         obj.cron = line;
       } else if ((i < 3) &&
-        /^[\u4e00-\u9fa5a-zA-Z][\u4e00-\u9fa5a-zA-Z0-9]*(,[\u4e00-\u9fa5a-zA-Z][\u4e00-\u9fa5a-zA-Z0-9]*)*(,)?$/.test(line)) {
+        /^[\u4e00-\u9fa5a-zA-Z][\u4e00-\u9fa5a-zA-Z0-9]*(,[\u4e00-\u9fa5a-zA-Z][\u4e00-\u9fa5a-zA-Z0-9]*)*(,)?$/.test(line) &&
+        !line.startsWith("SCRIPT*")) {
         // 是name
         line.split(",").forEach(name => {
           name = name.trim()
@@ -142,6 +147,8 @@ function parseText(text) {
             return
           obj.element[name] = {};
         });
+      } else if (line.startsWith("SCRIPT*")) {
+        obj.source += line.trim() + "\n";
       } else {
         obj.source += line.trim() + "\n";
       }
@@ -164,6 +171,8 @@ function parseText(text) {
     ) {
       // 匹配URL的正则表达式
       obj.type = "http";
+    } else if (source.startsWith("SCRIPT*")) {
+      obj.type = "script"
     } else {
       obj.type = "unknown"
     }
@@ -213,26 +222,31 @@ function testTask(task) {
 
 function commitData(store, task, response) {
 
-  console.log("绑定数据", response);
+  if (response.data.headers === undefined &&
+    response.data.request === undefined &&
+    response.data.status === undefined &&
+    typeof response === 'object' &&
+    typeof response.name === "string") {
+    const { attributeName, name, data } = response
+    store.commit("setCanvasComponentAttribute", [
+      attributeName,
+      name,
+      data
+    ]);
+  } else {
+    const data = response.data.data
+    if (Array.isArray(data)) {
+      data.forEach(({ attributeName, name, data }) => {
+        store.commit("setCanvasComponentAttribute", [
+          attributeName,
+          name,
+          data
+        ]);
 
-  const data = response.data.data
-
-  if (Array.isArray(data)) {
-
-    data.forEach(({ attributeName, name, data }) => {
-      store.commit("setCanvasComponentAttribute", [
-        attributeName,
-        name,
-        data
-      ]);
-
-    })
+      })
+    }
   }
-
-
   // todo: 匹配data中的name
-
-
 }
 
 // 数据绑定器
@@ -291,105 +305,6 @@ export function requestCanvasData(canvasName, callback) {
                 continue
               element.componentType = component.component
               if (element.componentType === "vc-chart") {
-
-                // element.series = [
-                //   {
-                //     name: 'Line 1',
-                //     type: 'line',
-                //     stack: 'Total',
-                //     smooth: true,
-                //     lineStyle: {
-                //       width: 0
-                //     },
-                //     showSymbol: false,
-                //     areaStyle: {
-                //       opacity: 0.8
-                //     },
-                //     emphasis: {
-                //       focus: 'series'
-                //     },
-                //     data: [140, 232, 101, 264, 90, 340, 250]
-                //   },
-                //   {
-                //     name: 'Line 2',
-                //     type: 'line',
-                //     stack: 'Total',
-                //     smooth: true,
-                //     lineStyle: {
-                //       width: 0
-                //     },
-                //     showSymbol: false,
-                //     areaStyle: {
-                //       opacity: 0.8
-                //     },
-                //     emphasis: {
-                //       focus: 'series'
-                //     },
-                //     data: [120, 282, 111, 234, 220, 340, 310]
-                //   },
-                //   {
-                //     name: 'Line 3',
-                //     type: 'line',
-                //     stack: 'Total',
-                //     smooth: true,
-                //     lineStyle: {
-                //       width: 0
-                //     },
-                //     showSymbol: false,
-                //     areaStyle: {
-                //       opacity: 0.8
-                //     },
-                //     emphasis: {
-                //       focus: 'series'
-                //     },
-                //     data: [320, 132, 201, 334, 190, 130, 220]
-                //   },
-                //   {
-                //     name: 'Line 4',
-                //     type: 'line',
-                //     stack: 'Total',
-                //     smooth: true,
-                //     lineStyle: {
-                //       width: 0
-                //     },
-                //     showSymbol: false,
-                //     areaStyle: {
-                //       opacity: 0.8
-                //     },
-                //     emphasis: {
-                //       focus: 'series'
-                //     },
-                //     data: [220, 402, 231, 134, 190, 230, 120]
-                //   },
-                //   {
-                //     name: 'Line 5',
-                //     type: 'line',
-                //     stack: 'Total',
-                //     smooth: true,
-                //     lineStyle: {
-                //       width: 0
-                //     },
-                //     showSymbol: false,
-                //     label: {
-                //       show: true,
-                //       position: 'top'
-                //     },
-                //     areaStyle: {
-                //       opacity: 0.8
-                //     },
-                //     emphasis: {
-                //       focus: 'series'
-                //     },
-                //     data: [220, 302, 181, 234, 210, 290, 150]
-                //   }
-                // ].map((item) => {
-                //   return {
-                //     name: item.name,
-                //     type: item.type
-                //   }
-                // })
-
-
                 console.log("图表组件22", component);
                 console.log("图表组件33", component.data.option.series);
               }
@@ -405,7 +320,6 @@ export function requestCanvasData(canvasName, callback) {
 
               if (task.type === "get") {
                 task.call = () => {
-                  console.log("执行任务AA1", task);
                   axios.get(task.source).then(response => {
                     if (response.status !== 200 || !response) {
                       console.error(task, response);
@@ -420,8 +334,6 @@ export function requestCanvasData(canvasName, callback) {
               } else if (task.type === "post") {
 
                 task.call = () => {
-
-                  console.log("执行任务AA2", task);
                   axios.post(task.source).then(response => {
                     if (response.status !== 200 || !response) {
                       console.error(task, response);
@@ -432,6 +344,70 @@ export function requestCanvasData(canvasName, callback) {
                     const errorResponse = JSON.parse(JSON.stringify(error))
                     console.warn("任务执行报错", task, errorResponse);
                   })
+                }
+
+              } else if (task.type === "script") {
+
+                task.call = () => {
+
+                  if (task.source.startsWith("SCRIPT*") && task.instance === undefined) {
+
+                    const arr = task.source.trim().split("*")
+                    const scriptPath = arr[1].trim()
+                    task.methodName = arr[2]
+
+                    axios.get("/BI/Component/GetScript", {
+                      params: {
+                        name: scriptPath,
+                      },
+                      timeout: 6000,
+                    })
+                      .then(({ data }) => {
+                        if (data.state !== 200) {
+                          console.warn("执行任务获取脚本异常", data);
+                          return
+                        }
+                        const code = data.data;
+                        if (scriptPath.endsWith("ts")) {
+                          const iife = CompileTypescriptToIIFE(code);
+                          task.instance = new iife();
+                        } else if (scriptPath.endsWith("js")) {
+                          CompileToModule(code).then((module) => {
+                            if (Object.prototype.toString.call(module) === "[object Module]") {
+                              task.instance = module
+                            } else if (Object.prototype.toString.call(module.default) === '[object Function]') {
+                              task.instance = new module.default();
+                            } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
+                              task.instance = module.default;
+                            }
+                          });
+                        }
+                      })
+                      .catch((error) => {
+                        console.error(`${scriptPath}脚本异常: `, error);
+                      });
+                  } else {
+
+                    const instance = task.instance
+                    const methodName = task.methodName
+
+                    let response = null
+                    if (Object.prototype.toString.call(instance) === "[object Module]") {
+
+                      if (methodName === undefined || methodName === null) {
+                        response = instance.default.bind(this)(task)
+                      } else if (Object.prototype.toString.call(methodName) === "[object String]" &&
+                        Object.prototype.toString.call(instance[methodName]) === "[object Function]") {
+                        response = instance[methodName].bind(this)(task)
+                      } else {
+                      }
+                    } else if (Object.prototype.toString.call(instance) === '[object Function]') {
+                    } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
+                    }
+
+                    commitData(this.$store, task, response)
+
+                  }
                 }
 
               } else {

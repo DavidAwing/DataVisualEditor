@@ -1,8 +1,8 @@
 import axios from "axios";
 import * as acorn from "acorn";
 const estraverse = require("estraverse");
- 
- 
+
+
 const Babel: any = (window as any).Babel
 const System: any = (window as any).System
 const ts: any = (window as any).ts
@@ -122,18 +122,26 @@ function createDownloadElement(content: string, filename = new Date().toISOStrin
 export function CompileTypescriptToIIFE(sourceCode: string) {
 
   const tsCode = ts.transpile(sourceCode, {
-    target: ts.ScriptTarget.ES6,
+    target: ts.ScriptTarget.ES5,
+    preserveConstEnums: true,
+    allowNonTsExtensions: true,
+    isolatedModules: true,
+    noEmitOnError: false,
+    suppressImplicitAnyIndexErrors: false,
   });
+
+  const className = tsCode.match(/var\s+(\w+)\s+=\s+\/\*\*\s+@class\s+\*\/\s+\(function\s*\(\)\s*{/)[1];
   const iifeCode = `(function() {
                         ${tsCode}
-                        return name;
+                        return ${className};
                     })()`;
   // @ts-ignore
   const iife = eval(iifeCode);
+
+  // @ts-ignore
+  // const iife = new Function(tsCode);
   return iife
 }
-
-
 
 
 export function CompileToModule(sourceCode: string) {
@@ -170,6 +178,9 @@ export function CompileToModule(sourceCode: string) {
       });
   })
 }
+
+
+
 
 
 

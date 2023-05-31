@@ -4,7 +4,6 @@
   </div>
 </template>
 
-
 <script>
 import {
   stringToFunction,
@@ -14,8 +13,7 @@ import {
 } from './components/DataVisualEditor/utils/compiler.ts';
 import Vue from 'vue';
 import axios from 'axios';
-
- 
+import moment from 'moment';
 
 // import * as ts from './compiler/typescript@5.0.4.js';
 
@@ -28,13 +26,13 @@ export default {
   props: {},
   computed: {},
   created() {
- 
-
-    console.log("全局", Babel);
-    console.log("全局", Object.prototype.toString.call(Babel) );
+    window.bi = new Object();
+    window.bi.Vue = Vue;
+    window.bi.axios = axios;
+    window.bi.moment = moment;
 
     axios
-      .get('/BI/Component/GetGlobalModuleScript', { timeout: 1000 * 6 })
+      .get('/BI/Component/GetGlobalModuleScript', { timeout: 6000 })
       .then(({ data }) => {
         if (data.state !== 200) {
           console.error('获取全局挂载脚本异常', error);
@@ -45,24 +43,25 @@ export default {
           if (item.type === 'ts') {
             const iife = CompileTypescriptToIIFE(item.code);
             const instance = new iife();
-            let name = iife.Name;
+            let name = iife.name;
             if (instance.Name) name = instance.Name;
             if (instance.MountTarget === undefined || instance.MountTarget === null) {
               console.warn('GetGlobalModuleScript|MountTarget未赋值,挂载默认目标window', item);
               instance.MountTarget = window;
             }
-            if (name === undefined || name === null) {
+            if (name === undefined || name === null)
               console.warn('GetGlobalModuleScript|Name未赋值,设置为文件名', item);
-              name = item.name;
+
+            if (instance.MountTarget[name] === undefined) instance.MountTarget[name] = new Object();
+            for (const key in instance) {
+              // if (instance.hasOwnProperty(key) && Object.prototype.toString.call(instance[key]) == '[object Function]')
+              instance.MountTarget[name][key] = instance[key];
             }
-            instance.MountTarget[name] = instance;
             return;
           }
 
           CompileToModule.bind(this)(item.code).then(module => {
-
             if (Object.prototype.toString.call(module) === '[object Module]' && module.default === undefined) {
-
             } else if (Object.prototype.toString.call(module.default) === '[object Function]') {
               const instance = new module.default();
 
@@ -75,7 +74,7 @@ export default {
                 console.warn('GetGlobalModuleScript|Name未赋值,设置为文件名', item);
                 name = item.name;
               }
-              instance.MountTarget[name] = instance;
+              instance.MountTarget[name] = { ...instance.MountTarget[name], ...instance };
             } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
               let name = module.Name;
               if (module.MountTarget === undefined || module.MountTarget === null) {
@@ -86,7 +85,7 @@ export default {
                 console.warn('GetGlobalModuleScript|Name未赋值,设置为文件名', item);
                 name = item.name;
               }
-              module.MountTarget[name] = module.default;
+              module.MountTarget[name] = { ...module.MountTarget[name], ...module.default };
             }
           });
         });

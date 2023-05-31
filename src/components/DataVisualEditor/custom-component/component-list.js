@@ -145,7 +145,7 @@ const list = [
     label: '文字',
     icon: 'wenben',
     data: {
-      text: "文本222",
+      text: "请输入文本...",
       verticalAlign: "",
       writingMode: "horizontal",
       show: true,

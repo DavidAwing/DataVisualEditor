@@ -14,6 +14,8 @@ import {
 import Vue from 'vue';
 import axios from 'axios';
 import moment from 'moment';
+import BigNumber from 'bignumber.js';
+const JSONfn = require("jsonfn").JSONfn;
 
 // import * as ts from './compiler/typescript@5.0.4.js';
 
@@ -30,6 +32,9 @@ export default {
     window.bi.Vue = Vue;
     window.bi.axios = axios;
     window.bi.moment = moment;
+    window.bi.BigNumber = BigNumber;
+    window.bi.JSONfn = JSONfn;
+    window.bi.App = this;
 
     axios
       .get('/BI/Component/GetGlobalModuleScript', { timeout: 6000 })

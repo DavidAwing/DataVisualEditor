@@ -48,6 +48,11 @@ const routes: Array<RouteConfig> = [
     path: '/DeviceInformation',
     name: 'DeviceInformation',
     component: () => import('@/views/DeviceInformation/index.vue')
+  },
+  {
+    path: '/DatasourceEditor',
+    name: 'DatasourceEditor',
+    component: () => import('@/views/DatasourceEditor/index.vue')
   }
 ]
 

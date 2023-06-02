@@ -13,28 +13,16 @@
           filterable
           placeholder=""
         >
-          <el-option
-            v-for="item in canvasList"
-            :key="item.name"
-            :label="item.name"
-            :value="item.name"
-          >
-          </el-option>
+          <el-option v-for="item in canvasList" :key="item.name" :label="item.name" :value="item.name"> </el-option>
         </el-select>
       </div>
       <!-- <el-button @click="exportTemplate">导出</el-button>
       <el-button @click="importTemplate">导入</el-button> -->
       <!-- <el-button @click="redo">预览</el-button> -->
       <!-- 填写接口或者json数据测试 -->
-      <el-button @click="" @click="canvasConfigDialogVisible = true"
-        >配置</el-button
-      >
+      <el-button @click="" @click="canvasConfigDialogVisible = true">配置</el-button>
 
-      <el-select
-        v-model="canvasData.deviceType"
-        style="width: 70px; min-width: 70px"
-        class="canvas-config"
-      >
+      <el-select v-model="canvasData.deviceType" style="width: 70px; min-width: 70px" class="canvas-config">
         <el-option key="pc" label="pc" value="pc"> </el-option>
         <el-option key="mobile" label="mobile" value="mobile"></el-option>
       </el-select>
@@ -45,32 +33,18 @@
       <el-button @click="redo">重做</el-button>
       <label for="input" class="insert" v-if="false">插入图片</label>
       <input id="input" type="file" hidden @change="handleFileChange" />
-      <el-button style="margin-left: 10px" @click="preview" v-if="false"
-        >预览</el-button
-      >
+      <el-button style="margin-left: 10px" @click="preview" v-if="false">预览</el-button>
       <el-button @click="save" style="margin-left: 10px">保存</el-button>
       <el-button @click="clearCanvas">删除</el-button>
-      <el-button :disabled="!areaData.components.length" @click="compose"
-        >组合</el-button
-      >
+      <el-button :disabled="!areaData.components.length" @click="compose">组合</el-button>
       <el-button
-        :disabled="
-          !curComponent ||
-          curComponent.isLock ||
-          curComponent.component != 'Group'
-        "
+        :disabled="!curComponent || curComponent.isLock || curComponent.component != 'Group'"
         @click="decompose"
       >
         拆分
       </el-button>
-      <el-button :disabled="!curComponent || curComponent.isLock" @click="lock"
-        >锁定</el-button
-      >
-      <el-button
-        :disabled="!curComponent || !curComponent.isLock"
-        @click="unlock"
-        >解锁</el-button
-      >
+      <el-button :disabled="!curComponent || curComponent.isLock" @click="lock">锁定</el-button>
+      <el-button :disabled="!curComponent || !curComponent.isLock" @click="unlock">解锁</el-button>
 
       <div class="canvas-config">
         <span>画布大小</span>
@@ -78,42 +52,28 @@
         <span>*</span>
         <input style="padding: 6px" v-model="canvasData.height" />
       </div>
-      <el-select
-        v-model="canvasData.unit"
-        style="width: 70px; min-width: 70px"
-        class="canvas-config"
-      >
+      <el-select v-model="canvasData.unit" style="width: 70px; min-width: 70px" class="canvas-config">
         <el-option key="px" label="px" value="px"></el-option>
         <el-option key="%" label="%" value="%"></el-option>
         <!-- <el-option key="mm" label="mm" value="mm"></el-option> -->
       </el-select>
       <div class="canvas-config">
         <span>画布比例</span>
-        <input
-          style="padding: 6px"
-          v-model="scale"
-          @input="handleScaleChange"
-        />
+        <input style="padding: 6px" v-model="scale" @input="handleScaleChange" />
         %
       </div>
     </div>
 
-    <el-dialog title="全局配置" :visible.sync="canvasConfigDialogVisible">
+    <el-dialog title="数据源" :visible.sync="canvasConfigDialogVisible">
       <el-form>
-        <el-form-item label="数据来源">
-          <el-input
-            type="textarea"
-            v-model="canvasData.dataSource.parameters"
-            autocomplete="off"
-            :rows="10"
-          ></el-input>
-        </el-form-item>
+        <!-- <el-form-item label="数据来源">
 
-        <el-form-item label="cron">
-          <el-input
-            v-model="canvasData.dataSource.cron"
-            autocomplete="off"
-          ></el-input>
+        </el-form-item> -->
+
+        <el-input type="textarea" v-model="canvasData.dataSource.parameters" autocomplete="off" :rows="10"></el-input>
+
+        <el-form-item label="cron" v-show="false">
+          <el-input v-model="canvasData.dataSource.cron" autocomplete="off"></el-input>
         </el-form-item>
 
         <!-- <el-form-item label="http地址">
@@ -128,34 +88,39 @@
         </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="canvasConfigDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="canvasConfigDialogVisible = false"
-          >确 定</el-button
-        >
+
+        <a href="/sub01/#/DatasourceEditor" target="_blank" class="">
+          <el-button type="text">进入数据源编辑器</el-button>
+        </a>
+        <div>
+          <el-button @click="canvasConfigDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="canvasConfigDialogVisible = false">确 定</el-button>
+        </div>
+
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import generateID, { resetID } from "../utils/generateID";
-import { removeAllStyleNotOfCanvasName } from "../utils/style";
-import toast, { toastClose } from "../utils/toast";
-import { mapState } from "vuex";
-import Preview from "./Editor/Preview";
-import ComponentListViewer from "./ComponentListViewer";
-import { commonStyle, commonAttr } from "../custom-component/component-list";
-import eventBus from "../utils/eventBus";
-import { deepCopy, selectFile, saveText, closeWindow } from "../utils/utils";
-import { divide, multiply } from "mathjs";
-import * as DB from "../utils/indexDB";
-import { toImage } from "../utils/domUtils";
-const LZ = require("lz-string");
-const JSONfn = require("jsonfn").JSONfn;
-import TestCanvas from "./TestCanvas";
-import axios from "axios";
-import md5 from "blueimp-md5";
-import { requestCanvasData } from "../utils/dataBinder";
+import generateID, { resetID } from '../utils/generateID';
+import { removeAllStyleNotOfCanvasName } from '../utils/style';
+import toast, { toastClose } from '../utils/toast';
+import { mapState } from 'vuex';
+import Preview from './Editor/Preview';
+import ComponentListViewer from './ComponentListViewer';
+import { commonStyle, commonAttr } from '../custom-component/component-list';
+import eventBus from '../utils/eventBus';
+import { deepCopy, selectFile, saveText, closeWindow } from '../utils/utils';
+import { divide, multiply } from 'mathjs';
+import * as DB from '../utils/indexDB';
+import { toImage } from '../utils/domUtils';
+const LZ = require('lz-string');
+const JSONfn = require('jsonfn').JSONfn;
+import TestCanvas from './TestCanvas';
+import axios from 'axios';
+import md5 from 'blueimp-md5';
+import { requestCanvasData } from '../utils/dataBinder';
 
 export default {
   components: { Preview, ComponentListViewer },
@@ -163,7 +128,7 @@ export default {
     return {
       isShowPreview: false,
       isShowComponentListViewer: false,
-      needToChange: ["top", "left", "width", "height", "fontSize"],
+      needToChange: ['top', 'left', 'width', 'height', 'fontSize'],
       scale: 100,
       scaleCopy: null,
       messageList: [],
@@ -171,20 +136,13 @@ export default {
       changeState: {
         name: true,
       },
-      currentCanvasName: "", // 当前的画布名称
+      currentCanvasName: '', // 当前的画布名称
       canvasList: [],
       canvasConfigDialogVisible: false,
     };
   },
   computed: {
-    ...mapState([
-      "canvasComponentData",
-      "canvasData",
-      "areaData",
-      "curComponent",
-      "curComponentIndex",
-      "canvasName",
-    ]),
+    ...mapState(['canvasComponentData', 'canvasData', 'areaData', 'curComponent', 'curComponentIndex', 'canvasName']),
   },
   watch: {
     currentCanvasName: {
@@ -192,103 +150,78 @@ export default {
         removeAllStyleNotOfCanvasName(this.currentCanvasName);
 
         // 清除画布中已选中的组件
-        this.$store.commit("setCurComponent", {
+        this.$store.commit('setCurComponent', {
           component: null,
           index: null,
         });
 
-        this.$store.commit("setCanvasName", this.currentCanvasName);
+        this.$store.commit('setCanvasName', this.currentCanvasName);
 
-        if (val == "") {
-          this.$store.commit("setCanvasComponentData", []);
-          this.$store.commit("recordSnapshot");
+        if (val == '') {
+          this.$store.commit('setCanvasComponentData', []);
+          this.$store.commit('recordSnapshot');
           return;
         }
 
-        DB.setItem("CurrentCanvasName", this.currentCanvasName);
-
-        this.setAttributeChangeable("name", false);
-
+        DB.setItem('CurrentCanvasName', this.currentCanvasName);
+        this.setAttributeChangeable('name', false);
         for (const data of this.canvasList) {
           if (data.name == val) {
             const name = val;
-            axios
-              .get(`/BI/Component/GetCanvasCheckCode?name=${name}`)
-              .then(({ data }) => {
-                if (data.state !== 200) {
-                  console.warn("currentCanvasName|获取校验码发生错误", data);
-                  return;
-                }
-                const code = data.data;
-                if (data.checkCode === code) {
-                  const canvasComponentData = data.canvasComponentData;
-                  const canvasData = data.canvasData;
-                  // 恢复画布
-                  this.$store.commit(
-                    "setCanvasComponentData",
-                    this.resetID(JSONfn.parse(canvasComponentData))
-                  );
-                  this.$store.commit("setCanvasData", JSONfn.parse(canvasData));
-                  eventBus.$emit(
-                    "restoreEvent",
-                    this.currentCanvasName,
-                    canvasComponentData
-                  );
-                } else {
-                  // 从后台请求数据
-
-                  axios
-                    .get(`/BI/Component/GetCanvasTemplate`, {
-                      params: {
-                        name: name,
-                      },
-                      timeout: 1000 * 60 * 30,
-                    })
-                    .then(({ data }) => {
-                      if (data.state !== 200) {
-                        console.warn(
-                          "currentCanvasName|GetCanvasTemplate发生错误",
-                          data
-                        );
-                        return;
-                      }
-                      data = JSONfn.parse(data.data);
-                      const canvasComponentData = data.canvasComponentData;
-                      const canvasData = data.canvasData;
-                      // 恢复画布
-                      this.$store.commit(
-                        "setCanvasComponentData",
-                        this.resetID(JSONfn.parse(canvasComponentData))
-                      );
-                      this.$store.commit(
-                        "setCanvasData",
-                        JSONfn.parse(canvasData)
-                      );
-                      eventBus.$emit(
-                        "restoreEvent",
-                        this.currentCanvasName,
-                        canvasComponentData
-                      );
-                    })
-                    .catch((error) => {
-                      console.error("currentCanvasName|发生错误", error);
-                    });
-                }
-              });
+            axios.get(`/BI/Component/GetCanvasCheckCode?name=${name}`).then(({ data }) => {
+              if (data.state !== 200) {
+                console.warn('currentCanvasName|获取校验码发生错误', data);
+                return;
+              }
+              const code = data.data;
+              if (data.checkCode === code) {
+                const canvasComponentData = data.canvasComponentData;
+                const canvasData = data.canvasData;
+                // 恢复画布
+                this.$store.commit('setCanvasComponentData', this.resetID(JSONfn.parse(canvasComponentData)));
+                this.$store.commit('setCanvasData', JSONfn.parse(canvasData));
+                eventBus.$emit('restoreEvent', this.currentCanvasName, canvasComponentData);
+              } else {
+                // 从后台请求数据
+                axios
+                  .get(`/BI/Component/GetCanvasTemplate`, {
+                    params: {
+                      name: name,
+                    },
+                    timeout: 1000 * 60 * 30,
+                  })
+                  .then(({ data }) => {
+                    if (data.state !== 200) {
+                      console.warn('currentCanvasName|GetCanvasTemplate发生错误', data);
+                      return;
+                    }
+                    data = JSONfn.parse(data.data);
+                    const canvasComponentData = data.canvasComponentData;
+                    const canvasData = data.canvasData;
+                    // 恢复画布
+                    this.$store.commit('setCanvasComponentData', this.resetID(JSONfn.parse(canvasComponentData)));
+                    this.$store.commit('setCanvasData', JSONfn.parse(canvasData));
+                    eventBus.$emit('restoreEvent', this.currentCanvasName, canvasComponentData);
+                  })
+                  .catch(error => {
+                    console.error('currentCanvasName|发生错误', error);
+                  });
+              }
+            });
 
             return;
           }
         }
 
         // 新增的
-        this.$store.commit("setCanvasComponentData", []);
-        this.$store.commit("recordSnapshot");
+        this.$store.commit('setCanvasComponentData', []);
+        this.$store.commit('recordSnapshot');
 
         this.canvasList.push({
           canvasComponentData: JSONfn.stringify(this.canvasComponentData),
           canvasData: JSONfn.stringify(this.canvasData),
           name: this.currentCanvasName,
-          type: "Canvas-Data",
+          type: 'Canvas-Data',
         });
       },
       deep: false,
@@ -302,15 +235,15 @@ export default {
     },
   },
   created() {
-    eventBus.$on("preview", this.preview);
-    eventBus.$on("save", this.save);
-    eventBus.$on("clearCanvas", this.clearCanvas);
+    eventBus.$on('preview', this.preview);
+    eventBus.$on('save', this.save);
+    eventBus.$on('clearCanvas', this.clearCanvas);
   },
   mounted() {
     const that = this;
     DB.CallbackMap.onOpenSucceedEventList.push(async () => {
-      this.canvasList = await DB.getAllItemByType("Canvas-Data");
-      DB.getItem("CurrentCanvasName").then((item) => {
+      this.canvasList = await DB.getAllItemByType('Canvas-Data');
+      DB.getItem('CurrentCanvasName').then(item => {
         this.currentCanvasName = item;
       });
     });
@@ -330,8 +263,8 @@ export default {
     },
 
     exportTemplate() {
-      if (this.currentCanvasName == null || this.currentCanvasName == "") {
-        toast("请设置看板模板的名称...");
+      if (this.currentCanvasName == null || this.currentCanvasName == '') {
+        toast('请设置看板模板的名称...');
         return;
       }
 
@@ -351,60 +284,48 @@ export default {
       saveText(
         !this.currentCanvasName
           ? `${year}.${month}.${day}.${hours}.${minutes}.${second}.label`
-          : this.currentCanvasName + ".label",
+          : this.currentCanvasName + '.label',
         JSONfn.stringify(canvas)
       );
-      toast("标签模板已导出", "success", 3000);
+      toast('标签模板已导出', 'success', 3000);
     },
 
     resetID,
 
     importTemplate() {
-      selectFile().then((fileList) => {
+      selectFile().then(fileList => {
         const that = this;
 
         const reader = new FileReader();
-        reader.readAsText(fileList[0], "UTF-8");
+        reader.readAsText(fileList[0], 'UTF-8');
         reader.onload = function (e) {
           const text = e.target.result;
           const canvas = JSONfn.parse(text);
 
           // 用保存的数据恢复画布
-          if (typeof canvas.canvasComponentData === "string") {
-            that.$store.commit(
-              "setCanvasComponentData",
-              that.resetID(JSONfn.parse(canvas.canvasComponentData))
-            );
+          if (typeof canvas.canvasComponentData === 'string') {
+            that.$store.commit('setCanvasComponentData', that.resetID(JSONfn.parse(canvas.canvasComponentData)));
           }
 
-          if (typeof canvas.canvasData === "string") {
-            that.$store.commit(
-              "setCanvasData",
-              JSONfn.parse(canvas.canvasData)
-            );
+          if (typeof canvas.canvasData === 'string') {
+            that.$store.commit('setCanvasData', JSONfn.parse(canvas.canvasData));
           }
 
           const name = fileList[0].name;
-          that.$store.commit(
-            "setCanvasName",
-            name.substring(0, name.length - 6)
-          );
+          that.$store.commit('setCanvasName', name.substring(0, name.length - 6));
         };
       });
     },
 
     importData() {
-      function selectFile(
-        options = { multiple: false, accept: "*/*" },
-        isDirectory = false
-      ) {
+      function selectFile(options = { multiple: false, accept: '*/*' }, isDirectory = false) {
         return new Promise((res, rej) => {
-          const el = document.createElement("input");
-          el.type = "file";
+          const el = document.createElement('input');
+          el.type = 'file';
           el.accept = options.accept;
           el.webkitdirectory = isDirectory;
           el.multiple = options.multiple;
-          el.addEventListener("change", (result) => {
+          el.addEventListener('change', result => {
             try {
               if (el.files === null) {
                 rej(null);
@@ -419,18 +340,15 @@ export default {
         });
       }
 
-      selectFile().then((fileList) => {
-        if (
-          fileList[0].name.toLowerCase().endsWith(".txt") ||
-          fileList[0].name.toLowerCase().endsWith(".json")
-        ) {
+      selectFile().then(fileList => {
+        if (fileList[0].name.toLowerCase().endsWith('.txt') || fileList[0].name.toLowerCase().endsWith('.json')) {
           const reader = new FileReader();
-          reader.readAsText(fileList[0], "UTF-8");
+          reader.readAsText(fileList[0], 'UTF-8');
           reader.onload = function (e) {
             const text = e.target.result;
             const labelData = JSONfn.parse(text);
-            this.$store.commit("setListData", labelData);
-            toast("标签数据导入成功", "success", 600);
+            this.$store.commit('setListData', labelData);
+            toast('标签数据导入成功', 'success', 600);
           }.bind(this);
         }
       });
@@ -451,80 +369,78 @@ export default {
         // eslint-disable-next-line no-bitwise
         this.scale = ~~this.scale || 1;
         const canvasComponentData = deepCopy(this.canvasComponentData);
-        canvasComponentData.forEach((component) => {
-          Object.keys(component.style).forEach((key) => {
+        canvasComponentData.forEach(component => {
+          Object.keys(component.style).forEach(key => {
             if (this.needToChange.includes(key)) {
               // 根据原来的比例获取样式原来的尺寸
               // 再用原来的尺寸 * 现在的比例得出新的尺寸
-              component.style[key] = this.format(
-                this.getOriginStyle(component.style[key])
-              );
+              component.style[key] = this.format(this.getOriginStyle(component.style[key]));
             }
           });
         });
 
-        this.$store.commit("setCanvasComponentData", canvasComponentData);
+        this.$store.commit('setCanvasComponentData', canvasComponentData);
         // 更新画布数组后，需要重新设置当前组件，否则在改变比例后，直接拖动圆点改变组件大小不会生效 https://github.com/woai3c/visual-drag-demo/issues/74
-        this.$store.commit("setCurComponent", {
+        this.$store.commit('setCurComponent', {
           component: canvasComponentData[this.curComponentIndex],
           index: this.curComponentIndex,
         });
-        this.$store.commit("setCanvasData", {
+        this.$store.commit('setCanvasData', {
           ...this.canvasData,
           scale: this.scale,
         });
 
         this.$nextTick(() => {
-          if (typeof afterCallback == "function") afterCallback();
+          if (typeof afterCallback == 'function') afterCallback();
         });
       }, 200);
     },
 
     lock() {
-      this.$store.commit("lock");
+      this.$store.commit('lock');
     },
 
     unlock() {
-      this.$store.commit("unlock");
+      this.$store.commit('unlock');
     },
 
     compose() {
-      this.$store.commit("compose");
-      this.$store.commit("recordSnapshot");
+      this.$store.commit('compose');
+      this.$store.commit('recordSnapshot');
     },
 
     decompose() {
-      this.$store.commit("decompose");
-      this.$store.commit("recordSnapshot");
+      this.$store.commit('decompose');
+      this.$store.commit('recordSnapshot');
     },
 
     undo() {
-      this.$store.commit("undo");
+      this.$store.commit('undo');
     },
 
     redo() {
-      this.$store.commit("redo");
+      this.$store.commit('redo');
     },
 
     handleFileChange(e) {
       const file = e.target.files[0];
-      if (!file.type.includes("image")) {
-        toast("只能插入图片");
+      if (!file.type.includes('image')) {
+        toast('只能插入图片');
         return;
       }
 
       const reader = new FileReader();
-      reader.onload = (res) => {
+      reader.onload = res => {
         const fileResult = res.target.result;
         const img = new Image();
         img.onload = () => {
-          this.$store.commit("addComponent", {
+          this.$store.commit('addComponent', {
             component: {
               ...commonAttr,
               id: generateID(),
-              component: "Picture",
-              label: "图片",
-              icon: "",
+              component: 'Picture',
+              label: '图片',
+              icon: '',
               propValue: fileResult,
               style: {
                 ...commonStyle,
@@ -536,11 +452,11 @@ export default {
             },
           });
 
-          this.$store.commit("recordSnapshot");
+          this.$store.commit('recordSnapshot');
 
           // 修复重复上传同一文件，@change 不触发的问题
-          document.querySelector("#input").setAttribute("type", "text");
-          document.querySelector("#input").setAttribute("type", "file");
+          document.querySelector('#input').setAttribute('type', 'text');
+          document.querySelector('#input').setAttribute('type', 'file');
         };
 
         img.src = fileResult;
@@ -551,34 +467,26 @@ export default {
 
     preview() {
       this.isShowPreview = true;
-      this.$store.commit("setEditMode", "preview");
+      this.$store.commit('setEditMode', 'preview');
     },
 
     save() {
-      if (
-        this.currentCanvasName == null ||
-        this.currentCanvasName.trim() === ""
-      ) {
-        toast("请设置画布名称...");
+      if (this.currentCanvasName == null || this.currentCanvasName.trim() === '') {
+        toast('请设置画布名称...');
         return false;
       }
 
       const componentNameList = [];
       for (const component of this.canvasComponentData) {
-        if (
-          !component["data"] ||
-          !component["data"]["name"] ||
-          component["data"]["name"].trim() === ""
-        )
-          continue;
+        if (!component['data'] || !component['data']['name'] || component['data']['name'].trim() === '') continue;
 
         // todo 去除组件的服务端数据
-        if (component.component === "") {
+        if (component.component === '') {
         }
 
-        const componentName = component["data"]["name"].trim();
+        const componentName = component['data']['name'].trim();
         if (componentNameList.indexOf(componentName) !== -1) {
-          toast("组件名称重复: " + componentName);
+          toast('组件名称重复: ' + componentName);
           return;
         }
         componentNameList.push(componentName);
@@ -587,15 +495,13 @@ export default {
       const canvasComponentData = JSONfn.stringify(this.canvasComponentData);
       const canvasData = JSONfn.stringify(this.canvasData);
 
-      const systemVersion = "t0.01";
-      const checkCode = md5(
-        canvasComponentData + "@|||@" + canvasData + "@|||@" + systemVersion
-      );
+      const systemVersion = 't0.01';
+      const checkCode = md5(canvasComponentData + '@|||@' + canvasData + '@|||@' + systemVersion);
 
       const currentCanvasName = this.currentCanvasName;
 
       const canvasEditorData = {
-        type: "Canvas-Data",
+        type: 'Canvas-Data',
         name: currentCanvasName,
         canvasComponentData: canvasComponentData,
         canvasData: canvasData,
@@ -606,58 +512,51 @@ export default {
 
       DB.setItem(currentCanvasName, canvasEditorData);
       axios
-        .post(
-          `/BI/Component/SaveCanvasTemplate?name=${currentCanvasName}`,
-          canvasEditorData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        )
-        .then((response) => {
+        .post(`/BI/Component/SaveCanvasTemplate?name=${currentCanvasName}`, canvasEditorData, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
           if (response.status == 200) {
-            toast("模板保存成功", "success");
+            toast('模板保存成功', 'success');
             return;
           }
         })
-        .catch((error) => {
+        .catch(error => {
           const errorResponse = JSON.parse(JSON.stringify(error));
-          console.warn("保存数据异常", errorResponse);
+          console.warn('保存数据异常', errorResponse);
         });
 
       // 保存图片
-      toImage(document.getElementById("editor")).then((image) => {
+      toImage(document.getElementById('editor')).then(image => {
         axios.post(
           `/BI/Component/SaveCanvasTemplateImage?name=${currentCanvasName}`,
-          image.substring("data:image/png;base64,".length),
+          image.substring('data:image/png;base64,'.length),
           {
             headers: {
-              "Content-Type": "text/plain",
+              'Content-Type': 'text/plain',
             },
           }
         );
       });
 
-      eventBus.$emit("saveEvent", currentCanvasName, canvasEditorData);
+      eventBus.$emit('saveEvent', currentCanvasName, canvasEditorData);
       return true;
     },
 
     clearCanvas() {
-      if (
-        this.currentCanvasName == null ||
-        this.currentCanvasName.trim() === ""
-      ) {
+      if (this.currentCanvasName == null || this.currentCanvasName.trim() === '') {
         return;
       }
 
-      DB.removeItem("CurrentCanvasName");
+      DB.removeItem('CurrentCanvasName');
       DB.removeItem(this.currentCanvasName);
 
-      this.$store.commit("setCurComponent", { component: null, index: null });
-      this.$store.commit("setCanvasComponentData", []);
-      this.$store.commit("setCanvasName", "");
-      this.$store.commit("recordSnapshot");
+      this.$store.commit('setCurComponent', { component: null, index: null });
+      this.$store.commit('setCanvasComponentData', []);
+      this.$store.commit('setCanvasName', '');
+      this.$store.commit('recordSnapshot');
 
       for (let i = 0; i < this.canvasList.length; i++) {
         if (this.canvasList[i].name === this.currentCanvasName) {
@@ -665,34 +564,28 @@ export default {
           break;
         }
       }
-      this.currentCanvasName = "";
+      this.currentCanvasName = '';
     },
 
     handlePreviewChange() {
-      this.$store.commit("setEditMode", "edit");
+      this.$store.commit('setEditMode', 'edit');
     },
 
     handleComponentListViewerChange() {
-      this.$store.commit("setEditMode", "edit");
+      this.$store.commit('setEditMode', 'edit');
 
       this.scale = this.scaleCopy;
       this.handleScaleChange();
     },
 
     inputCanvaName(event) {
-      if (
-        event.target.value === undefined ||
-        event.target.value === null ||
-        event.target.value.trim() === ""
-      )
-        return;
+      if (event.target.value === undefined || event.target.value === null || event.target.value.trim() === '') return;
       this.currentCanvasName = event.target.value;
 
       try {
         requestCanvasData.bind(this)(this.currentCanvasName);
       } catch (error) {
-        console.error("数据绑定异常", error);
-
+        console.error('数据绑定异常', error);
       }
     },
 
@@ -766,5 +659,19 @@ export default {
       color: #3a8ee6;
     }
   }
+}
+
+/deep/ .el-dialog__body {
+  padding: 0 15px;
+}
+
+/deep/ .el-dialog .el-dialog__header {
+  text-align: left;
+}
+
+.dialog-footer {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
 }
 </style>

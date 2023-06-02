@@ -4,10 +4,15 @@ const axios = require('axios').default;
 const path = require('path')
 // const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+var HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin');
 
 function resolve(dir) {
   return path.join(__dirname, dir)
 }
+
+const isDev = process.env.NODE_ENV === 'development'
+
 
 const IS_PROD = ['production', 'prod'].includes(process.env.NODE_ENV)
 
@@ -44,6 +49,17 @@ module.exports = defineConfig({
       }
     },
     plugins: [
+      // new HtmlWebpackPlugin(
+      //   {
+      //     title: "BI系统",
+      //     inject: true,
+      //     inlineSource: /runtime~.+\.js$/, // embed all javascript and css inline
+      //     template: "public/index.html",
+      //     js: ["/atewrwere.js"]
+      //   }
+      // ),
+      // new webpack.HotModuleReplacementPlugin(),
+      // new HtmlWebpackInlineSourcePlugin(HtmlWebpackPlugin),
       // new MonacoWebpackPlugin(),
       new webpack.ProvidePlugin({
         Vue: 'vue',
@@ -59,7 +75,48 @@ module.exports = defineConfig({
     devtool: "cheap-source-map",
     externals: {
       './cptable': 'var cptable'
-    }
+    },
+    output: {
+      // 设置输出文件格式为UMD或IIFE
+      libraryTarget: 'umd',
+      // 设置输出文件名
+      filename: (pathData) => {
+        if (pathData.chunk.name === 'runtime~app') {
+          return 'bi-[name].js';
+        } else {
+          return 'bi-[name].[contenthash].js'
+        }
+      },
+    },
+    optimization: {
+      runtimeChunk: !isDev,
+      splitChunks: {
+        chunks: 'all',
+        minSize: 20000, // Minimum chunk size (in bytes)
+        maxSize: 1024 * 1024 * 2, // Maximum chunk size (in bytes)
+      },
+    },
+  },
+  chainWebpack: config => {
+    config.resolve.alias.set("@", path.join(__dirname, "src"))
+
+    // 配置 HtmlWebpackPlugin
+    config.plugin('html').tap(args => {
+      args[0].template = './public/index.html'; // 可选：指定 HTML 模板文件路径
+      args[0].scriptLoading = 'defer'; // 可选：推迟加载脚本，提升性能
+      args[0].chunksSortMode = 'none'; // 可选：禁用脚本排序，保持原始顺序
+      args[0].filename = 'index.html'; // 可选：指定生成的 HTML 文件名
+      args[0].cdn = {
+        js: [
+          "./compiler/typescript@5.0.4.js",
+          "./compiler/babel@7.15.0.js",
+          "./compiler/systemjs@6.11.0.js",
+        ],
+        css: []
+      }
+      return args;
+    });
+
   },
   devServer: {
     host: '0.0.0.0',

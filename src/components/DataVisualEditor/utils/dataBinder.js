@@ -1,6 +1,6 @@
 import * as DB from "../utils/indexDB";
 import { getRandStr } from "../utils/utils";
-import { CompileToModule, CompileTypescriptToIIFE } from "../utils/compiler";
+import { CompileToModule, CompileTypescriptToIIFE, codeToInstance } from "../utils/compiler";
 import CronExpressionValidator from "../utils/CronExpressionValidator";
 import axios from 'axios'
 import toast from "./toast";
@@ -50,6 +50,19 @@ https://chat.openai.com/chat/3a780546-a1ba-43e3-8f60-48477bdc7121
 
 帆帆帆帆
 http://chat.openai.com/chat/3a780546-a1ba-43e3-8f60-48477bdc7121
+
+
+
+KNPMCTeFywVLXRc
+http://172.16.2.40:9096/#/project
+
+
+
+
+[执行方法任务]
+FMaCdstbaGGgThs
+*/1 * * * * *
+SCRIPT*AttributeEvent/testTask.js*Test2
 
 
 
@@ -148,7 +161,7 @@ function parseText(text) {
           obj.element[name] = {};
         });
       } else if (line.startsWith("SCRIPT*")) {
-        obj.source += line.trim() + "\n";
+        obj.source = line
       } else {
         obj.source += line.trim() + "\n";
       }
@@ -172,14 +185,13 @@ function parseText(text) {
       // 匹配URL的正则表达式
       obj.type = "http";
     } else if (source.startsWith("SCRIPT*")) {
+      obj.source = source.trim().substring("SCRIPT*".length);
       obj.type = "script"
-    } else {
-      obj.type = "unknown"
     }
 
     if (obj.jobName === undefined)
       obj.jobName = getRandStr()  // todo 不能用随机字符串
-    obj.source = obj.source.substring(0, obj.source.length - 1)
+    obj.source = obj.source.trim()
 
     if (obj.cron === undefined) {
 
@@ -196,7 +208,6 @@ const jobList = []
 function testTask(task) {
 
   return new Promise((resolve, reject) => {
-
     if (task.type === "http" && task.source.startsWith("/")) {
       axios.get(task.source, {
         timeout: 1000 * 60 * 3
@@ -215,7 +226,6 @@ function testTask(task) {
     } else {
       resolve(task)
     }
-
   })
 
 }
@@ -311,8 +321,7 @@ export function requestCanvasData(canvasName, callback) {
             }
 
             // 合并任务
-            // console.log("任务列表2", task);
-
+            console.log("任务列表2", task);
             testTask(task).then((task) => {
 
               if (task.cron === undefined)
@@ -350,11 +359,16 @@ export function requestCanvasData(canvasName, callback) {
 
                 task.call = () => {
 
-                  if (task.source.startsWith("SCRIPT*") && task.instance === undefined) {
+                  if (task.method === undefined || task.method === null) {
 
+                    if (task.method === null)
+                      return
                     const arr = task.source.trim().split("*")
-                    const scriptPath = arr[1].trim()
-                    task.methodName = arr[2]
+                    const scriptPath = arr[0].trim()
+                    const methodName = arr[1]
+                    task.method = null
+
+
 
                     axios.get("/BI/Component/GetScript", {
                       params: {
@@ -367,45 +381,50 @@ export function requestCanvasData(canvasName, callback) {
                           console.warn("执行任务获取脚本异常", data);
                           return
                         }
-                        const code = data.data;
-                        if (scriptPath.endsWith("ts")) {
-                          const iife = CompileTypescriptToIIFE(code);
-                          task.instance = new iife();
-                        } else if (scriptPath.endsWith("js")) {
-                          CompileToModule(code).then((module) => {
-                            if (Object.prototype.toString.call(module) === "[object Module]") {
-                              task.instance = module
-                            } else if (Object.prototype.toString.call(module.default) === '[object Function]') {
-                              task.instance = new module.default();
-                            } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
-                              task.instance = module.default;
+
+                        codeToInstance(scriptPath, data.data).then(instance => {
+                          let method = null
+                          if (Object.prototype.toString.call(instance) === "[object Module]") {
+                            if (methodName === undefined || methodName === null) {
+                              method = instance.default.bind(this)
+                            } else if (Object.prototype.toString.call(methodName) === "[object String]" &&
+                              Object.prototype.toString.call(instance[methodName]) === "[object Function]") {
+                              method = instance[methodName].bind(this)
+                            } else {
                             }
-                          });
-                        }
+                          } else if (Object.prototype.toString.call(instance) === '[object Function]') {
+                          } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
+                          }
+
+                          if (method === null) {
+                            console.error(`找不到任务执行的方法`, "方法名: " + methodName, "实例类型: " + Object.prototype.toString.call(instance), "代码: " + data.data);
+                            return
+                          }
+
+                          task.method = method
+                        })
+
                       })
                       .catch((error) => {
                         console.error(`${scriptPath}脚本异常: `, error);
                       });
                   } else {
 
-                    const instance = task.instance
-                    const methodName = task.methodName
+                    console.log("任务AAA1");
 
-                    let response = null
-                    if (Object.prototype.toString.call(instance) === "[object Module]") {
+                    const response = task.method()
 
-                      if (methodName === undefined || methodName === null) {
-                        response = instance.default.bind(this)(task)
-                      } else if (Object.prototype.toString.call(methodName) === "[object String]" &&
-                        Object.prototype.toString.call(instance[methodName]) === "[object Function]") {
-                        response = instance[methodName].bind(this)(task)
-                      } else {
-                      }
-                    } else if (Object.prototype.toString.call(instance) === '[object Function]') {
-                    } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
+
+
+                    if (Object.prototype.toString.call(response) === "[object Promise]") {
+                      response.then(data => {
+                        commitData(this.$store, task, data)
+                      }).catch(error => {
+                        console.error(`执行script任务异常`, task, error);
+                      })
+                    } else {
+                      commitData(this.$store, task, response)
                     }
-
-                    commitData(this.$store, task, response)
 
                   }
                 }

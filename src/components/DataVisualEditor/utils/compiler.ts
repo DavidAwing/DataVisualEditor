@@ -179,6 +179,28 @@ export function CompileToModule(sourceCode: string) {
   })
 }
 
+export function codeToInstance(type: string, code: string) {
+  return new Promise((resolve, reject) => {
+    let instance: any = null
+    if (type.endsWith("ts")) {
+      const iife = CompileTypescriptToIIFE(code);
+      instance = new iife();
+      resolve(instance)
+    } else if (type.endsWith("js")) {
+      CompileToModule(code).then((module: any) => {
+        if (Object.prototype.toString.call(module) === "[object Module]") {
+          instance = module
+        } else if (Object.prototype.toString.call(module.default) === '[object Function]') {
+          instance = new module.default();
+        } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
+          instance = module.default;
+        }
+        resolve(instance)
+      });
+    }
+  })
+}
+
 
 
 

@@ -14,9 +14,12 @@
   <meta name="apple-touch-fullscreen" content="yes">
   <link rel="dns-prefetch" href="//mc.meituan.net">
   <link rel="dns-prefetch" href="//p1.meituan.net">
-  <script src="./compiler/typescript@5.0.4.js"></script>
-  <script src="./compiler/babel@7.15.0.js"></script> 
-  <script src="./compiler/systemjs@6.11.0.js"></script> 
+
+  <% if(htmlWebpackPlugin.options.cdn) {%>
+    <% for(var css of htmlWebpackPlugin.options.cdn.css) { %>
+    <link rel="stylesheet" type="text/css" href="<%=css%>"></link>
+    <% } %>
+  <% } %> 
 
   <title><%= webpackConfig.name %></title>
 
@@ -55,6 +58,11 @@
   </noscript>
   <div id="app"></div>
   <!-- built files will be auto injected -->
+  <% if(htmlWebpackPlugin.options.cdn) {%>
+    <% for(var js of htmlWebpackPlugin.options.cdn.js) { %>
+    <script src="<%=js%>"></script>
+    <% } %>
+  <% } %>
 </body>
 
 </html>

@@ -23,7 +23,7 @@
         <div>数据源类型</div>
         <el-select v-model="canvasDataSource.dataSourceType" placeholder="">
           <el-option
-            v-for="item in ['database', 'http', 'script', 'mock']"
+            v-for="item in ['database', 'post', 'get', 'script', 'mock']"
             :key="item"
             :label="getDataSourceTypeLabel(item)"
             :value="item"
@@ -34,24 +34,36 @@
 
       <div v-if="canvasDataSource.dataSourceType === 'database'">
         <div>数据库</div>
-        <el-select v-model="canvasDataSource.dataSourceType" placeholder="">
-          <el-option
-            v-for="item in ['database', 'http', 'script', 'mock']"
-            :key="item"
-            :label="getDataSourceTypeLabel(item)"
-            :value="item"
-          >
-          </el-option>
+        <el-select v-model="canvasDataSource.dataSource" placeholder="" value-key="id">
+          <el-option v-for="item in databaseList" :key="item.id" :label="item.name" :value="item"> </el-option>
         </el-select>
       </div>
 
       <div>
         <div>执行计划</div>
-        <el-input></el-input>
+        <el-input v-model="canvasDataSource.cron"></el-input>
       </div>
 
       <div class="canvas-data-source-list">
-        <div>已添加的数据源</div>
+        <div>
+          <span>已添加的数据源</span>
+          <el-button
+            style="margin-left: 6px; transform: scale(0.6)"
+            @click="addCanvasDataSource"
+            icon="el-icon-plus"
+            type="primary"
+            size="mini"
+            circle
+          ></el-button>
+          <el-button
+            style="transform: scale(0.6) translateX(-13px)"
+            @click="deleteCanvasDataSource"
+            icon="el-icon-minus"
+            type="primary"
+            size="mini"
+            circle
+          ></el-button>
+        </div>
         <div>
           <div>
             <div>名称</div>
@@ -66,7 +78,7 @@
           >
             <div>{{ item.name }}</div>
             <div>{{ item.componentName }}</div>
-            <div>11</div>
+            <div>{{ item.dataSource ? item.dataSource.name : '' }}</div>
           </div>
 
           <!-- <el-table :data="tableData" style="width: 80%">
@@ -78,8 +90,8 @@
       </div>
 
       <div>
-        <div><el-button @click="addCanvasDataSource">添加</el-button></div>
-        <div><el-button @click="deleteCanvasDataSource">删除</el-button></div>
+        <div><el-button @click="testDataSource">测试</el-button></div>
+        <div><el-button @click="">保存</el-button></div>
       </div>
 
       <div class="subcomponent" v-if="Component.component === 'Group'"></div>
@@ -87,11 +99,7 @@
 
     <div v-if="canvasDataSource.dataSourceType === 'database'">
       <div>
-        <el-input type="textarea"></el-input>
-      </div>
-
-      <div>
-        <el-button>测试</el-button>
+        <el-input v-model="canvasDataSource.sql" type="textarea"></el-input>
       </div>
     </div>
 
@@ -120,18 +128,9 @@ export default {
   data() {
     return {
       canvas: [],
-      selectComponentName: [],
-      dataSourceList: [],
-      dataSourceName: '',
+      databaseList: [],
       canvasDataSourceList: [],
-      canvasDataSource: {
-        id: '',
-        name: '',
-        componentName: '',
-        dataSourceType: '',
-        cron: '',
-        dataSource: {},
-      },
+      canvasDataSource: {},
     };
   },
   components: { CodeEditor },
@@ -155,14 +154,6 @@ export default {
         const name = this.canvasDataSource.componentName;
         if (name === undefined || name === null) continue;
         if (name.includes(item.data.name)) return item;
-      }
-      return {};
-    },
-    Datasource() {
-      if (this.dataSourceList.length === 0) return {};
-
-      for (const item of this.dataSourceList) {
-        if (item.name === this.dataSourceName) return item;
       }
       return {};
     },
@@ -197,18 +188,20 @@ export default {
       });
     });
 
-    axios
-      .post(`/BI/DataSource/FindUserDataSource`, {
-        userId: 'admin',
-      })
-      .then(({ data }) => {
-        this.dataSourceList = data.data;
-
-        console.log('数据源', data);
-      });
+    axios.post(`/BI/DataSource/FindDatabaseByUserId`, null, { params: { userId: 'admin' } }).then(({ data }) => {
+      this.databaseList = data.data;
+    });
   },
   mounted() {},
   methods: {
+    testDataSource() {
+      console.log('数据源测试', this.databaseList);
+      console.log('数据源测试', this.canvasDataSource);
+
+      axios.post('/BI/DataSource/GetData', this.canvasDataSource).then(({ data }) => {
+        console.log('请求数据');
+      });
+    },
     selectCanvasDataSource(canvasDataSource) {
       if (this.canvasDataSource.id === canvasDataSource.id) {
         this.canvasDataSource = {};
@@ -251,7 +244,6 @@ export default {
       } else if (component === 'v-rect-shape') {
         return '边框';
       }
-
       return component;
     },
     getDataSourceTypeLabel(type) {

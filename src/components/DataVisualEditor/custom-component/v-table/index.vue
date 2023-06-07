@@ -18,6 +18,7 @@
         >
         </el-table-column>
       </template>
+
     </el-table>
 
     <el-pagination background layout="prev, pager, next" :total="10" v-if="false"> </el-pagination>
@@ -84,6 +85,7 @@ import { getRandStr } from "../../utils/utils";
 import VResize from 'v-resize'
 import eventBus from '../../utils/eventBus'
 import elDragDialog from "../../directive/el-drag-dialog";
+import tableFit from "../../directive/tableFit";
 
 
 export default {

@@ -18,7 +18,7 @@ import '@/components/DataVisualEditor/styles/animate.less'
 import '@/components/DataVisualEditor/styles/reset.css'
 
 
-require('@/compiler') ;
+// require('@/compiler');
 // const babel = require.context('./compiler', true, "babel.min@7.15.4.js");
 
 

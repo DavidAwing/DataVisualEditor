@@ -64,34 +64,29 @@
             circle
           ></el-button>
         </div>
+
         <div>
           <div>
             <div>名称</div>
             <div>组件</div>
             <div>数据来源</div>
           </div>
-
           <div
             v-for="(item, index) in canvasDataSourceList"
             @click="selectCanvasDataSource(item)"
-            :class="item.id === canvasDataSource.id ? 'selected-canvas-data-source' : 'canvas-data-source'"
+            :class="getDataSourceClassName(item)"
+            :key="index"
           >
             <div>{{ item.name }}</div>
             <div>{{ item.componentName }}</div>
             <div>{{ item.dataSource ? item.dataSource.name : '' }}</div>
           </div>
-
-          <!-- <el-table :data="tableData" style="width: 80%">
-            <el-table-column prop="name" label="名称" width="180"> </el-table-column>
-            <el-table-column prop="name" label="姓名" width="180"> </el-table-column>
-            <el-table-column prop="address" label="地址"> </el-table-column>
-          </el-table> -->
         </div>
       </div>
 
       <div>
         <div><el-button @click="testDataSource">测试</el-button></div>
-        <div><el-button @click="">保存</el-button></div>
+        <div><el-button @click="saveCanvasDataSourceList">保存</el-button></div>
       </div>
 
       <div class="subcomponent" v-if="Component.component === 'Group'"></div>
@@ -103,10 +98,31 @@
       </div>
     </div>
 
+    <div v-if="canvasDataSource.dataSourceType === 'script'">
+      <div>
+        <el-input v-model="canvasDataSource.script" type="textarea"></el-input>
+      </div>
+    </div>
+
     <div v-if="canvasDataSource.dataSourceType === 'get' || canvasDataSource.dataSourceType === 'post'">
       <div>url</div>
       <el-input> </el-input>
     </div>
+
+    <el-dialog title="组件预览" :visible.sync="componentPreviewDialogVisible" class="component-preview">
+      <div>
+        <!--页面组件列表展示-->
+
+        <component
+          :is="Component.component"
+          :id="'component' + Component.id"
+          class="component"
+          :style="getComponentStyle(Component)"
+          :prop-value="Component.propValue"
+          :element="Component"
+        />
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -115,10 +131,26 @@
 import CodeEditor from '../../components/DataVisualEditor/components/CodeEditor';
 import { listenGlobalKeyDown } from '../../components/DataVisualEditor/utils/shortcutKey';
 import { deepCopy, selectFile, saveText, accMul, getOneMmsPx } from '../../components/DataVisualEditor/utils/utils';
+import { commitData } from '../../components/DataVisualEditor/utils/dataBinder';
 import { get } from '../../components/DataVisualEditor/utils/request';
 import * as DB from '../../components/DataVisualEditor/utils/indexDB';
 import Vue from 'vue';
+import { mapState } from 'vuex';
 import axios from 'axios';
+import {
+  getStyle,
+  getComponentRotatedStyle,
+  getCanvasStyle,
+  addStyleListToHead,
+} from '../../components/DataVisualEditor/utils/style';
+
+import {
+  CompileToModule,
+  CompileTypescriptToIIFE,
+  codeToInstance,
+} from '../../components/DataVisualEditor/utils/compiler';
+
+import Shape from '../../components/DataVisualEditor/components/Editor/Shape';
 
 import generateID, { resetID } from '../../components/DataVisualEditor/utils/generateID';
 const JSONfn = require('jsonfn').JSONfn;
@@ -131,15 +163,18 @@ export default {
       databaseList: [],
       canvasDataSourceList: [],
       canvasDataSource: {},
+      canvasName: '',
+      componentPreviewDialogVisible: false,
     };
   },
-  components: { CodeEditor },
+  components: { CodeEditor, Shape },
   props: {},
   computed: {
+    ...mapState(['canvasData', 'canvasComponentData']),
     ComponentList() {
-      if (this.canvas.length === 0) return [];
+      if (this.canvasComponentData.length === 0) return [];
       const componentList = [];
-      for (const item of JSONfn.parse(this.canvas.canvasComponentData)) {
+      for (const item of this.canvasComponentData) {
         if (item.component === 'Group') {
           for (const subcomponent of item.propValue) componentList.push(subcomponent);
         } else {
@@ -161,46 +196,121 @@ export default {
   created() {
     document.title = '组件数据源编辑';
 
-    const canvasName = this.$route.query.name;
-    if (!canvasName) {
+    this.canvasName = this.$route.query.name;
+
+    if (this.canvasName === undefined || this.canvasName === null || this.canvasName.trim() === '') {
       // todo: 显示画布列表
       toast('请设置画布名称!!!');
       return;
     }
 
+    this.$store.commit('setCanvasName', this.canvasName);
+
     DB.CallbackMap.onOpenSucceedEventList.push(() => {
       DB.getAllItemByType('Canvas-Data').then(canvasList => {
         if (canvasList === undefined || canvasList === null || canvasList.length === 0) {
-          console.log('找不到画布数据');
+          toast('未找到存储的画布数据');
           return;
         }
-
         for (const item of canvasList) {
-          if (item.name === canvasName) this.canvas = item;
+          if (item.name === this.canvasName) {
+            this.canvas = item;
+            this.$store.commit('setCanvasComponentData', JSONfn.parse(this.canvas.canvasComponentData));
+          }
         }
-
         if (this.canvas === undefined || this.canvas === null) {
-          console.log('找不到画布数据');
+          toast('未找到画布数据');
           return;
         }
-
-        console.log('画布', this.canvas);
       });
     });
 
     axios.post(`/BI/DataSource/FindDatabaseByUserId`, null, { params: { userId: 'admin' } }).then(({ data }) => {
       this.databaseList = data.data;
     });
+
+    axios
+      .get(`/BI/DataSource/GetCanvasDataSourceList`, { params: { userId: 'admin', canvasName: this.canvasName } })
+      .then(({ data }) => {
+        this.canvasDataSourceList = JSON.parse(data.data);
+        if (this.canvasDataSourceList.length > 0) this.canvasDataSource = this.canvasDataSourceList[0];
+      });
   },
   mounted() {},
   methods: {
+    getDataSourceClassName(item) {
+      let className = '';
+      if (item.id === this.canvasDataSource.id) {
+        className = 'selected-canvas-data-source';
+      } else {
+        className = 'canvas-data-source';
+      }
+      const c = this.ComponentList.find(c => c.data.name === item.componentName);
+      if (c === undefined) {
+        className += ' component-missing';
+      }
+      return className;
+    },
     testDataSource() {
-      console.log('数据源测试', this.databaseList);
-      console.log('数据源测试', this.canvasDataSource);
+      this.componentPreviewDialogVisible = true;
 
-      axios.post('/BI/DataSource/GetData', this.canvasDataSource).then(({ data }) => {
-        console.log('请求数据');
-      });
+      const task = this.canvasDataSource;
+      console.log('测试数据', task);
+
+      for (let i = 0; i < this.canvasComponentData.length; i++) {
+        let component = this.canvasComponentData[i];
+        if (component.component === 'Group')
+          component = component.propValue.find(item => item.data.name === task.componentName);
+        if (component === undefined || component === null) continue;
+        if (task.componentName === component.data.name) {
+          task.componentType = component.component;
+          break;
+        }
+      }
+
+      if (task.dataSourceType === 'script') {
+        codeToInstance(task.scriptLanguage || 'js', task.script).then(instance => {
+          let method = null;
+          if (Object.prototype.toString.call(instance) === '[object Module]') {
+            method = instance.default.bind(this);
+          } else if (Object.prototype.toString.call(instance) === '[object Function]') {
+          } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
+          }
+          const response = method(task);
+          if (Object.prototype.toString.call(response) === '[object Promise]') {
+            response
+              .then(data => {
+                commitData(this.$store, task, data);
+              })
+              .catch(error => {
+                console.error(`执行script任务异常`, task, error);
+              });
+          } else {
+            commitData(this.$store, task, response);
+          }
+        });
+      } else if (task.dataSourceType === 'database') {
+        let attributeName = '';
+        if (task.componentType === 'v-table') {
+          attributeName = 'data.tableData';
+        } else if (task.componentType === 'vc-chart') {
+        } else {
+          throw new Error('不支持的数据类型');
+        }
+
+        axios.post('/BI/DataSource/GetData', task, { timeout: 100000 }).then(({ data }) => {
+          console.log('请求数据库', data);
+          if (data.state !== 200) {
+            console.error('请求数据异常');
+            return;
+          }
+          commitData(this.$store, task, {
+            name: task.componentName,
+            attributeName: attributeName,
+            data: data.data,
+          });
+        });
+      }
     },
     selectCanvasDataSource(canvasDataSource) {
       if (this.canvasDataSource.id === canvasDataSource.id) {
@@ -219,7 +329,7 @@ export default {
     addCanvasDataSource() {
       let name = this.canvasDataSource.name;
       if (name === undefined || name === null || typeof name !== 'string' || name.trim().length === 0) {
-        console.warn('没有设置名称');
+        Message('请设置数据项名称');
         return;
       }
       name = name.trim();
@@ -262,6 +372,50 @@ export default {
       }
 
       return type;
+    },
+    saveCanvasDataSourceList() {
+      // todo 保存之前先检测sql或脚本语法
+      this.canvasDataSourceList.forEach(item => {
+        if (item.dataSourceType === 'script') {
+          // 检查类型注解
+          if (/@[a-zA-Z]+/.test(item.script)) return 'ts';
+        }
+
+        console.log('脚本语法', item);
+      });
+
+      const dataSourceParameters = JSONfn.stringify(this.canvasDataSourceList);
+      DB.setItem(`bi-user-canvas-data-source-${this.canvasName}`, dataSourceParameters);
+
+      axios
+        .post(`/BI/DataSource/SaveCanvasDataSourceList`, this.canvasDataSourceList, {
+          params: { userId: 'admin', canvasName: this.canvasName },
+        })
+        .then(({ data }) => {
+          if (data.state === 200) toast('保存成功', 'success');
+        });
+    },
+    getComponentStyle(component) {
+      if (JSON.stringify(component) === '{}') return '';
+
+      console.log('数据', component);
+      return getStyle(component.style, component.styleUnit, 1, ['top', 'left', 'width', 'height', 'rotate']);
+    },
+    getShapeStyle(style, styleUnit) {
+      if (style === undefined || styleUnit === undefined) {
+        return '';
+      }
+
+      const result = {};
+      ['width', 'height', 'top', 'left', 'rotate'].forEach(attr => {
+        if (attr != 'rotate') {
+          result[attr] = style[attr] + (styleUnit ? styleUnit[attr] : 'px');
+        } else {
+          result.transform = 'rotate(' + style[attr] + 'deg)';
+        }
+      });
+
+      return result;
     },
   },
 };

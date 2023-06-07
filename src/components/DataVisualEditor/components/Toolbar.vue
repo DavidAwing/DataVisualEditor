@@ -20,7 +20,7 @@
       <el-button @click="importTemplate">导入</el-button> -->
       <!-- <el-button @click="redo">预览</el-button> -->
       <!-- 填写接口或者json数据测试 -->
-      <el-button @click="" @click="canvasConfigDialogVisible = true">配置</el-button>
+      <el-button @click="" @click="showCanvasConfigDialogVisible">配置</el-button>
 
       <el-select v-model="canvasData.deviceType" style="width: 70px; min-width: 70px" class="canvas-config">
         <el-option key="pc" label="pc" value="pc"> </el-option>
@@ -88,15 +88,13 @@
         </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
-
-        <a href="/sub01/#/DatasourceEditor" target="_blank" class="">
+        <a :href="'/sub01/#/DatasourceEditor?name=' + currentCanvasName" target="_blank" class="">
           <el-button type="text">进入数据源编辑器</el-button>
         </a>
         <div>
           <el-button @click="canvasConfigDialogVisible = false">取 消</el-button>
           <el-button type="primary" @click="canvasConfigDialogVisible = false">确 定</el-button>
         </div>
-
       </div>
     </el-dialog>
   </div>
@@ -168,18 +166,19 @@ export default {
         for (const data of this.canvasList) {
           if (data.name == val) {
             const name = val;
+            const checkCode = data.checkCode;
+            const canvasComponentData = data.canvasComponentData;
+            const canvasData = JSONfn.parse(data.canvasData);
             axios.get(`/BI/Component/GetCanvasCheckCode?name=${name}`).then(({ data }) => {
               if (data.state !== 200) {
                 console.warn('currentCanvasName|获取校验码发生错误', data);
                 return;
               }
               const code = data.data;
-              if (data.checkCode === code) {
-                const canvasComponentData = data.canvasComponentData;
-                const canvasData = data.canvasData;
+              if (checkCode === code) {
                 // 恢复画布
                 this.$store.commit('setCanvasComponentData', this.resetID(JSONfn.parse(canvasComponentData)));
-                this.$store.commit('setCanvasData', JSONfn.parse(canvasData));
+                this.$store.commit('setCanvasData', canvasData);
                 eventBus.$emit('restoreEvent', this.currentCanvasName, canvasComponentData);
               } else {
                 // 从后台请求数据
@@ -197,11 +196,21 @@ export default {
                     }
                     data = JSONfn.parse(data.data);
                     const canvasComponentData = data.canvasComponentData;
-                    const canvasData = data.canvasData;
+                    const canvasData = JSONfn.parse(data.canvasData);
+
                     // 恢复画布
                     this.$store.commit('setCanvasComponentData', this.resetID(JSONfn.parse(canvasComponentData)));
-                    this.$store.commit('setCanvasData', JSONfn.parse(canvasData));
+                    this.$store.commit('setCanvasData', canvasData);
                     eventBus.$emit('restoreEvent', this.currentCanvasName, canvasComponentData);
+
+                    // axios
+                    //   .get(`/BI/DataSource/GetCanvasDataSourceList`, {
+                    //     params: { userId: 'admin', canvasName: this.currentCanvasName },
+                    //   })
+                    //   .then(({ data }) => {
+                    //     if (data.state === 200 && data.data !== '[]') canvasData.dataSource.parameters = data.data;
+                    //   })
+                    //   .finally(() => {});
                   })
                   .catch(error => {
                     console.error('currentCanvasName|发生错误', error);
@@ -247,12 +256,19 @@ export default {
         this.currentCanvasName = item;
       });
     });
-
-    // window.onresize = () => {
-    //   if (that.save()) window.location.reload();
-    // };
   },
   methods: {
+    showCanvasConfigDialogVisible() {
+      const canvasData = this.canvasData;
+      DB.getItem(`bi-user-canvas-data-source-${this.currentCanvasName}`).then(userCanvasDataSource => {
+        if (userCanvasDataSource !== undefined) {
+          canvasData.dataSource.parameters = userCanvasDataSource;
+          DB.removeItem(`bi-user-canvas-data-source-${this.currentCanvasName}`);
+          this.save();
+        }
+      });
+      this.canvasConfigDialogVisible = true;
+    },
     setAttributeChangeable(key, state) {
       this.changeState[key] = state;
     },
@@ -491,6 +507,8 @@ export default {
         }
         componentNameList.push(componentName);
       }
+
+      this.canvasData.datetime = bi.utils.format(new Date(), 'YYYY/MM/DD HH:mm:ss');
 
       const canvasComponentData = JSONfn.stringify(this.canvasComponentData);
       const canvasData = JSONfn.stringify(this.canvasData);

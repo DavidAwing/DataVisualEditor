@@ -14,9 +14,6 @@ import {
 } from "../utils/chartUtils";
 import eventBus from "../utils/eventBus";
 
-
-
-
 Vue.use(Vuex)
 
 const data = {
@@ -124,9 +121,6 @@ const data = {
 
     // 设置组件的属性
     setCanvasComponentAttribute(state, params) {
-
-
-
 
       const attribute = params[0]
       const name = params[1]

@@ -107,6 +107,7 @@ const extractExpressions = (text) => {
   return expressions;
 }
 
+
 function parseText(text) {
 
   const groups = text.split(/\n{2,}/g); // 将文本分割成组
@@ -227,22 +228,34 @@ function testTask(task) {
       resolve(task)
     }
   })
-
 }
 
-function commitData(store, task, response) {
+export function commitData(store, task, response) {
 
-  if (response.data.headers === undefined &&
-    response.data.request === undefined &&
-    response.data.status === undefined &&
-    typeof response === 'object' &&
-    typeof response.name === "string") {
-    const { attributeName, name, data } = response
-    store.commit("setCanvasComponentAttribute", [
-      attributeName,
-      name,
-      data
-    ]);
+  if ((Array.isArray(response) && task.componentName && task.dataSourceType && task.name) ||
+    (response.data.headers === undefined &&
+      response.data.request === undefined &&
+      response.data.status === undefined &&
+      typeof response === 'object' &&
+      typeof response.name === "string")) {
+
+    if (Array.isArray(response)) {
+      response.forEach(item => {
+        const { attributeName, name, data } = item
+        store.commit("setCanvasComponentAttribute", [
+          attributeName,
+          name,
+          data
+        ]);
+      })
+    } else {
+      const { attributeName, name, data } = response
+      store.commit("setCanvasComponentAttribute", [
+        attributeName,
+        name,
+        data
+      ]);
+    }
   } else {
     const data = response.data.data
     if (Array.isArray(data)) {
@@ -299,123 +312,39 @@ export function requestCanvasData(canvasName, callback) {
           );
           this.$store.commit("setCanvasData", canvasData);
           const dataSource = canvasData.dataSource
-          const sourceList = parseText(dataSource.parameters)
-          // console.log("任务列表1", sourceList);
-          sourceList.forEach(task => {
-            // console.log("任务列表D1", task);
-            for (let i = 0; i < canvasComponentData.length; i++) {
 
-              let component = canvasComponentData[i];
-              if (component.component === "Group")
-                component = component.propValue.find(item => Object.keys(task.element).includes(item.data.name))
-              if (component === undefined || component === null)
-                continue
-              const element = task.element[component.data.name]
-              if (element === undefined || element === null)
-                continue
-              element.componentType = component.component
-              if (element.componentType === "vc-chart") {
-                console.log("图表组件22", component);
-                console.log("图表组件33", component.data.option.series);
+          let dataSourceText = dataSource.parameters.trim()
+          if (dataSourceText.startsWith("[") && dataSourceText.endsWith("]")) {
+            const sourceList = JSON.parse(dataSourceText)
+
+            sourceList.forEach(task => {
+
+              for (let i = 0; i < canvasComponentData.length; i++) {
+                let component = canvasComponentData[i];
+                if (component.component === "Group")
+                  component = component.propValue.find(item => item.data.name === task.componentName)
+                if (component === undefined || component === null)
+                  continue
+                if (task.componentName === component.data.name) {
+                  task.componentType = component.component
+                  break
+                }
               }
-            }
 
-            // 合并任务
-            console.log("任务列表2", task);
-            testTask(task).then((task) => {
-
-              if (task.cron === undefined)
-                task.cron = dataSource.cron
-
-              if (task.type === "get") {
-                task.call = () => {
-                  axios.get(task.source).then(response => {
-                    if (response.status !== 200 || !response) {
-                      console.error(task, response);
-                      return
-                    }
-                    commitData(this.$store, task, response)
-                  }).catch(error => {
-                    const errorResponse = JSON.parse(JSON.stringify(error))
-                    console.warn("任务执行报错", task, errorResponse);
-                  })
-                }
-              } else if (task.type === "post") {
+              if (task.dataSourceType === "script") {
 
                 task.call = () => {
-                  axios.post(task.source).then(response => {
-                    if (response.status !== 200 || !response) {
-                      console.error(task, response);
-                      return
-                    }
-                    commitData(this.$store, task, response)
-                  }).catch(error => {
-                    const errorResponse = JSON.parse(JSON.stringify(error))
-                    console.warn("任务执行报错", task, errorResponse);
-                  })
-                }
-
-              } else if (task.type === "script") {
-
-                task.call = () => {
-
-                  if (task.method === undefined || task.method === null) {
-
-                    if (task.method === null)
-                      return
-                    const arr = task.source.trim().split("*")
-                    const scriptPath = arr[0].trim()
-                    const methodName = arr[1]
-                    task.method = null
-
-
-
-                    axios.get("/BI/Component/GetScript", {
-                      params: {
-                        name: scriptPath,
-                      },
-                      timeout: 6000,
+                  if (task.method === undefined) {
+                    codeToInstance(task.scriptLanguage || "js", task.script).then(instance => {
+                      console.log("Object.prototype.toString.call(instance)", Object.prototype.toString.call(instance));
+                      if (Object.prototype.toString.call(instance) === "[object Module]") {
+                        task.method = instance.default.bind(this)
+                      } else if (Object.prototype.toString.call(instance) === '[object Function]') {
+                      } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
+                      }
                     })
-                      .then(({ data }) => {
-                        if (data.state !== 200) {
-                          console.warn("执行任务获取脚本异常", data);
-                          return
-                        }
-
-                        codeToInstance(scriptPath, data.data).then(instance => {
-                          let method = null
-                          if (Object.prototype.toString.call(instance) === "[object Module]") {
-                            if (methodName === undefined || methodName === null) {
-                              method = instance.default.bind(this)
-                            } else if (Object.prototype.toString.call(methodName) === "[object String]" &&
-                              Object.prototype.toString.call(instance[methodName]) === "[object Function]") {
-                              method = instance[methodName].bind(this)
-                            } else {
-                            }
-                          } else if (Object.prototype.toString.call(instance) === '[object Function]') {
-                          } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
-                          }
-
-                          if (method === null) {
-                            console.error(`找不到任务执行的方法`, "方法名: " + methodName, "实例类型: " + Object.prototype.toString.call(instance), "代码: " + data.data);
-                            return
-                          }
-
-                          task.method = method
-                        })
-
-                      })
-                      .catch((error) => {
-                        console.error(`${scriptPath}脚本异常: `, error);
-                      });
                   } else {
-
-                    console.log("任务AAA1");
-
-                    const response = task.method()
-
-
-
+                    const response = task.method(task)
                     if (Object.prototype.toString.call(response) === "[object Promise]") {
                       response.then(data => {
                         commitData(this.$store, task, data)
@@ -425,28 +354,41 @@ export function requestCanvasData(canvasName, callback) {
                     } else {
                       commitData(this.$store, task, response)
                     }
-
                   }
+                }
+              } else if (task.dataSourceType === "database") {
+
+                let attributeName = ""
+                if (task.componentType === "v-table") {
+                  attributeName = "data.tableData"
+                } else if (task.componentType === "vc-chart") {
+
+                } else {
+                  throw new Error("不支持的数据类型")
+                }
+
+                task.call = () => {
+                  axios.post('/BI/DataSource/GetData', task, { timeout: 100000 }).then(({ data }) => {
+                    console.log("请求数据库", data);
+                    if (data.state !== 200) {
+                      console.error("请求数据异常");
+                      return
+                    }
+                    commitData(this.$store, task, {
+                      name: task.componentName,
+                      attributeName: attributeName,
+                      data: data.data
+                    })
+                  });
                 }
 
               } else {
-                task.call = () => {
-                  axios.post("/BI/CronJob/RequestData", task).then(response => {
-                    if (response === undefined || response === null || response.status !== 200) {
-                      console.error("任务执行报错1", task, response);
-                      return
-                    }
-                    commitData(this.$store, task, response)
-                  }).catch(error => {
-                    const errorResponse = JSON.parse(JSON.stringify(error))
-                    console.warn("任务执行报错2", task, errorResponse);
-                  })
-                }
+                throw new Error("无法处理的任务配置: " + JSON.stringify(task))
               }
 
               schedule.cancelJob(task.jobName);
               const job = schedule.scheduleJob(
-                task.jobName,
+                task.name,
                 task.cron,
                 task.call
               )
@@ -456,28 +398,160 @@ export function requestCanvasData(canvasName, callback) {
                 jobList.push(job)
               }
 
+
+
             })
 
-          });
 
-          // const job = schedule.scheduleJob(
-          //   jobName,
-          //   dataSource.cron,
-          //   () => {
-          //     console.log("todo请求数据,绑定数据");
-          //     // 设置组件数据
-          //     this.$store.commit("setCanvasComponentAttribute", [
-          //       "data",
-          //       {
-          //         aaa: {
-          //           text: new Date().toJSON()
-          //         },
-          //       },
-          //     ]);
-          //     console.log(new Date().toJSON() + "  定时任务运行完毕!  " + this.canvasName);
-          //   }
-          // );
+          } else {
+            const sourceList = parseText(dataSourceText)
+            sourceList.forEach(task => {
+              for (let i = 0; i < canvasComponentData.length; i++) {
 
+                let component = canvasComponentData[i];
+                if (component.component === "Group")
+                  component = component.propValue.find(item => Object.keys(task.element).includes(item.data.name))
+                if (component === undefined || component === null)
+                  continue
+                const element = task.element[component.data.name]
+                if (element === undefined || element === null)
+                  continue
+                element.componentType = component.component
+                if (element.componentType === "vc-chart") {
+                  console.log("图表组件22", component);
+                  console.log("图表组件33", component.data.option.series);
+                }
+              }
+
+              // 合并任务
+              console.log("任务列表2", task);
+              testTask(task).then((task) => {
+
+                if (task.cron === undefined)
+                  task.cron = dataSource.cron
+
+                if (task.type === "get") {
+                  task.call = () => {
+                    axios.get(task.source).then(response => {
+                      if (response.status !== 200 || !response) {
+                        console.error(task, response);
+                        return
+                      }
+                      commitData(this.$store, task, response)
+                    }).catch(error => {
+                      const errorResponse = JSON.parse(JSON.stringify(error))
+                      console.warn("任务执行报错", task, errorResponse);
+                    })
+                  }
+                } else if (task.type === "post") {
+
+                  task.call = () => {
+                    axios.post(task.source).then(response => {
+                      if (response.status !== 200 || !response) {
+                        console.error(task, response);
+                        return
+                      }
+                      commitData(this.$store, task, response)
+                    }).catch(error => {
+                      const errorResponse = JSON.parse(JSON.stringify(error))
+                      console.warn("任务执行报错", task, errorResponse);
+                    })
+                  }
+
+                } else if (task.type === "script") {
+
+                  task.call = () => {
+
+                    if (task.method === undefined || task.method === null) {
+                      if (task.method === null)
+                        return
+                      const arr = task.source.trim().split("*")
+                      const scriptPath = arr[0].trim()
+                      const methodName = arr[1]
+                      task.method = null
+                      axios.get("/BI/Component/GetScript", {
+                        params: {
+                          name: scriptPath,
+                        },
+                        timeout: 6000,
+                      })
+                        .then(({ data }) => {
+                          if (data.state !== 200) {
+                            console.warn("执行任务获取脚本异常", data);
+                            return
+                          }
+
+                          codeToInstance(scriptPath, data.data).then(instance => {
+                            let method = null
+                            if (Object.prototype.toString.call(instance) === "[object Module]") {
+                              if (methodName === undefined || methodName === null) {
+                                method = instance.default.bind(this)
+                              } else if (Object.prototype.toString.call(methodName) === "[object String]" &&
+                                Object.prototype.toString.call(instance[methodName]) === "[object Function]") {
+                                method = instance[methodName].bind(this)
+                              } else {
+                              }
+                            } else if (Object.prototype.toString.call(instance) === '[object Function]') {
+                            } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
+                            }
+
+                            if (method === null) {
+                              console.error(`找不到任务执行的方法`, "方法名: " + methodName, "实例类型: " + Object.prototype.toString.call(instance), "代码: " + data.data);
+                              return
+                            }
+
+                            task.method = method
+                          })
+
+                        })
+                        .catch((error) => {
+                          console.error(`${scriptPath}脚本异常: `, error);
+                        });
+                    } else {
+                      const response = task.method()
+                      if (Object.prototype.toString.call(response) === "[object Promise]") {
+                        response.then(data => {
+                          commitData(this.$store, task, data)
+                        }).catch(error => {
+                          console.error(`执行script任务异常`, task, error);
+                        })
+                      } else {
+                        commitData(this.$store, task, response)
+                      }
+
+                    }
+                  }
+
+                } else {
+                  task.call = () => {
+                    axios.post("/BI/CronJob/RequestData", task).then(response => {
+                      if (response === undefined || response === null || response.status !== 200) {
+                        console.error("任务执行报错1", task, response);
+                        return
+                      }
+                      commitData(this.$store, task, response)
+                    }).catch(error => {
+                      const errorResponse = JSON.parse(JSON.stringify(error))
+                      console.warn("任务执行报错2", task, errorResponse);
+                    })
+                  }
+                }
+
+                schedule.cancelJob(task.jobName);
+                const job = schedule.scheduleJob(
+                  task.jobName,
+                  task.cron,
+                  task.call
+                )
+
+                if (job !== null && job !== undefined) {
+                  job.invoke();
+                  jobList.push(job)
+                }
+
+              })
+            });
+          }
           return;
         }
       }
@@ -509,6 +583,14 @@ export function requestCanvasData(canvasName, callback) {
         });
     }
   };
+
+  if (callback === undefined) {
+    callback = (success, error) => {
+      if (!success) {
+        console.trace("发生异常", error);
+      }
+    }
+  }
 
   getCanvasData(canvasName, callback);
 }

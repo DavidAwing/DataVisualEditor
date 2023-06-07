@@ -15,7 +15,7 @@ import Vue from 'vue';
 import axios from 'axios';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
-const JSONfn = require("jsonfn").JSONfn;
+const JSONfn = require('jsonfn').JSONfn;
 
 // import * as ts from './compiler/typescript@5.0.4.js';
 

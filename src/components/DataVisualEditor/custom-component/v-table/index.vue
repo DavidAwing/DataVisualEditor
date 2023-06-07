@@ -1,24 +1,45 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <div class="container">
-    <el-table :data="element.data.tableData" height="250" :border="element.data.showBorder" style="width: 100%"
-      ref="table">
+    <el-table
+      :data="element.data.tableData"
+      height="250"
+      :border="element.data.showBorder"
+      style="width: 100%"
+      ref="table"
+    >
       <template v-for="(column, index) in element.data.columns">
-        <el-table-column :prop="column.prop" :label="column.label" :align="column.align" :min-width="column.width"
-          v-bind:key="index">
+        <el-table-column
+          :prop="column.prop"
+          :label="column.label"
+          :align="column.align"
+          :min-width="column.width"
+          :key="index"
+        >
         </el-table-column>
       </template>
     </el-table>
 
-    <el-pagination background layout="prev, pager, next" :total="10" v-if="false">
-    </el-pagination>
+    <el-pagination background layout="prev, pager, next" :total="10" v-if="false"> </el-pagination>
 
     <top-el-dialog title="表头编辑" :visible.sync="element.data.editColumnsDialog" width="35%" v-el-drag-dialog center>
       <el-form :inline="true" label-width="80px">
         <el-form-item label="列名" class="full-width">
-          <el-select v-model="selected" clearable filterable placeholder="" autocomplete="off" @blur="addColumn"
-            @clear="removeColumn">
-            <el-option v-for="(item, index) in element.data.columns" :key="index" :label="item.label" :value="item.prop">
+          <el-select
+            v-model="selected"
+            clearable
+            filterable
+            placeholder=""
+            autocomplete="off"
+            @blur="addColumn"
+            @clear="removeColumn"
+          >
+            <el-option
+              v-for="(item, index) in element.data.columns"
+              :key="index"
+              :label="item.label"
+              :value="item.prop"
+            >
             </el-option>
           </el-select>
         </el-form-item>
@@ -320,5 +341,5 @@ export default {
 </script>
 
 <style lang="less" scoped>
-@import "index.less";
+@import 'index.less';
 </style>

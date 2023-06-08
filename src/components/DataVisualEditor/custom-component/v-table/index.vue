@@ -18,7 +18,6 @@
         >
         </el-table-column>
       </template>
-
     </el-table>
 
     <el-pagination background layout="prev, pager, next" :total="10" v-if="false"> </el-pagination>

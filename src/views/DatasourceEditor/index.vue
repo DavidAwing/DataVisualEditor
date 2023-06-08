@@ -113,14 +113,23 @@
       <div>
         <!--页面组件列表展示-->
 
-        <component
-          :is="Component.component"
-          :id="'component' + Component.id"
-          class="component"
-          :style="getComponentStyle(Component)"
-          :prop-value="Component.propValue"
-          :element="Component"
-        />
+        <!-- <Shape
+        :key="Component.id"
+        :default-style="Component.style"
+        :style="getShapeStyle(Component.style, Component.styleUnit)"
+        :element="Component"
+      > -->
+      <component
+      :is="Component.component"
+      :id="'component' + Component.id"
+      class="component"
+      :style="getComponentStyle(Component)"
+      :prop-value="Component.propValue"
+      :element="Component"
+    />
+      <!-- </Shape> -->
+
+
       </div>
     </el-dialog>
   </div>
@@ -397,9 +406,7 @@ export default {
     },
     getComponentStyle(component) {
       if (JSON.stringify(component) === '{}') return '';
-
-      console.log('数据', component);
-      return getStyle(component.style, component.styleUnit, 1, ['top', 'left', 'width', 'height', 'rotate']);
+      return getStyle(component.style, component.styleUnit, 1, ['top', 'left']);
     },
     getShapeStyle(style, styleUnit) {
       if (style === undefined || styleUnit === undefined) {

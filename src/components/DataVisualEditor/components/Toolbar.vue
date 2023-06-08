@@ -259,15 +259,17 @@ export default {
   },
   methods: {
     showCanvasConfigDialogVisible() {
+      this.canvasConfigDialogVisible = true;
       const canvasData = this.canvasData;
       DB.getItem(`bi-user-canvas-data-source-${this.currentCanvasName}`).then(userCanvasDataSource => {
         if (userCanvasDataSource !== undefined) {
           canvasData.dataSource.parameters = userCanvasDataSource;
           DB.removeItem(`bi-user-canvas-data-source-${this.currentCanvasName}`);
-          this.save();
+
+          // this.save();
         }
       });
-      this.canvasConfigDialogVisible = true;
+
     },
     setAttributeChangeable(key, state) {
       this.changeState[key] = state;

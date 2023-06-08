@@ -19,14 +19,30 @@
   export default {
     data() {
       return {
-        smallGridColor: "rgba(207, 207, 207, 0.3)",
-        gridColor: "rgba(186, 186, 186, 0.5)"
+        smallGridColor: "rgba(207, 207, 207, 0.25)",
+        gridColor: "rgba(186, 186, 186, 0.6)"
       }
     },
     mounted() {
       if (this.config != null && this.config.smallGridColor && this.config.gridColor) {
         this.smallGridColor = this.config.smallGridColor
         this.gridColor = this.config.gridColor
+      }
+
+
+      if (screen.width > 1800) {
+
+        // const grid = document.getElementById("grid")
+        // const smallGrid = document.getElementById("smallGrid")
+
+        // grid.setAttribute("width", "36")
+        // grid.setAttribute("height", "36")
+
+        // smallGrid.setAttribute("width", "2")
+        // smallGrid.setAttribute("height", "2")
+
+      } else if (screen.width > 1300) {
+
       }
     },
     props: {

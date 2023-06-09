@@ -16,6 +16,51 @@ import eventBus from "../utils/eventBus";
 
 Vue.use(Vuex)
 
+
+/**
+ * 字符串出现的次数
+* str { String } 完整字符串
+* tatget { String } 目标对象，要查找的字符串
+*/
+function searchStrIndexOf(str, target) {
+  let index = str.indexOf(target)
+  let sum = 0;
+  while (index > -1) {
+    index = str.indexOf(target, index + 1)
+    sum++
+  }
+  return sum
+}
+
+const ObjectToChartOption = (option, obj, indexList) => {
+
+  const keys = Object.keys(obj)
+  keys.forEach(key => {
+    let path = key.substring(5).split(/\s+/).filter(str => str !== undefined && str !== null && str.trim() !== "").pop().trim()
+
+
+    if (searchStrIndexOf(path, "[]") === 1 && indexList.length === 1) {
+      path = path.replace("[]", `[${indexList[0]}]`)
+    } else if (searchStrIndexOf(path, "[]") === 2 && indexList.length === 2) {
+      path = path.replace("[]", `[${indexList[0]}]`)
+      path = path.replace("[]", `[${indexList[1]}]`)
+    } else if (searchStrIndexOf(path, "[]") === 1 && indexList.length === 2) {
+      path = path.replace("[]", `[${indexList[1]}]`)
+    }
+
+    const value = obj[key]
+    // 检测path存在吗
+    const find = getValueByAttributePath(option, path)
+    if (Array.isArray(find) && !Array.isArray(value) && !Object.prototype.toString.call(value) !== "[object Object]")
+      path = path + `[${indexList[0]}]`
+
+    setJsonAttribute(option, path, value, false)
+  })
+
+}
+
+
+
 const data = {
   state: {
     ...animation.state,
@@ -119,12 +164,16 @@ const data = {
       });
     },
 
+
+
     // 设置组件的属性
     setCanvasComponentAttribute(state, params) {
 
       const attribute = params[0]
       const name = params[1]
       const data = params[2]
+      // const {dataTypeToken}   = params[3]
+
 
       for (const item of state.canvasComponentData) {
 
@@ -136,27 +185,115 @@ const data = {
 
         if (component.component.startsWith("vc-")) {
 
-          const keys = Object.keys(data)
-          keys.forEach(key => {
+          if (data.dataTypeToken !== undefined && data.dataTypeToken !== null) {
+            const option = component.data.option
+            if (data.dataTypeToken === "[n]{@PATH:value}") {
+              for (let i = 0; i < data.data.length; i++) {
+                const obj = data.data[i];
+                ObjectToChartOption(option, obj, [i])
+              }
+            } else if (data.dataTypeToken === "[n][n]{@PATH:value}") {
+              const arr = data.data
+              for (let i = 0; i < arr.length; i++) {
+                for (let j = 0; j < arr[i].length; j++) {
+                  const obj = arr[i][j]
+                  ObjectToChartOption(option, obj, [i, j])
+                }
+              }
+            } else if (data.dataTypeToken === "[n][1]{SameAttributeName}") {
+              const map = data.data
+              const keys = Object.keys(map)
 
-            const value = data[key]
-            const attributeList = key.match(/@\w+/g)
-            if (attributeList !== null) {
-              for (let i = 0; i < attributeList.length; i++) {
-                // todo 替换变量
-              }
+              let serieIndex = 0
+              keys.forEach(name => {
+
+                let serie = option.series.find(item => item.name === name)
+                if (serie === undefined) {
+                  serie = option.series[serieIndex]
+                }
+                serieIndex++
+
+                if (serie.type === "bar" || serie.type === "line") {
+                  if (serie.type === "line") {
+                    console.log("设置line--", serie);
+                  }
+
+                  if (Array.isArray(serie.data) && serie.data.every(item => typeof item !== 'object')) {
+                    const isNumberArray = serie.data.every(val => {
+                      if (typeof val === 'number')
+                        return true
+                      else if (typeof val === 'string') {
+                        if (/^(-\.|\.|\+.){0,1}\d+?$/g.test(val) || /^[+-]?\d+(\.\d+)?$/g.test(val)) {
+                          return true
+                        } else {
+                          return false
+                        }
+                      }
+                      return false
+                    })
+                    if (isNumberArray) {
+                      serie.data = map[name]
+                    } else {  // todo 需要每一项单独去设置
+                      throw new Error("需要每项单独去设置...")
+                    }
+                  } else if (Array.isArray(serie.data) && serie.data.every(item => typeof item === 'object')) {
+                    for (let i = 0; i < map[name].length; i++) {
+                      const val = map[name][i];
+                      if (serie.data[i] === undefined) {
+                        console.error("setCanvasComponentAttribute|数据不匹配,请检查", params);
+                        break
+                      }
+                      serie.data[i].value = val
+                    }
+                  } else {
+                    throw new Error("异常了...")
+                  }
+
+                } else if (serie.type === "line") {
+
+
+                }
+              })
+
+              console.log("数据异常AA1设置之后", component.data.option.series);
+
+            } else if (data.dataTypeToken === "[n][1]{NumberAttributeName}") {
+
+            } else if (data.dataTypeToken === "[n][1]{StringAttributeName}" || data.dataTypeToken === "[n][n]{StringAttributeName}") {
+
             }
-            let newData = JSON.parse(JSON.stringify(component.data))
-            if (key.includes("@index")) {
-              for (let i = 0; i < value.length; i++) {
-                const pathValue = key.replaceAll("@index", i)
-                newData = setJsonAttribute(newData, pathValue, value[i])
+
+          } else if (Array.isArray(data) && Object.prototype.toString.call(data[0]) === '[object Object]') {
+
+
+
+          } else if (Object.prototype.toString.call(data) === '[object Object]') {
+
+            const keys = Object.keys(data)
+            keys.forEach(key => {
+
+              const value = data[key]
+              const attributeList = key.match(/@\w+/g)
+              if (attributeList !== null) {
+                for (let i = 0; i < attributeList.length; i++) {
+                  // todo 替换变量
+                }
               }
-            } else {
-              newData = setJsonAttribute(newData, key, value)
-            }
-            eventBus.$emit("SetOption", name, newData.option)
-          })
+              let newData = JSON.parse(JSON.stringify(component.data))
+              if (key.includes("@index")) {
+                for (let i = 0; i < value.length; i++) {
+                  const pathValue = key.replaceAll("@index", i)
+                  newData = setJsonAttribute(newData, pathValue, value[i])
+                }
+              } else {
+                newData = setJsonAttribute(newData, key, value)
+              }
+              eventBus.$emit("SetOption", name, newData.option)
+            })
+
+          } else {
+            console.warn("setCanvasComponentAttribute|无法处理", params);
+          }
 
         } else {
           if (component[attribute] === undefined || component[attribute] !== null || attribute.includes(".")) {

@@ -230,6 +230,223 @@ function testTask(task) {
   })
 }
 
+
+
+// 先判断长度，再遍历比较
+function ArrayCompare(array1, array2) {
+  // 如果长度不一样，则直接不相等
+  if (array1.length != array2.length) {
+    return false;
+  }
+  // 如果长度一样，则for循环比较
+  for (let i = 0; i < array1.length; i++) {
+    // array1的元素是否都在array2中存在，有一个不存在就不相等
+    if (!array2.includes(array1[i])) {
+      return false;
+    }
+  }
+  for (let i = 0; i < array2.length; i++) {
+    // array2的元素是否都在array1中存在，有一个不存在就不相等
+    if (!array1.includes(array2[i])) {
+      return false;
+    }
+  }
+  // 如果执行到这里，说明全部匹配
+  return true;
+}
+
+function getDataTypeToken(data) {
+
+  {
+
+    // type: [n][n]{SameAttributeName}
+    const data0 = [
+      [
+        {
+          RUNCARD_QTY: 5
+        },
+        {
+          RUNCARD_QTY: 3
+        },
+        {
+          RUNCARD_QTY: 5
+        },
+        {
+          RUNCARD_QTY: 5
+        },
+        {
+          RUNCARD_QTY: 5
+        },
+        {
+          RUNCARD_QTY: 5
+        },
+        {
+          RUNCARD_QTY: 5
+        }
+      ],
+      [
+        {
+          TARGET_QTY: 100
+        },
+        {
+          TARGET_QTY: 0
+        },
+        {
+          TARGET_QTY: 100
+        },
+        {
+          TARGET_QTY: 1000
+        },
+        {
+          TARGET_QTY: 1000
+        }
+      ]
+    ]
+
+    // type: [n][1]{NumberAttributeName}  /   [n][n]{NumberAttributeName}
+    const data1 = [
+      [
+        {
+          1: 120,
+          2: 234,
+          3: 41231,
+          4: 231,
+          5: 543,
+          6: 652,
+          7: 1232
+        }
+      ],
+      [
+        {
+          1: 123,
+          2: 224,
+          3: 431,
+          4: 631,
+          5: 943,
+          6: 602,
+          7: 232
+        }
+      ]
+    ]
+
+    // type: [n][1]{StringAttributeName}   / [n][n]{StringAttributeName}
+    const data2 = [
+      [{ Mon: 5, Tue: 70, Wed: 15, Thu: 30, Fri: 55, Sat: 60, Sun: 15 }],
+      [{ Mon: 5, Tue: 70, Wed: 15, Thu: 30, Fri: 55, Sat: 60 }],
+    ]
+
+  }
+
+  if (Array.isArray(data) && data.every(item => Array.isArray(item))) {
+    for (let i = 0; i < data.length; i++) {
+      const objArr = data[i];
+      // 检测是不是[n][n]{SameAttributeName}
+      const keysList = []
+      objArr.forEach(obj => {
+        if (typeof obj !== "object")
+          throw new Error("获取token异常,不是object类型", data, obj)
+        keysList.push(Object.keys(obj))
+      })
+
+      for (let j = 0; j < keysList.length; j++) {
+        if (j === keysList.length - 1) {
+          if (keysList[j].every(item => item === keysList[j][0])) {
+            return "[n][1]{SameAttributeName}"
+          } else if (keysList.every(item => !isNaN(parseInt(item)))) {
+            return data.some(arr => arr.length > 1) ? `[n][n]{NumberAttributeName}` : `[n][1]{NumberAttributeName}`
+          } else {
+            for (let i = 0; i < data.length; i++) {
+              for (let j = 0; j < data[i].length; j++) {
+                const obj = data[i][j];
+                const keys = Object.keys(obj)
+                const isPath = keys.every(key => /@PATH\s*(\w)+/i.test(key))
+                if (!isPath) {
+                  return data.some(arr => arr.length > 1) ? `[n][n]{StringAttributeName}` : `[n][1]{StringAttributeName}`
+                }
+              }
+            }
+            return "[n][n]{@PATH:value}"
+          }
+        }
+        const arr1 = keysList[j];
+        const arr2 = keysList[j + 1];
+        const isEqual = ArrayCompare(arr1, arr2)
+        if (!isEqual) {
+          // 检测是不是[n][n]{NumberAttributeName}
+          if (keysList.every(item => !isNaN(parseInt(item)))) {
+            return data.some(arr => arr.length > 1) ? `[n][n]{NumberAttributeName}` : `[n][1]{NumberAttributeName}`
+          } else {
+            for (let i = 0; i < data.length; i++) {
+              for (let j = 0; j < data[i].length; j++) {
+                const obj = data[i][j];
+                const keys = Object.keys(obj)
+                const isPath = keys.every(key => /@PATH\s*(\w)+/i.test(key))
+                if (!isPath) {
+                  return data.some(arr => arr.length > 1) ? `[n][n]{StringAttributeName}` : `[n][1]{StringAttributeName}`
+                }
+              }
+            }
+            return "[n][n]{@PATH:value}"
+          }
+        }
+      }
+    }
+
+    throw new Error("getDataTypeToken|无法解析的数据", data)
+  } else if (Array.isArray(data) && data.every(item => Object.prototype.toString.call(item) === "[object Object]")) {
+    for (let i = 0; i < data.length; i++) {
+      const obj = data[i];
+      const keys = Object.keys(obj)
+      const isPath = keys.every(key => /@PATH\s*(\w)+/i.test(key))
+      if (!isPath) {
+        throw new Error("暂时不支持")
+      }
+    }
+    return "[n]{@PATH:value}"
+  } else if (Array.isArray(data) && data.every(item => Array.isArray(item))) {
+
+  }
+}
+
+function convertDataFormat(token, data) {
+
+  const convertedData = { dataTypeToken: token, data: null }
+  if (token === "[n][1]{SameAttributeName}") {
+    convertedData.data = {}
+    data.forEach(arr => {
+      const key = Object.keys(arr[0])[0]
+      const valueArr = []
+      arr.forEach(obj => {
+        valueArr.push(obj[key])
+      })
+      convertedData.data[key] = valueArr
+    })
+  } else if (token === "[n][1]{NumberAttributeName}") {
+    convertedData.data = []
+    data.forEach(arr => {
+      const keys = Object.keys(arr[0])
+      keys.sort((a, b) => a - b)
+      const valueArr = []
+      keys.forEach(key => {
+        valueArr.push(arr[0][key])
+      })
+      convertedData.data.push(valueArr)
+    })
+  } else if (token === "[n][1]{StringAttributeName}" || token === "[n][n]{StringAttributeName}") {
+    convertedData.data = []
+    data.forEach(arr => {
+      arr.forEach(obj => {
+        convertedData.data.push(obj)
+      })
+    })
+  } else if (token === "[n]{@PATH:value}" || token === "[n][n]{@PATH:value}") {
+    convertedData.data = data
+  } else {
+    throw new Error("无法解析的token")
+  }
+  return convertedData
+}
+
 export function commitData(store, task, response) {
 
   if ((Array.isArray(response) && task.componentName && task.dataSourceType && task.name) ||
@@ -240,6 +457,9 @@ export function commitData(store, task, response) {
       typeof response.name === "string")) {
 
     if (Array.isArray(response)) {
+
+      if (response.length === 0)
+        return
       response.forEach(item => {
         const { attributeName, name, data } = item
         store.commit("setCanvasComponentAttribute", [
@@ -248,6 +468,12 @@ export function commitData(store, task, response) {
           data
         ]);
       })
+      if (Array.isArray(response[0])) {
+        console.log("多个sql查询", response);
+      } else if (Object.prototype.toString.call(response[0]) === '[object Object]') {
+      } else {
+        console.warn("commitData|数据无法处理", task, response);
+      }
     } else {
       const { attributeName, name, data } = response
       store.commit("setCanvasComponentAttribute", [
@@ -362,17 +588,184 @@ export function requestCanvasData(canvasName, callback) {
                 if (task.componentType === "v-table") {
                   attributeName = "data.tableData"
                 } else if (task.componentType === "vc-chart") {
-
+                  attributeName = "data.option.series[@index0].data[@index1].value"
                 } else {
                   throw new Error("不支持的数据类型")
                 }
 
                 task.call = () => {
                   axios.post('/BI/DataSource/GetData', task, { timeout: 100000 }).then(({ data }) => {
-                    console.log("请求数据库", data);
+
+                    if (task.name === "测试雷雷的sql") {
+                      console.log("请求数据库", task, data);
+                    }
+
                     if (data.state !== 200) {
                       console.error("请求数据异常");
                       return
+                    }
+
+                    // type: [n][n]{SameAttributeName}
+                    const data0 = [
+                      [
+                        {
+                          RUNCARD_QTY: 5
+                        },
+                        {
+                          RUNCARD_QTY: 30
+                        },
+                        {
+                          RUNCARD_QTY: 5
+                        },
+                        {
+                          RUNCARD_QTY: 5
+                        },
+                        {
+                          RUNCARD_QTY: 5
+                        },
+                        {
+                          RUNCARD_QTY: 5
+                        },
+                        {
+                          RUNCARD_QTY: 5
+                        }
+                      ],
+                      [
+                        {
+                          TARGET_QTY: 100
+                        },
+                        {
+                          TARGET_QTY: 0
+                        },
+                        {
+                          TARGET_QTY: 100
+                        },
+                        {
+                          TARGET_QTY: 1000
+                        },
+                        {
+                          TARGET_QTY: 1000
+                        }
+                      ]
+                    ]
+                    // type: [n][1]{NumberAttributeName}
+                    const data1 = [
+                      [
+                        {
+                          1: 120,
+                          2: 234,
+                          3: 41231,
+                          4: 231,
+                          5: 543,
+                          6: 652,
+                          7: 1232
+                        }
+                      ],
+                      [
+                        {
+                          1: 123,
+                          2: 224,
+                          3: 431,
+                          4: 631,
+                          5: 943,
+                          6: 602,
+                          7: 232
+                        }
+                      ]
+                    ]
+                    // type: [n][1]{StringAttributeName}
+                    const data2 = [
+                      [{ Mon: 5, Tue: 70, Wed: 15, Thu: 30, Fri: 55, Sat: 60, Sun: 15 }],
+                      [{ Mon: 5, Tue: 70, Wed: 15, Thu: 30, Fri: 55, Sat: 60 }],
+                    ]
+
+                    const data3 = [[
+                      {
+                        "@PATH   xAxis.data[]": "AA1",
+                        "@PATH   series[0].data[].value ": 100
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA2",
+                        "@PATH   series[0].data[].value ": 150
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA3",
+                        "@PATH   series[0].data[].value": 50
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA4",
+                        "@PATH   series[0].data[].value": 60
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA5",
+                        "@PATH   series[0].data[].value": 70
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA6",
+                        "@PATH   series[0].data[].value": 90
+                      }
+                    ],
+                    [
+                      {
+                        "@PATH   xAxis.data[]": "AA2",
+                        "@PATH   series[1].data[].value ": 50
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA2",
+                        "@PATH   series[1].data[].value ": 150
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA3",
+                        "@PATH   series[1].data[].value": 50
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA4",
+                        "@PATH   series[1].data[].value": 60
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA5",
+                        "@PATH   series[1].data[].value": 70
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA6",
+                        "@PATH   series[1].data[].value": 90
+                      }
+                    ],
+                    [
+                      {
+                        "@PATH   xAxis.data[]": "AA2",
+                        "@PATH   series[2].data[].value ": 50
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA2",
+                        "@PATH   series[2].data[].value ": 150
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA3",
+                        "@PATH   series[2].data[].value": 50
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA4",
+                        "@PATH   series[2].data[].value": 60
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA5",
+                        "@PATH   series[2].data[].value": 70
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA6",
+                        "@PATH   series[2].data[].value": 90
+                      }
+                    ]
+                    ]
+
+                    data.data = data3
+
+                    if (task.dataTypeToken === undefined && task.componentType === "vc-chart") {
+                      task.dataTypeToken = getDataTypeToken(data.data)  // data.data
+                    }
+                    if (task.componentType === "vc-chart") {
+                      data.data = convertDataFormat(task.dataTypeToken, data.data)
                     }
                     commitData(this.$store, task, {
                       name: task.componentName,

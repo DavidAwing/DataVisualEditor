@@ -61,7 +61,7 @@ export default {
   },
   created() {
     // dev环境下支持实时数据传输
-    // http://localhost:9538/sub01/#/DisplayBoardViewer?name=生产进度看板&id=test&env=dev
+    // http://localhost:9538/bi/#/DisplayBoardViewer?name=生产进度看板&id=test&env=dev
 
     const canvasName = this.$route.query.name;
     if (!canvasName) {

@@ -22,8 +22,6 @@ import '@/components/DataVisualEditor/styles/reset.css'
 // const babel = require.context('./compiler', true, "babel.min@7.15.4.js");
 
 
-
-
 Vue.use(VuePlugin)
 Vue.use(ElementUI, { size: 'small' });
 

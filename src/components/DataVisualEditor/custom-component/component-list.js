@@ -2084,7 +2084,7 @@ const list = [
     },
     icon: 'wenben',
     data: {
-      src: "http://localhost:9538/sub01/#/DisplayBoardAdmin",
+      src: "http://localhost:9538/bi/#/DisplayBoardAdmin",
       horizontalAlignment: "",
       verticalAlignment: "",
       iframeWidth: "100%",

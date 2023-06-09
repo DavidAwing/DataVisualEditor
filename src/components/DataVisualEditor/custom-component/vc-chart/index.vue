@@ -101,6 +101,7 @@ export default {
   created() {
   },
   mounted() {
+    console.log("数据项", this.element.data.option);
   },
   methods: {
     updateDraggable(a) {

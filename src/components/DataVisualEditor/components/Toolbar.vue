@@ -88,7 +88,7 @@
         </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <a :href="'/sub01/#/DatasourceEditor?name=' + currentCanvasName" target="_blank" class="">
+        <a :href="'/bi/#/DatasourceEditor?name=' + currentCanvasName" target="_blank" class="">
           <el-button type="text">进入数据源编辑器</el-button>
         </a>
         <div>

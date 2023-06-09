@@ -28,6 +28,10 @@ export default {
   props: {},
   computed: {},
   created() {
+
+    console.log("数据");
+
+
     window.bi = new Object();
     window.bi.Vue = Vue;
     window.bi.axios = axios;

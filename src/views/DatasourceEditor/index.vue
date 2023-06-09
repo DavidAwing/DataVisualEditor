@@ -34,7 +34,16 @@
 
       <div v-if="canvasDataSource.dataSourceType === 'database'">
         <div>数据库</div>
-        <el-select v-model="canvasDataSource.dataSource" placeholder="" value-key="id">
+        <el-select
+          id="database-select"
+          v-model="canvasDataSource.dataSource"
+          placeholder=""
+          value-key="id"
+          @keyup.enter.native="addDatabase('show', $event)"
+          @clear="addDatabase('showRemove')"
+          clearable
+          filterable
+        >
           <el-option v-for="item in databaseList" :key="item.id" :label="item.name" :value="item"> </el-option>
         </el-select>
       </div>
@@ -119,17 +128,67 @@
         :style="getShapeStyle(Component.style, Component.styleUnit)"
         :element="Component"
       > -->
-      <component
-      :is="Component.component"
-      :id="'component' + Component.id"
-      class="component"
-      :style="getComponentStyle(Component)"
-      :prop-value="Component.propValue"
-      :element="Component"
-    />
-      <!-- </Shape> -->
+        <component
+          :is="Component.component"
+          :id="'component' + Component.id"
+          class="component"
+          :style="getComponentStyle(Component)"
+          :prop-value="Component.propValue"
+          :element="Component"
+        />
+        <!-- </Shape> -->
+      </div>
+    </el-dialog>
 
+    <el-dialog :visible.sync="addDatabaseDialogVisible" class="add-database-dialog">
+      <div slot="title">
+        <div style="font-size: 16px; width: 10vw">
+          {{ addDatabaseDialogTitle }}
+        </div>
+      </div>
 
+      <div>
+        <el-form ref="form" :model="temp" label-width="auto" style="width: 30vw">
+          <el-form-item label="名称" style="text-align: left; width: 90%">
+            <el-input v-model="temp.name"></el-input>
+          </el-form-item>
+          <el-form-item label="数据库类型" style="text-align: left; width: 90%">
+            <el-select v-model="temp.dbType" placeholder="" value-key="id" style="text-align: left; width: 100%">
+              <el-option key="SQLServer" label="SQLServer" value="SQLServer"> </el-option>
+              <el-option key="Oracle" label="Oracle" value="Oracle"> </el-option>
+              <el-option key="MySQL" label="MySQL" value="MySQL"> </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="数据库名" style="text-align: left; width: 90%">
+            <el-input v-model="temp.dbName"></el-input>
+          </el-form-item>
+          <el-form-item label="数据库IP" style="text-align: left; width: 90%">
+            <el-input v-model="temp.dbIp"></el-input>
+          </el-form-item>
+          <el-form-item label="数据库端口" style="text-align: left; width: 90%">
+            <el-input v-model="temp.dbPort"></el-input>
+          </el-form-item>
+          <el-form-item label="数据库用户名" style="text-align: left; width: 90%">
+            <el-input v-model="temp.dbUserId"></el-input>
+          </el-form-item>
+          <el-form-item label="数据库密码" style="text-align: left; width: 90%">
+            <el-input v-model="temp.dbPassword"></el-input>
+          </el-form-item>
+          <el-form-item label="字符集" style="text-align: left; width: 90%">
+            <el-input v-model="temp.dbCharset"></el-input>
+          </el-form-item>
+          <el-form-item label="备注" style="text-align: left; width: 90%">
+            <el-input v-model="temp.remark" type="textarea" rows="3"></el-input>
+          </el-form-item>
+        </el-form>
+      </div>
+      <div slot="footer">
+        <el-button @click="addDatabaseDialogVisible = false">取 消</el-button>
+        <el-button
+          type="primary"
+          @click="addDatabaseDialogTitle === '添加数据库' ? addDatabase('add') : addDatabase('remove')"
+          >确 定</el-button
+        >
       </div>
     </el-dialog>
   </div>
@@ -174,6 +233,9 @@ export default {
       canvasDataSource: {},
       canvasName: '',
       componentPreviewDialogVisible: false,
+      addDatabaseDialogVisible: false,
+      temp: {},
+      addDatabaseDialogTitle: '添加数据库',
     };
   },
   components: { CodeEditor, Shape },
@@ -247,6 +309,40 @@ export default {
   },
   mounted() {},
   methods: {
+    addDatabase(type, event) {
+      if (type === 'show') {
+        this.addDatabaseDialogTitle = '添加数据库';
+        if (event.target.value === undefined || event.target.value === null || event.target.value.trim() === '') return;
+        const name = event.target.value.trim();
+
+        this.temp = { name: name, userId: 'admin' };
+        this.addDatabaseDialogVisible = true;
+      } else if (type === 'add') {
+        this.addDatabaseDialogTitle = '添加数据库';
+        axios.post('/BI/DataSource/AddDatabase', this.temp).then(({ data }) => {
+          this.temp.id = data.data;
+          this.databaseList.push(this.temp);
+        });
+        this.addDatabaseDialogVisible = false;
+      } else if (type === 'showRemove') {
+        const name = document.getElementById('database-select').value;
+        this.temp = this.databaseList.find(item => item.name === name);
+        this.addDatabaseDialogTitle = '确定删除此数据库吗?';
+        this.addDatabaseDialogVisible = true;
+      } else if (type === 'remove') {
+        this.addDatabaseDialogVisible = false;
+        const id = this.temp.id;
+        axios.post('/BI/DataSource/DeleteDatabase', { id: id }).then(({ data }) => {
+          for (let i = 0; i < this.databaseList.length; i++) {
+            const database = this.databaseList[i];
+            if (database.id === id) {
+              this.databaseList.splice(i, 1);
+              break;
+            }
+          }
+        });
+      }
+    },
     getDataSourceClassName(item) {
       let className = '';
       if (item.id === this.canvasDataSource.id) {

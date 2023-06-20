@@ -518,7 +518,7 @@ export function requestCanvasData(canvasName, callback) {
       for (const data of canvasList) {
         if (data.name === name) {
           if (data.checkCode !== undefined) {
-            const response = await axios.get(`/BI/Component/GetCanvasCheckCode?name=${name}`)
+            const response = await axios.get(`/BI-API/Component/GetCanvasCheckCode?name=${name}`)
             if (response !== undefined && response.data !== undefined) {
               const code = response.data.data
               if (data.checkCode !== code) {
@@ -557,6 +557,9 @@ export function requestCanvasData(canvasName, callback) {
                 }
               }
 
+              if (task.componentType === undefined)
+                throw new Error("组件丢失了: " + task.componentName)
+
               if (task.dataSourceType === "script") {
 
                 task.call = () => {
@@ -590,15 +593,13 @@ export function requestCanvasData(canvasName, callback) {
                 } else if (task.componentType === "vc-chart") {
                   attributeName = "data.option.series[@index0].data[@index1].value"
                 } else {
-                  throw new Error("不支持的数据类型")
+
+                  console.log("数据异常", task);
+                  throw new Error("不支持的数据类型: " + task.componentName + ";" + task.componentType)
                 }
 
                 task.call = () => {
-                  axios.post('/BI/DataSource/GetData', task, { timeout: 100000 }).then(({ data }) => {
-
-                    if (task.name === "测试雷雷的sql") {
-                      console.log("请求数据库", task, data);
-                    }
+                  axios.post('/BI-API/DataSource/GetData', task, { timeout: 100000 }).then(({ data }) => {
 
                     if (data.state !== 200) {
                       console.error("请求数据异常");
@@ -759,7 +760,7 @@ export function requestCanvasData(canvasName, callback) {
                     ]
                     ]
 
-                    data.data = data3
+                    // data.data = data3
 
                     if (task.dataTypeToken === undefined && task.componentType === "vc-chart") {
                       task.dataTypeToken = getDataTypeToken(data.data)  // data.data
@@ -862,7 +863,7 @@ export function requestCanvasData(canvasName, callback) {
                       const scriptPath = arr[0].trim()
                       const methodName = arr[1]
                       task.method = null
-                      axios.get("/BI/Component/GetScript", {
+                      axios.get("/BI-API/Component/GetScript", {
                         params: {
                           name: scriptPath,
                         },
@@ -917,7 +918,7 @@ export function requestCanvasData(canvasName, callback) {
 
                 } else {
                   task.call = () => {
-                    axios.post("/BI/CronJob/RequestData", task).then(response => {
+                    axios.post("/BI-API/CronJob/RequestData", task).then(response => {
                       if (response === undefined || response === null || response.status !== 200) {
                         console.error("任务执行报错1", task, response);
                         return
@@ -952,7 +953,7 @@ export function requestCanvasData(canvasName, callback) {
 
     if (!hasName) {
 
-      axios.get(`/BI/Component/GetCanvasTemplate`, {
+      axios.get(`/BI-API/Component/GetCanvasTemplate`, {
         params: {
           name: name,
         },

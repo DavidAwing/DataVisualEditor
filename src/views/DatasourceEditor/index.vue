@@ -296,12 +296,12 @@ export default {
       });
     });
 
-    axios.post(`/BI/DataSource/FindDatabaseByUserId`, null, { params: { userId: 'admin' } }).then(({ data }) => {
+    axios.post(`/BI-API/DataSource/FindDatabaseByUserId`, null, { params: { userId: 'admin' } }).then(({ data }) => {
       this.databaseList = data.data;
     });
 
     axios
-      .get(`/BI/DataSource/GetCanvasDataSourceList`, { params: { userId: 'admin', canvasName: this.canvasName } })
+      .get(`/BI-API/DataSource/GetCanvasDataSourceList`, { params: { userId: 'admin', canvasName: this.canvasName } })
       .then(({ data }) => {
         this.canvasDataSourceList = JSON.parse(data.data);
         if (this.canvasDataSourceList.length > 0) this.canvasDataSource = this.canvasDataSourceList[0];
@@ -319,7 +319,7 @@ export default {
         this.addDatabaseDialogVisible = true;
       } else if (type === 'add') {
         this.addDatabaseDialogTitle = '添加数据库';
-        axios.post('/BI/DataSource/AddDatabase', this.temp).then(({ data }) => {
+        axios.post('/BI-API/DataSource/AddDatabase', this.temp).then(({ data }) => {
           this.temp.id = data.data;
           this.databaseList.push(this.temp);
         });
@@ -332,7 +332,7 @@ export default {
       } else if (type === 'remove') {
         this.addDatabaseDialogVisible = false;
         const id = this.temp.id;
-        axios.post('/BI/DataSource/DeleteDatabase', { id: id }).then(({ data }) => {
+        axios.post('/BI-API/DataSource/DeleteDatabase', { id: id }).then(({ data }) => {
           for (let i = 0; i < this.databaseList.length; i++) {
             const database = this.databaseList[i];
             if (database.id === id) {
@@ -403,7 +403,7 @@ export default {
           throw new Error('不支持的数据类型');
         }
 
-        axios.post('/BI/DataSource/GetData', task, { timeout: 100000 }).then(({ data }) => {
+        axios.post('/BI-API/DataSource/GetData', task, { timeout: 100000 }).then(({ data }) => {
           console.log('请求数据库', data);
           if (data.state !== 200) {
             console.error('请求数据异常');
@@ -493,7 +493,7 @@ export default {
       DB.setItem(`bi-user-canvas-data-source-${this.canvasName}`, dataSourceParameters);
 
       axios
-        .post(`/BI/DataSource/SaveCanvasDataSourceList`, this.canvasDataSourceList, {
+        .post(`/BI-API/DataSource/SaveCanvasDataSourceList`, this.canvasDataSourceList, {
           params: { userId: 'admin', canvasName: this.canvasName },
         })
         .then(({ data }) => {

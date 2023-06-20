@@ -11,11 +11,21 @@ import {
   CompileToModule,
   CompileTypescriptToIIFE,
 } from './components/DataVisualEditor/utils/compiler.ts';
+
+import {
+  getValueByAttributePath,
+  setJsonAttribute,
+  SetValueAndAttributePathFromKey,
+} from './components/DataVisualEditor/utils/chartUtils';
+
 import Vue from 'vue';
 import axios from 'axios';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
 const JSONfn = require('jsonfn').JSONfn;
+import store from '@/store';
+
+import eventBus from "./components/DataVisualEditor/utils/eventBus";
 
 // import * as ts from './compiler/typescript@5.0.4.js';
 
@@ -28,10 +38,6 @@ export default {
   props: {},
   computed: {},
   created() {
-
-    console.log("数据");
-
-
     window.bi = new Object();
     window.bi.Vue = Vue;
     window.bi.axios = axios;
@@ -39,9 +45,14 @@ export default {
     window.bi.BigNumber = BigNumber;
     window.bi.JSONfn = JSONfn;
     window.bi.App = this;
+    window.bi.store = store;
+    window.bi.$watch = this.$watch;
+
+    console.log('bsddfdsdfi', store.state);
+    console.log('bsddfdsdfi', this.$watch);
 
     axios
-      .get('/BI/Component/GetGlobalModuleScript', { timeout: 6000 })
+      .get('/BI-API/Component/GetGlobalModuleScript', { timeout: 6000 })
       .then(({ data }) => {
         if (data.state !== 200) {
           console.error('获取全局挂载脚本异常', error);
@@ -96,14 +107,25 @@ export default {
               }
               module.MountTarget[name] = { ...module.MountTarget[name], ...module.default };
             }
+
+            bi.utils.getValueByAttributePath = getValueByAttributePath;
+            bi.utils.setJsonAttribute = setJsonAttribute;
+            bi.utils.SetValueAndAttributePathFromKey = SetValueAndAttributePathFromKey;
+            bi.utils.eventBus = eventBus;
           });
         });
       })
       .catch(error => {
         console.error(`挂载全局脚本异常: `, error);
-      });
+      })
+      .finally(() => {});
   },
-  mounted() {},
+  mounted() {
+    // store.commit("menuShow", false)
+    // setTimeout(() => {
+    //   store.commit("menuShow", true)
+    // }, 300);
+  },
   methods: {},
 };
 </script>

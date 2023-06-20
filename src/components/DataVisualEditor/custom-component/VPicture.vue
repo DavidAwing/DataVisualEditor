@@ -2,7 +2,7 @@
   <div class="container">
     <el-image
       style="width: 100%; height: 100%"
-      :src="element.data.image"
+      :src="src"
       :fit="element.data.fit"
     ></el-image>
   </div>
@@ -37,6 +37,12 @@ export default {
     curComponent() {
       return this.$store.state.curComponent;
     },
+    src() {
+      if (this.element.data.imageUrl !== undefined && this.element.data.imageUrl !== null && this.element.data.imageUrl.trim() !== "") {
+        return this.element.data.imageUrl
+      }
+      return this.element.data.image
+    }
   },
   created() {
     eventBus.$on("onFillCanvas", (name, value) => {

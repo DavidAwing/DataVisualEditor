@@ -20,13 +20,7 @@
               </el-option>
             </el-select>
             <button class="add-selector">
-              <img
-                src="@/assets/setting.png"
-                alt=""
-                srcset=""
-                width="18px"
-                style="vertical-align: middle"
-              />
+              <img src="@/assets/setting.png" alt="" srcset="" width="18px" style="vertical-align: middle" />
             </button>
           </div>
 
@@ -126,9 +120,7 @@
             <el-collapse-item title="已应用样式" name="1">
               <el-tag
                 v-for="(style, styleIndex) in addedStyleTags"
-                :key="
-                  generateStyleId(style.styleId, curComponent.id) + styleIndex
-                "
+                :key="generateStyleId(style.styleId, curComponent.id) + styleIndex"
                 closable
                 :disable-transitions="false"
                 @close="handleStyleTagsClose(style)"
@@ -142,41 +134,22 @@
             <el-collapse-item title="变量" name="2">
               <div>
                 <el-form-item
-                  v-for="(
-                    { label, variable, type, options }, index
-                  ) in curStyle.attrList"
+                  v-for="({ label, variable, type, options }, index) in curStyle.attrList"
                   :key="index"
                   :label="label || variable"
                 >
                   <div v-if="type == 'color-picker'">
-                    <el-color-picker
-                      v-model="curStyle.attrList[index].value"
-                      :showAlpha="options.showAlpha"
-                    >
+                    <el-color-picker v-model="curStyle.attrList[index].value" :showAlpha="options.showAlpha">
                     </el-color-picker>
                   </div>
 
-                  <div
-                    v-else-if="type == 'string'"
-                    style="display: flex; width: 100%; position: relative"
-                  >
-                    <el-input
-                      v-model="curStyle.attrList[index].value"
-                      type="string"
-                    />
+                  <div v-else-if="type == 'string'" style="display: flex; width: 100%; position: relative">
+                    <el-input v-model="curStyle.attrList[index].value" type="string" />
                   </div>
 
                   <div v-else-if="type == 'select'">
-                    <el-select
-                      v-model="curStyle.attrList[index].value"
-                      placeholder=""
-                    >
-                      <el-option
-                        v-for="item in options"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value"
-                      >
+                    <el-select v-model="curStyle.attrList[index].value" placeholder="">
+                      <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
                       </el-option>
                     </el-select>
                   </div>
@@ -217,8 +190,8 @@
   todo: css支持 for if 变量
   */
 
-import { mapState } from "vuex";
-import Vue from "vue";
+import { mapState } from 'vuex';
+import Vue from 'vue';
 import {
   styleData,
   addSelectorToStyle,
@@ -234,48 +207,41 @@ import {
   addStyleListToHead,
   generateStyleId,
   removeAllStyleNotOfCanvasName,
-} from "@/components/DataVisualEditor/utils/style";
-import * as DB from "@/components/DataVisualEditor/utils/indexDB";
-const toStyleString = require("to-style").string;
-const toStyleObject = require("to-style").object;
-import { toCSS, toJSON } from "cssjson";
-import {
-  strToBase64,
-  isArrayInclude,
-} from "@/components/DataVisualEditor/utils/utils";
-import deepClone from "deep-clone";
-import axios from "axios";
-import StyleBase from "../StyleBase";
+} from '@/components/DataVisualEditor/utils/style';
+import * as DB from '@/components/DataVisualEditor/utils/indexDB';
+const toStyleString = require('to-style').string;
+const toStyleObject = require('to-style').object;
+import { toCSS, toJSON } from 'cssjson';
+import { strToBase64, isArrayInclude } from '@/components/DataVisualEditor/utils/utils';
+import deepClone from 'deep-clone';
+import axios from 'axios';
+import StyleBase from '../StyleBase';
 
 export default {
   components: {},
   extends: StyleBase,
   data() {
     return {
-      excludes: ["Group"], // 这些组件不显示内容
-      content: "",
-      selectKey: ["textAlign", "borderStyle", "verticalAlign"],
+      excludes: ['Group'], // 这些组件不显示内容
+      content: '',
+      selectKey: ['textAlign', 'borderStyle', 'verticalAlign'],
       styleData,
       inputVisible: false,
-      inputValue: "",
-      cssActiveCollapses: ["1", "2"],
+      inputValue: '',
+      cssActiveCollapses: ['1', '2'],
     };
   },
   computed: {
-    ...mapState(["canvasName"]),
+    ...mapState(['canvasName']),
   },
   watch: {
     curSelector: {
       handler: function (val, old) {
-
         // this.selectStyle.activeClassList = val
         // if (val.length == 0)
         //   return
-
         // // 保存原始的样式
-
         // // 恢复原始的样式
-
         // const component = this.curComponent
         // function changeStyle(style) {
         //   const keys = Object.keys(style)
@@ -283,7 +249,6 @@ export default {
         //     component.style[key] = style[key]
         //   })
         // }
-
         // changeStyle(toJSON(this.curStyle.style).attributes)
       },
       deep: true,
@@ -312,24 +277,22 @@ export default {
       // }
 
       if (this.curStyle.css == null || this.curStyle.css.trim().length === 0) {
-        console.warn("请选择样式");
+        console.warn('请选择样式');
         return;
       }
 
       if (this.curSelector == null || this.curSelector.trim().length === 0) {
-        console.warn("请选择选择器");
+        console.warn('请选择选择器');
         return;
       }
 
       let originalStyle = convertToCss(this.curStyle.css);
 
       const cssData = {};
-      this.curStyle.attrList.forEach((attr) => {
-        let attrKey = "";
+      this.curStyle.attrList.forEach(attr => {
+        let attrKey = '';
         const variable = attr.variable.trim();
-        !variable.startsWith("@")
-          ? (attrKey = variable)
-          : (attrKey = variable.substring(1));
+        !variable.startsWith('@') ? (attrKey = variable) : (attrKey = variable.substring(1));
         cssData[attrKey] = attr.value;
       });
 
@@ -344,13 +307,7 @@ export default {
 
       // 样式会添加到页面的head标签内
       const id = this.generateStyleId(
-        this.canvasName +
-          "-" +
-          this.curStyle.value +
-          "-" +
-          this.curComponent.id +
-          "-" +
-          this.curSelector
+        this.canvasName + '-' + this.curStyle.value + '-' + this.curComponent.id + '-' + this.curSelector
       );
       const selector = this.curSelector;
 
@@ -375,10 +332,7 @@ export default {
       for (let i = 0; i < this.curComponent.styleList.length; i++) {
         // todo 速度可以优化
         const style = this.curComponent.styleList[i];
-        if (
-          this.generateStyleId(style.styleId, this.curComponent.id) === id &&
-          style.selector === selector
-        ) {
+        if (this.generateStyleId(style.styleId, this.curComponent.id) === id && style.selector === selector) {
           this.curComponent.styleList[i].css = originalStyle;
           this.curComponent.styleList[i].cssData = cssData;
           isExists = true;
@@ -387,34 +341,21 @@ export default {
       }
 
       if (!isExists) {
-        let selectorName = "";
+        let selectorName = '';
         for (let i = 0; i < this.selectorList.length; i++) {
           const selector = this.selectorList[i];
-          if (
-            typeof selector === "object" &&
-            selector.label &&
-            selector.value &&
-            selector.value === this.curSelector
-          ) {
+          if (typeof selector === 'object' && selector.label && selector.value && selector.value === this.curSelector) {
             selectorName = selector.label;
             break;
-          } else if (
-            typeof selector === "string" &&
-            selector === this.curSelector
-          ) {
+          } else if (typeof selector === 'string' && selector === this.curSelector) {
             selectorName = selector;
             break;
           }
         }
 
         this.curComponent.styleList.push({
-          styleId:
-            this.canvasName +
-            "-" +
-            this.curStyle.value +
-            "-{id}-" +
-            this.curSelector,
-          styleName: "[" + selectorName + "][" + this.curStyle.label + "]",
+          styleId: this.canvasName + '-' + this.curStyle.value + '-{id}-' + this.curSelector,
+          styleName: '[' + selectorName + '][' + this.curStyle.label + ']',
           selector: this.curSelector,
           cssData: cssData,
           css: originalStyle,
@@ -426,9 +367,7 @@ export default {
       addStyleListToHead(this.curComponent, this.canvasName);
     },
 
-    contentChange(text) {
-
-    },
+    contentChange(text) {},
 
     showAttr(curComponent, key) {
       if (curComponent == null) return false;
@@ -441,16 +380,14 @@ export default {
       const style = this.curComponent.styleList[index];
       this.curComponent.styleList.splice(index, 1);
 
-      removeStyleById(
-        this.generateStyleId(style.styleId, this.curComponent.id)
-      );
+      removeStyleById(this.generateStyleId(style.styleId, this.curComponent.id));
 
       // this.addedStyleTags.splice(this.addedStyleTags.indexOf(tag), 1);
     },
 
     showInput() {
       this.inputVisible = true;
-      this.$nextTick((_) => {
+      this.$nextTick(_ => {
         this.$refs.saveTagInput.$refs.input.focus();
       });
     },
@@ -464,7 +401,7 @@ export default {
         this.addedStyleTags.push(inputValue);
       }
       this.inputVisible = false;
-      this.inputValue = "";
+      this.inputValue = '';
     },
   },
 };

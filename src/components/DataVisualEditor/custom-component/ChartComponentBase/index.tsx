@@ -18,20 +18,49 @@ export default class ChartsComponentBase extends ComponentBase {
   chartDom: HTMLElement | undefined = undefined
   chart: any = undefined
   editSeriesDialog = false
+  editOptionDialog = false
   oldSeries: any = undefined
   oldStyle: any = {}
+  selectChartStyle: any = {}
   activeSerieIndex = 0
+  chartStyleMap: any = {}
+
+
 
   // 计算属性
   get styleList() {
     return this.element.styleList;
   }
 
+  get chartStyleList() {
+
+    if (Object.keys(this.chartStyleMap).length === 0)
+      return []
+
+    if (this.activeSerie.type === "bar") {
+
+    }
+    if (this.activeSerie.type === "line") {
+
+    }
+    if (this.activeSerie.type === "pie") {
+
+    }
+    if (this.activeSerie.type === "scatter") {
+
+    }
+    if (this.activeSerie.type === "gauge") {
+
+    }
+
+    return this.chartStyleMap[this.activeSerie.type] || []
+  }
+
   get option() {
     return this.element.data.option;
   }
 
-  set option(val) {
+  set option(val: any) {
     this.element.data.option = val;
   }
   get test222(): any {
@@ -85,15 +114,23 @@ export default class ChartsComponentBase extends ComponentBase {
         value: "pie",
       },
       {
+        label: "仪表盘",
+        value: "gauge",
+      },
+      {
         label: "散点(气泡)图",
         value: "scatter",
       },
+
     ]
   }
 
   constructor() {
     super()
-    console.log();
+
+
+
+
   }
 
   // render(createElement: any) {

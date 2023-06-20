@@ -130,13 +130,13 @@ module.exports = defineConfig({
     historyApiFallback: true,
     allowedHosts: 'all',
     proxy: {
-      '/BI': {
+      '/BI-API': {
         target: 'http://127.0.0.1:5053',
         secure: false,
         changeOrigin: true,
         ws: true,
         pathRewrite: {
-          '^/BI': '/'
+          '^/BI-API': '/'
         }
       },
       '/H5': {

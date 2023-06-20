@@ -20,13 +20,7 @@
               </el-option>
             </el-select>
             <button class="set-selector">
-              <img
-                src="@/assets/setting.png"
-                alt=""
-                srcset=""
-                width="18px"
-                style="vertical-align: middle"
-              />
+              <img src="@/assets/setting.png" alt="" srcset="" width="18px" style="vertical-align: middle" />
             </button>
           </div>
 
@@ -57,21 +51,10 @@
 
           <el-form-item label="选项" slot="reference">
             <div style="width: 100%; min-width: 100%; display: flex">
-              <el-cascader
-                v-model="selectedStyle"
-                :options="styleList"
-                @change="handleStyleChange"
-                clearable
-              >
+              <el-cascader v-model="selectedStyle" :options="styleList" @change="handleStyleChange" clearable>
               </el-cascader>
               <button class="set-style" v-if="false">
-                <img
-                  src="@/assets/setting.png"
-                  alt=""
-                  srcset=""
-                  width="18px"
-                  style="vertical-align: middle"
-                />
+                <img src="@/assets/setting.png" alt="" srcset="" width="18px" style="vertical-align: middle" />
               </button>
             </div>
           </el-form-item>
@@ -117,9 +100,7 @@
             <el-collapse-item title="设置" name="2">
               <div style="display: flex; flex-flow: column nowrap">
                 <el-form-item
-                  v-for="(
-                    { label, variable, type, options }, index
-                  ) in curStyle.attrList"
+                  v-for="({ label, variable, type, options }, index) in curStyle.attrList"
                   :key="index + '-' + type"
                   :label="label || variable"
                 >
@@ -139,7 +120,7 @@
                           circle
                           @click="
                             () => {
-                              onIconClick([...icon['onClick']], {
+                              onStyleAttrEvent([...icon['onClick']], {
                                 variable: variable,
                                 type: type,
                                 attrIndex: index,
@@ -160,32 +141,15 @@
                   <div v-if="type === 'color-picker'">
                     <div
                       v-if="options.gradientType === 'linear'"
-                      style="
-                        display: flex;
-                        width: 100%;
-                        position: relative;
-                        flex-flow: column nowrap;
-                      "
+                      style="display: flex; width: 100%; position: relative; flex-flow: column nowrap"
                     >
-                      <div style="display: flex; justify-content: center">
-                        起止位置
-                      </div>
+                      <div style="display: flex; justify-content: center">起止位置</div>
 
-                      <div
-                        style="
-                          flex: 1;
-                          width: 100%;
-                          display: flex;
-                          flex-flow: row nowrap;
-                          justify-content: center;
-                        "
-                      >
+                      <div style="flex: 1; width: 100%; display: flex; flex-flow: row nowrap; justify-content: center">
                         <span style="margin-left: 8px">右</span>
                         <span style="margin-left: 10px">
                           <el-input-number
-                            v-model.number="
-                              curStyle.attrList[index].options.value.x
-                            "
+                            v-model.number="curStyle.attrList[index].options.value.x"
                             type="number"
                             :min="0"
                             :max="1"
@@ -206,9 +170,7 @@
                         <span style="margin-left: 8px">下</span>
                         <span style="margin-left: 10px">
                           <el-input-number
-                            v-model.number="
-                              curStyle.attrList[index].options.value.y
-                            "
+                            v-model.number="curStyle.attrList[index].options.value.y"
                             type="number"
                             :min="0"
                             :max="1"
@@ -229,9 +191,7 @@
                         <span style="margin-left: 8px">左</span>
                         <span style="margin-left: 10px">
                           <el-input-number
-                            v-model.number="
-                              curStyle.attrList[index].options.value.x2
-                            "
+                            v-model.number="curStyle.attrList[index].options.value.x2"
                             type="number"
                             :min="0"
                             :max="1"
@@ -252,9 +212,7 @@
                         <span style="margin-left: 8px">上</span>
                         <span style="margin-left: 10px">
                           <el-input-number
-                            v-model.number="
-                              curStyle.attrList[index].options.value.y2
-                            "
+                            v-model.number="curStyle.attrList[index].options.value.y2"
                             type="number"
                             :min="0"
                             :max="1"
@@ -274,25 +232,15 @@
                           align-items: center;
                           margin-top: 6px;
                         "
-                        v-for="item in curStyle.attrList[index].options.value
-                          .colorStops"
+                        v-for="item in curStyle.attrList[index].options.value.colorStops"
                       >
                         <div style="display: flex; justify-content: center">
                           <span style="margin-left: 10px">
-                            <el-input-number
-                              v-model.number="item.offset"
-                              type="number"
-                              :min="0"
-                              :max="1"
-                              :step="0.1"
+                            <el-input-number v-model.number="item.offset" type="number" :min="0" :max="1" :step="0.1"
                           /></span>
 
                           <span style="margin-left: 10px">
-                            <el-color-picker
-                              v-model="item.color"
-                              :showAlpha="true"
-                            >
-                            </el-color-picker>
+                            <el-color-picker v-model="item.color" :showAlpha="true"> </el-color-picker>
                           </span>
                         </div>
                       </div>
@@ -300,21 +248,12 @@
 
                     <div
                       v-else-if="options.gradientType === 'radial'"
-                      style="
-                        display: flex;
-                        width: 100%;
-                        position: relative;
-                        flex-flow: column nowrap;
-                      "
+                      style="display: flex; width: 100%; position: relative; flex-flow: column nowrap"
                     >
                       辐射状的渐变
                     </div>
 
-                    <el-color-picker
-                      v-else
-                      v-model="curStyle.attrList[index].value"
-                      :showAlpha="options.showAlpha"
-                    >
+                    <el-color-picker v-else v-model="curStyle.attrList[index].value" :showAlpha="options.showAlpha">
                     </el-color-picker>
                   </div>
 
@@ -348,14 +287,8 @@
                     />
                   </div>
 
-                  <div
-                    v-else-if="type === 'number'"
-                    style="display: flex; width: 100%; position: relative"
-                  >
-                    <el-input
-                      v-model.number="curStyle.attrList[index].value"
-                      type="number"
-                    />
+                  <div v-else-if="type === 'number'" style="display: flex; width: 100%; position: relative">
+                    <el-input v-model.number="curStyle.attrList[index].value" type="number" />
                     <el-select
                       v-if="curStyle.attrList[index].options.unit"
                       v-model="curStyle.attrList[index].options.unit"
@@ -368,20 +301,14 @@
 
                   <div
                     v-else-if="type === 'integer'"
+                    v-show="options.show === false ? false : true"
                     style="display: flex; width: 100%; position: relative"
                   >
                     <!--  oninput="value=value.replace(/[^0-9]/g,'')"     :max="options.max !== undefined ? options.max : 99999"-->
                     <el-input-number
                       v-model.number="curStyle.attrList[index].value"
-                      :min="
-                        options.min !== undefined ? options.min : -999999999
-                      "
-                      :max="
-                        typeof options.max === 'string' &&
-                        options.max.startsWith('#')
-                          ? getComputedValue(options.max)
-                          : options.max || 999999999
-                      "
+                      :min="options.min !== undefined ? options.min : -999999999"
+                      :max="options.max !== undefined ? options.max : 999999999"
                       :step="options.step !== undefined ? options.step : 1"
                       type="number"
                       @change="
@@ -406,12 +333,9 @@
                   </div>
 
                   <div v-else-if="type == 'select'">
-                    <el-select
-                      v-model="curStyle.attrList[index].value"
-                      placeholder=""
-                    >
+                    <el-select v-model="curStyle.attrList[index].value" placeholder="">
                       <el-option
-                        v-for="item in options"
+                        v-for="item in options.options"
                         :key="item.value"
                         :label="item.label"
                         :value="item.value"
@@ -420,17 +344,14 @@
                     </el-select>
                   </div>
 
-                  <div v-else-if="type === 'string[]' || type === 'number[]'">
-                    <div
-                      v-for="(item, itemIndex) in curStyle.attrList[index]
-                        .value"
-                    >
+                  <div v-else-if="type === 'string[]'">
+                    <div v-for="(item, itemIndex) in curStyle.attrList[index].value">
                       <el-input
                         v-model="curStyle.attrList[index].value[itemIndex]"
                         :type="type === 'string[]' ? 'text' : 'number'"
                         @focus="
                           () => {
-                            onControlEvent([...options['onFocus']], {
+                            onStyleAttrEvent([...options['onFocus']], {
                               attrIndex: index,
                               attr: curStyle.attrList[index],
                               style: curStyle,
@@ -442,10 +363,21 @@
                     </div>
                   </div>
 
+                  <div v-else-if="type === 'number[]' || type === 'integer[]'">
+                    <div
+                      v-for="(item, itemIndex) in curStyle.attrList[index].value"
+                      style="display: flex; width: 100%; position: relative"
+                    >
+                      <el-input-number
+                        v-model.number="curStyle.attrList[index].value[itemIndex]"
+                        :step="1"
+                        type="number"
+                      />
+                    </div>
+                  </div>
+
                   <div v-else-if="type === 'checkbox'">
-                    <el-checkbox
-                      v-model="curStyle.attrList[index].value"
-                    ></el-checkbox>
+                    <el-checkbox v-model="curStyle.attrList[index].value"></el-checkbox>
                   </div>
                 </el-form-item>
               </div>
@@ -484,8 +416,8 @@
   todo: css支持 for if 变量
   */
 
-import { mapState } from "vuex";
-import Vue from "vue";
+import { mapState } from 'vuex';
+import Vue from 'vue';
 import {
   styleData,
   addSelectorToStyle,
@@ -500,48 +432,46 @@ import {
   addStyleListToHead,
   generateStyleId,
   removeAllStyleNotOfCanvasName,
-} from "@/components/DataVisualEditor/utils/style";
-import * as DB from "@/components/DataVisualEditor/utils/indexDB";
-const toStyleString = require("to-style").string;
-const toStyleObject = require("to-style").object;
-import { toCSS, toJSON } from "cssjson";
-import {
-  strToBase64,
-  isArrayInclude,
-  removeWhitespace,
-} from "@/components/DataVisualEditor/utils/utils";
-import deepClone from "deep-clone";
-import StyleBase from "../StyleBase";
-import axios from "axios";
-import eventBus from "../../../utils/eventBus";
-import { CRUD } from "../../../utils/chartUtils";
+} from '@/components/DataVisualEditor/utils/style';
+import * as DB from '@/components/DataVisualEditor/utils/indexDB';
+const toStyleString = require('to-style').string;
+const toStyleObject = require('to-style').object;
+import { toCSS, toJSON } from 'cssjson';
+import { strToBase64, isArrayInclude, removeWhitespace } from '@/components/DataVisualEditor/utils/utils';
+import deepClone from 'deep-clone';
+import StyleBase from '../StyleBase';
+import axios from 'axios';
+import eventBus from '../../../utils/eventBus';
+import { CRUD } from '../../../utils/chartUtils';
 
 export default {
   components: {},
   extends: StyleBase,
   data() {
     return {
-      excludes: ["Group"], // 这些组件不显示内容
-      content: "",
-      selectKey: ["textAlign", "borderStyle", "verticalAlign"],
+      excludes: ['Group'], // 这些组件不显示内容
+      content: '',
+      selectKey: ['textAlign', 'borderStyle', 'verticalAlign'],
       styleData,
       inputVisible: false,
-      inputValue: "",
-      cssActiveCollapses: ["1", "2"],
+      inputValue: '',
+      cssActiveCollapses: ['1', '2'],
     };
   },
   computed: {
-    ...mapState(["canvasName"]),
+    ...mapState(['canvasName']),
     addedStyleTags() {
-      if (
-        this.curComponent.styleList == null ||
-        this.curComponent.styleList.length === 0
-      )
-        return [];
+      if (this.curComponent.styleList == null || this.curComponent.styleList.length === 0) return [];
       return this.curComponent.styleList;
     },
   },
-  mounted() {},
+  beforeCreate(){
+
+  },
+  mounted() {
+
+
+  },
   methods: {
     generateStyleId,
 
@@ -551,14 +481,14 @@ export default {
       const style = this.curStyle;
       const component = this.curComponent;
       if (style.css == null || style.css.trim().length === 0) {
-        console.warn("请选择样式");
+        console.warn('请选择样式');
         return;
       }
 
       const styleArr = this.getHierarchy(style.hierarchy);
 
-      const key = "styleList:" + this.curComponent.component;
-      let menuName = "";
+      const key = 'styleList:' + this.curComponent.component;
+      let menuName = '';
       for (let i = 0; i < styleArr.length; i++) {
         for (let j = 0; j < this.styleMap[key].length; j++) {
           if (this.styleMap[key][j].value === styleArr[i]) {
@@ -566,24 +496,22 @@ export default {
             break;
           }
         }
-        if (menuName.trim() !== "") break;
+        if (menuName.trim() !== '') break;
       }
 
       const cssData = {};
-      this.curStyle.attrList.forEach((attr) => {
-        let attrKey = "";
+      this.curStyle.attrList.forEach(attr => {
+        let attrKey = '';
         const variable = attr.variable.trim();
-        !variable.startsWith("@")
-          ? (attrKey = variable)
-          : (attrKey = variable.substring(1));
+        !variable.startsWith('@') ? (attrKey = variable) : (attrKey = variable.substring(1));
         cssData[attrKey] = attr.value;
       });
 
       let styleValue = this.curStyle.value;
-      if (styleValue.includes("@")) {
+      if (styleValue.includes('@')) {
         const regex = /@\w+(?=[\x20\].])/g;
         const match = styleValue.match(regex); // ['@index', '@aaindex']
-        match.forEach((placeholder) => {
+        match.forEach(placeholder => {
           const key = placeholder.substring(1);
           styleValue = styleValue.replaceAll(placeholder, cssData[key]);
         });
@@ -591,11 +519,11 @@ export default {
 
       const styleId = removeWhitespace(
         this.canvasName +
-          "-" +
+          '-' +
           component.id +
-          "-" +
+          '-' +
           styleArr[0] + // 父样式
-          "-" +
+          '-' +
           styleValue
       );
 
@@ -617,29 +545,16 @@ export default {
           // todo 给修改的样式标签一个动画,并高亮显示当前标签
           const oldData = deepClone(this.curComponent.styleList[i]);
           this.$set(this.curComponent.styleList, i, newData);
-          eventBus.$emit(
-            "onOptionChange",
-            this.curComponent.data.name,
-            CRUD.update,
-            newData,
-            oldData
-          );
+          eventBus.$emit('onOptionChange', this.curComponent.data.name, CRUD.update, newData, oldData);
           return;
         }
       }
 
       this.curComponent.styleList.push(newData);
-      eventBus.$emit(
-        "onOptionChange",
-        this.curComponent.data.name,
-        CRUD.create,
-        newData,
-        undefined
-      );
+      eventBus.$emit('onOptionChange', this.curComponent.data.name, CRUD.create, newData, undefined);
     },
 
-    contentChange(text) {
-    },
+    contentChange(text) {},
 
     showAttr(curComponent, key) {
       if (curComponent == null) return false;
@@ -649,7 +564,7 @@ export default {
 
     showInput() {
       this.inputVisible = true;
-      this.$nextTick((_) => {
+      this.$nextTick(_ => {
         this.$refs.saveTagInput.$refs.input.focus();
       });
     },
@@ -663,11 +578,11 @@ export default {
         this.addedStyleTags.push(inputValue);
       }
       this.inputVisible = false;
-      this.inputValue = "";
+      this.inputValue = '';
     },
 
     testAAA2() {
-      alert("aaa222");
+      alert('aaa222');
     },
   },
 };

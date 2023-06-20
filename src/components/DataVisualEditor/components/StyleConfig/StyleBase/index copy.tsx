@@ -586,11 +586,25 @@ export default class StyleListBase extends tsc<Vue> {
 
     this.$watch('curStyle', (val, old) => {
 
+      console.log("当前样式abc", this.STYLE_STATE);
+
       if (JSONfn.stringify(this.curStyle) === "{}")
         return
 
+      // if (this.STYLE_STATE === StyleState.recovered) {
+      //   this.STYLE_STATE = StyleState.latest
+      //   return
+      // }
+
+      console.log("改变了或者切换", val, old, this.oldStyle);
+
       // 是否切换了样式
       const isSwitchStyle = val.hierarchy !== old.hierarchy
+
+      // if (this.STYLE_STATE === StyleState.created) {
+
+      //   console.log("curStylepcsdf刚刚创建", this.curStyle);
+      // }
 
       const execution = () => {
         if (this.curStyle !== undefined && this.curStyle.attrList !== undefined) {
@@ -637,7 +651,7 @@ export default class StyleListBase extends tsc<Vue> {
                 placeholder = placeholder.substring(0, placeholder.length - 1)
               const attrKey = placeholder.startsWith("@") ? placeholder.substring(1) : placeholder;
               const findAttr = this.curStyle.attrList.find((item: any) => item.variable === placeholder || item.variable === placeholder.substring(1))
-              if (findAttr.options.dataExclude === true)
+              if (findAttr.dataExclude === true)
                 cssData.dataExcludeList.push(variable)
               cssData[attrKey] = findAttr.value;
             });
@@ -646,7 +660,7 @@ export default class StyleListBase extends tsc<Vue> {
 
         if (attr.type === "color-picker" && attr.options !== undefined && attr.options.gradientType !== undefined && attr.options.gradientType === 'linear') {
           const gradient = attr.options.value
-          if (attr.options.dataExclude === true)
+          if (attr.dataExclude === true)
             cssData.dataExcludeList.push(attrKey)
           cssData[attrKey] = new echarts.graphic.LinearGradient(gradient.x, gradient.y, gradient.x2, gradient.y2, gradient.colorStops)
           return
@@ -667,7 +681,7 @@ export default class StyleListBase extends tsc<Vue> {
             });
           }
         }
-        if (attr.options.dataExclude === true)
+        if (attr.dataExclude === true)
           cssData.dataExcludeList.push(attrKey)
         cssData[attrKey] = attr.value;
       });
@@ -711,9 +725,6 @@ export default class StyleListBase extends tsc<Vue> {
       this.$nextTick(() => {
         execution()
       })
-
-
-      console.log("css数据", cssData);
 
 
 
@@ -785,6 +796,9 @@ export default class StyleListBase extends tsc<Vue> {
               }
             })
             this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
+            if (this.STYLE_STATE === StyleState.created) {
+              this.STYLE_STATE = StyleState.recovered
+            }
           }
           // this.isSwitchToStyle = false
         } else if (this.curStyle.type === "css") {
@@ -840,9 +854,9 @@ export default class StyleListBase extends tsc<Vue> {
               console.warn("获取不到数据", attributePath, this.curComponent.data.option);
 
               cssData.dataExcludeList.forEach((key: string) => {
-                delete cssData[key]
+                // delete cssData[key]
               });
-              delete cssData.dataExcludeList
+              // delete cssData.dataExcludeList
               optionValue = { ...cssData }
               let newOption = SetValueAndAttributePathFromKey(this.curComponent.data.option, attributePath, optionValue)
               newOption = setJsonAttribute(newOption, attributePath, optionValue)
@@ -884,11 +898,8 @@ export default class StyleListBase extends tsc<Vue> {
               if (cssData.dataExcludeList.includes(variable))
                 return
               const value = getValueByAttributePath(optionValue, variable)
-              if (value === undefined || value === null) {
-                attr.value = ""
+              if (value === undefined || value === null)
                 return
-              }
-
               if (attr.type === "color-picker" && typeof value === "object" && value.type === "linear") {
                 attr.options.gradientType = "linear"
                 attr.options.value.x = value.x
@@ -918,9 +929,9 @@ export default class StyleListBase extends tsc<Vue> {
             console.log("afaf啊实打实的发发");
 
 
-            cssData.dataExcludeList.forEach((key: string) => {
-              delete cssData[key]
-            });
+            // cssData.dataExcludeList.forEach((key: string) => {
+            //   delete cssData[key]
+            // });
 
             delete cssData.dataExcludeList
             let newOption = SetValueAndAttributePathFromKey(this.curComponent.data.option, attributePath, cssData)
@@ -1173,6 +1184,7 @@ export default class StyleListBase extends tsc<Vue> {
 
     // todo 解析字符串设置数据
     this.$nextTick(() => {
+
     })
 
     args[0].forEach((str: string | undefined) => {
@@ -1209,12 +1221,11 @@ export default class StyleListBase extends tsc<Vue> {
               CompileToModule(code).then((module: EsModule<any>) => {
 
                 if (Object.prototype.toString.call(module) === "[object Module]") {
-                  if ((methodName === undefined || methodName === null || module[methodName] === undefined || module[methodName] === null) || module.default === undefined) {
-                    args[1].ParameterString = methodName
-                    module.default.bind(this)(args[1])
+                  if ((methodName === undefined || methodName === null) && module.default !== undefined) {
+                    module.default.bind(this)()
                   } else if (Object.prototype.toString.call(methodName) === "[object String]" &&
                     Object.prototype.toString.call(module[methodName]) === "[object Function]") {
-                    module[methodName].bind(this)(args[1])
+                    module[methodName].bind(this)()
                   } else {
 
                   }
@@ -1245,7 +1256,6 @@ export default class StyleListBase extends tsc<Vue> {
 
 
   onIconClick(...args: any[]) {
-    debugger
     args[0].forEach((str: string | undefined) => {
       if (typeof str !== 'string' || str.trim() === "")
         return

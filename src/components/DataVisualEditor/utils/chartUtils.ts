@@ -47,6 +47,9 @@ export function setJsonAttribute(json: string | object, attributePath: string, v
         }
         return originalObj;
       }
+
+      // if (currentObj === undefined)
+      //   currentObj = []
       if (currentObj[match[1]] === undefined || currentObj[match[1]] === null)
         currentObj[match[1]] = []
       if (currentObj[match[1]][index] === undefined ||
@@ -70,6 +73,7 @@ export function setJsonAttribute(json: string | object, attributePath: string, v
       }
       currentObj = currentObj[property];
     }
+
   }
   return originalObj
 }
@@ -86,7 +90,7 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
   // }
 
   const properties = removeWhitespace(attributePath).split(".").map((x: any) => x.trim());
-  let currentObj: any = undefined
+  let currentObj: any = null
 
   if (from.constructor.name === "Window" ||
     Object.prototype.toString.call(currentObj) === "[object Module]" ||
@@ -99,7 +103,7 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
   }
 
   if (currentObj === undefined)
-      throw new Error(`getValueByAttributePath|currentObj数据未定义,attributePath=${attributePath}`);
+    throw new Error(`getValueByAttributePath|currentObj数据未定义,attributePath=${attributePath}`);
 
   for (let i = 0; i < properties.length; i++) {
     const property = properties[i];
@@ -116,6 +120,10 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
       if (isNaN(index))
         throw Error("setJsonAttribute,格式不正确: " + attributePath);
       if (i === properties.length - 1) {
+
+        // if (currentObj === undefined) {
+        //   currentObj = []
+        // }
 
         if (currentObj[match[1]] === undefined || currentObj[match[1]] === null)
           return undefined
@@ -153,12 +161,13 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
         }
       }
       currentObj = currentObj[property];
-    }
-
-    if (currentObj === undefined)  {
-      console.warn(`getValueByAttributePath|currentObj数据未定义,attributePath=${attributePath},property=${property}`);
+    } else if (currentObj[property] === undefined) {
       return undefined
     }
+    // if (currentObj === undefined) {
+    //   console.warn(`getValueByAttributePath|currentObj数据未定义,attributePath=${attributePath},property=${property}`);
+    //   return undefined
+    // }
   }
 
   return currentObj

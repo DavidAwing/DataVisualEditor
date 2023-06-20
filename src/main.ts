@@ -38,6 +38,11 @@ Vue.component('top-el-dialog', {
 });
 
 
+Vue.config.warnHandler = (msg: string, vm: Vue, trace: string) => {
+  console.log("拦截vue全局警告", msg, vm, trace);
+
+}
+
 
 Vue.config.productionTip = false
 

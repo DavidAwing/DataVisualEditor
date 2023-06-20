@@ -173,6 +173,8 @@ const list = [
       width: 'px',
       height: 'px',
       fontSize: 'px',
+      borderRadius: 'px',
+      letterSpacing: 'px'
     },
     attrList: [
       {
@@ -472,6 +474,7 @@ const list = [
       width: 'px',
       height: 'px',
       fontSize: 'px',
+      borderRadius: 'px',
     },
     attrList: [
       {
@@ -894,6 +897,7 @@ const list = [
     data: {
       name: "",
       image: require('../assets/img-default.webp'),
+      imageUrl: "",
       fit: "scale-down",
       show: true,
       isAlign: true
@@ -998,6 +1002,12 @@ const list = [
         ]
       },
       {
+        key: "imageUrl",
+        type: "text",
+        label: '图片地址',
+        bind: "data"
+      },
+      {
         type: "input-file",
         label: '选择图片',
         bind: function (self, event) {
@@ -1042,30 +1052,6 @@ const list = [
         bind: 'style'
       },
       {
-        key: "fontSize",
-        type: "number",
-        label: '字体大小',
-        bind: 'style'
-      },
-      {
-        key: "fontWeight",
-        type: "number",
-        label: '字体粗细',
-        bind: 'style'
-      },
-      {
-        key: "lineHeight",
-        type: "number",
-        label: '行高',
-        bind: 'style'
-      },
-      {
-        key: "letterSpacing",
-        type: "number",
-        label: '字间距',
-        bind: 'style'
-      },
-      {
         key: "textAlign",
         type: "select",
         label: '左右对齐',
@@ -1090,19 +1076,6 @@ const list = [
         type: "number",
         label: '透明度',
         bind: 'style'
-      },
-      {
-        key: "fontFamily",
-        type: "select",
-        label: '字体',
-        options: fontFamilyOpts,
-        bind: 'style'
-      },
-      {
-        key: "text",
-        type: "textarea",
-        label: '文本',
-        bind: "data"
       }
     ],
     events: {

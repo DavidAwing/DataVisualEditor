@@ -38,14 +38,17 @@ const ObjectToChartOption = (option, obj, indexList) => {
   keys.forEach(key => {
     let path = key.substring(5).split(/\s+/).filter(str => str !== undefined && str !== null && str.trim() !== "").pop().trim()
 
-
     if (searchStrIndexOf(path, "[]") === 1 && indexList.length === 1) {
       path = path.replace("[]", `[${indexList[0]}]`)
     } else if (searchStrIndexOf(path, "[]") === 2 && indexList.length === 2) {
       path = path.replace("[]", `[${indexList[0]}]`)
       path = path.replace("[]", `[${indexList[1]}]`)
-    } else if (searchStrIndexOf(path, "[]") === 1 && indexList.length === 2) {
+    } else if (searchStrIndexOf(path, "[]") === 3 && indexList.length === 3) {
+      path = path.replace("[]", `[${indexList[0]}]`)
       path = path.replace("[]", `[${indexList[1]}]`)
+      path = path.replace("[]", `[${indexList[2]}]`)
+    } else {
+      throw new Error("ObjectToChartOption|报错了")
     }
 
     const value = obj[key]
@@ -197,7 +200,7 @@ const data = {
               for (let i = 0; i < arr.length; i++) {
                 for (let j = 0; j < arr[i].length; j++) {
                   const obj = arr[i][j]
-                  ObjectToChartOption(option, obj, [i, j])
+                  ObjectToChartOption(option, obj, [j])
                 }
               }
             } else if (data.dataTypeToken === "[n][1]{SameAttributeName}") {

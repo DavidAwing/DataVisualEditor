@@ -8,7 +8,20 @@
       <el-form label-position="left">
         <el-form-item label="选择器" v-if="false">
           <div style="width: 100%; min-width: 100%; display: flex">
-            <el-select v-model="curSelector" clearable>
+            <el-select
+              v-model="curSelector"
+              clearable
+              @change="
+                (val, old) => {
+                  onStyleAttrEvent([...options['onChange']], {
+                    attrIndex: index,
+                    attr: curStyle.attrList[index],
+                    style: curStyle,
+                    eventData: { val, old },
+                  });
+                }
+              "
+            >
               <!-- <el-option key="main-style" label="主要样式" value="main-style"></el-option>
                                                                                                           <hr class="hr-edge-weak" style="margin-top: 6px;"> -->
               <el-option
@@ -293,6 +306,16 @@
                       v-if="curStyle.attrList[index].options.unit"
                       v-model="curStyle.attrList[index].options.unit"
                       style="width: 100px; margin-left: 6px"
+                      @change="
+                        (val, old) => {
+                          onStyleAttrEvent([...options['onChange']], {
+                            attrIndex: index,
+                            attr: curStyle.attrList[index],
+                            style: curStyle,
+                            eventData: { val, old },
+                          });
+                        }
+                      "
                     >
                       <el-option key="px" label="px" value="px"></el-option>
                       <el-option key="%" label="%" value="%"></el-option>
@@ -326,6 +349,16 @@
                       v-if="curStyle.attrList[index].options.unit"
                       v-model="curStyle.attrList[index].options.unit"
                       style="width: 100px; margin-left: 6px"
+                      @change="
+                        (val, old) => {
+                          onStyleAttrEvent([...options['onChange']], {
+                            attrIndex: index,
+                            attr: curStyle.attrList[index],
+                            style: curStyle,
+                            eventData: { val, old },
+                          });
+                        }
+                      "
                     >
                       <el-option key="px" label="px" value="px"></el-option>
                       <el-option key="%" label="%" value="%"></el-option>
@@ -333,7 +366,20 @@
                   </div>
 
                   <div v-else-if="type == 'select'">
-                    <el-select v-model="curStyle.attrList[index].value" placeholder="">
+                    <el-select
+                      v-model="curStyle.attrList[index].value"
+                      placeholder=""
+                      @change="
+                        (val, old) => {
+                          onStyleAttrEvent([...options['onChange']], {
+                            attrIndex: index,
+                            attr: curStyle.attrList[index],
+                            style: curStyle,
+                            eventData: { val, old },
+                          });
+                        }
+                      "
+                    >
                       <el-option
                         v-for="item in options.options"
                         :key="item.value"
@@ -465,13 +511,8 @@ export default {
       return this.curComponent.styleList;
     },
   },
-  beforeCreate(){
-
-  },
-  mounted() {
-
-
-  },
+  beforeCreate() {},
+  mounted() {},
   methods: {
     generateStyleId,
 

@@ -118,6 +118,11 @@ export default {
     element: {
       handler: function (val) {
         console.log('element图形配置', val.data.option);
+
+
+
+
+
       },
       deep: true,
     },

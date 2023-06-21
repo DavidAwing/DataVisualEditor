@@ -3,6 +3,7 @@ import {
   removeWhitespace
 } from "@/components/DataVisualEditor/utils/utils";
 import { boolean } from "mathjs";
+import Vue from "vue";
 const JSONfn = require("jsonfn").JSONfn;
 
 
@@ -54,7 +55,15 @@ export function setJsonAttribute(json: string | object, attributePath: string, v
         currentObj[match[1]] = []
       if (currentObj[match[1]][index] === undefined ||
         currentObj[match[1]][index] === null) {
-        currentObj[match[1]][index] = {}
+
+        try {
+          currentObj[match[1]][index] = {}
+        } catch (error) {
+          currentObj[match[1]] = []
+          currentObj[match[1]][index] = {}
+        }
+
+
       }
       currentObj = currentObj[match[1]][index];
     } else if (
@@ -71,10 +80,15 @@ export function setJsonAttribute(json: string | object, attributePath: string, v
         }
         return originalObj;
       }
+
+      if (currentObj[property] === undefined) {
+        Vue.set(currentObj, property, {})
+      }
+
       currentObj = currentObj[property];
     }
-
   }
+
   return originalObj
 }
 
@@ -134,6 +148,10 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
           return undefined
         }
       }
+
+      if (currentObj[match[1]] === undefined || currentObj[match[1]] === null) 
+        return currentObj[match[1]] 
+        
       currentObj = currentObj[match[1]][index];
     } else if (
       Object.prototype.toString.call(currentObj) === "[object Object]"
@@ -146,6 +164,11 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
           return undefined
         }
       }
+
+      if (currentObj[property] === undefined) {
+        return undefined
+      }
+
       currentObj = currentObj[property];
     } else if (Object.prototype.toString.call(currentObj) === "[object Window]" ||
       Object.prototype.toString.call(currentObj) === "[object Module]" ||
@@ -164,11 +187,12 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
     } else if (currentObj[property] === undefined) {
       return undefined
     }
-    // if (currentObj === undefined) {
-    //   console.warn(`getValueByAttributePath|currentObj数据未定义,attributePath=${attributePath},property=${property}`);
-    //   return undefined
-    // }
+    if (currentObj === undefined) {
+      console.warn(`getValueByAttributePath|currentObj数据未定义,attributePath=${attributePath},property=${property}`);
+      return undefined
+    }
   }
+
 
   return currentObj
 }
@@ -179,6 +203,10 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
 
 // variable是itemStyle.color或series[0]这样的格式
 export function SetValueAndAttributePathFromKey(json: string | object, attributePath: string, value: any) {
+
+  if (attributePath.includes("data[0].name")) {
+    debugger
+  }
 
   let newJson: any = json;
   const keys = Object.keys(value)

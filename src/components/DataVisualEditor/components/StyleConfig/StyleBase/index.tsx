@@ -19,6 +19,7 @@ import {
 } from "../../../utils/chartUtils";
 import * as echarts from "echarts";
 import { EsModule } from "vue/types/options";
+import onStyleChange from "./onStyleChange";
 
 const JSONfn = require("jsonfn").JSONfn;
 const equal = require('fast-deep-equal')
@@ -46,7 +47,6 @@ class Job {
           Job.isFlushing = false
           Job.queue.clear()
         }
-
       })
     }
   }
@@ -92,6 +92,8 @@ export default class StyleListBase extends tsc<Vue> {
   selectedStyle: any = null
   STYLE_STATE: StyleState = StyleState.created
 
+
+  functionTimeList: Array<Date> = []
 
   getComputedValue(computedName: string, parameters: any) {
 
@@ -579,359 +581,444 @@ export default class StyleListBase extends tsc<Vue> {
   }
 
 
-  public created() {
+  public async created() {
 
     this.isStyleListInterrupt = false;
     // this.isSwitchToStyle = false;
 
+
+
     this.$watch('curStyle', (val, old) => {
 
-      if (JSONfn.stringify(this.curStyle) === "{}")
+
+
+
+      onStyleChange.bind(this)(val, old)
+      return
+
+      const curStyle = this.curStyle
+      if (JSONfn.stringify(curStyle) === "{}")
         return
 
-      // 是否切换了样式
-      const isSwitchStyle = val.hierarchy !== old.hierarchy
+      // 解决修改数据死循环
+      // this.functionTimeList.push(new Date())
+      // const size = 2
+      // if (this.functionTimeList.length > size) {
+      //   let totalDiff = 0;
+      //   for (let i = 1; i < this.functionTimeList.length; i++) {
+      //     const diff = this.functionTimeList[i].getTime() - this.functionTimeList[i - 1].getTime();
+      //     totalDiff += diff;
+      //   }
+      //   this.functionTimeList = []
+      //   if (totalDiff / size < 100) {
+      //     console.log("解决修改数据死循环");
+      //     return
+      //   }
+      // }
 
-      const execution = () => {
-        if (this.curStyle !== undefined && this.curStyle.attrList !== undefined) {
-          for (let i = 0; i < this.curStyle.attrList.length; i++) {
-            const attr = this.curStyle.attrList[i];
-            if (attr === undefined)
-              continue
-            if (Object.prototype.toString.call(attr.options) === "[object Object]") {
-              const keys = Object.keys(attr.options)
-              keys.filter(key => key.startsWith("on")).forEach((key: string) => {
-                let str = attr.options[key]
-                if (Array.isArray(str))
-                  str = str.join(";")
-                const returnedValue = this.executionString(str)
-              })
-            }
+      const onWatch = val.lifecycle && val.lifecycle.onWatch
+      if (onWatch !== undefined && onWatch !== null && typeof onWatch === 'string' && onWatch.startsWith("SCRIPT*")) {
+
+        const arr = onWatch.trim().split("*")
+        const scriptPath = arr[1].trim()
+        const methodName = arr[2]
+        const extraData: any = {}
+
+        axios.get("/BI-API/Component/GetScript", {
+          params: { name: scriptPath },
+          timeout: 1000 * 6,
+        }).then(({ data }) => {
+          if (data.state !== 200) {
+            console.warn("获取脚本异常", data);
+            return
           }
-        }
-        return
-        return new Promise((resolve, reject) => {
-          resolve(undefined)
-        })
-      }
+          const code = data.data;
+          if (scriptPath.endsWith("ts")) {
+            const iife = CompileTypescriptToIIFE(code);
+            const instance = new iife();
+          } else if (scriptPath.endsWith("js")) {
+            CompileToModule(code).then((module: EsModule<any>) => {
 
-      let attributePath = this.curStyle.value.split("~~~")[0]
-      const cssData: any = { dataExcludeList: [] };
-      const pathVariables: string[] = []
-      this.curStyle.attrList.forEach((attr: any) => {
-        const variable = attr.variable.trim();
-        let attrKey = variable.startsWith("@") ? variable.substring(1) : variable;
-        if (attrKey === undefined || attrKey.trim() === "")
-          return
+              if (Object.prototype.toString.call(module) === "[object Module]") {
+                if ((methodName === undefined || methodName === null || module[methodName] === undefined || module[methodName] === null) && module.default !== undefined) {
+                  extraData.ParameterString = methodName
+                  module.default.bind(this)(extraData)
+                } else if (Object.prototype.toString.call(methodName) === "[object String]" &&
+                  Object.prototype.toString.call(module[methodName]) === "[object Function]") {
+                  module[methodName].bind(this)(extraData)
+                } else {
 
-        if (attrKey.includes("@")) {
-
-          const regex = /@[^\\.\\[\s]+/g;
-          const match = attrKey.match(regex); // ['@index', '@aaindex']
-          if (match !== null) {
-            match.forEach((placeholder: string) => {
-              placeholder = placeholder.trim()
-              if (placeholder === "" || placeholder.trim() === "@")
-                return
-              if (placeholder.endsWith("]") || placeholder.endsWith("."))
-                placeholder = placeholder.substring(0, placeholder.length - 1)
-              const attrKey = placeholder.startsWith("@") ? placeholder.substring(1) : placeholder;
-              const findAttr = this.curStyle.attrList.find((item: any) => item.variable === placeholder || item.variable === placeholder.substring(1))
-              if (findAttr.options.dataExclude === true)
-                cssData.dataExcludeList.push(variable)
-              cssData[attrKey] = findAttr.value;
+                }
+              } else if (Object.prototype.toString.call(module.default) === '[object Function]') {
+                const instance = new module.default();
+              } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
+                const instance = module.default;
+              }
             });
           }
+        })
+
+
+
+
+
+
+        // 是否切换了样式
+        const isSwitchStyle = val.hierarchy !== old.hierarchy
+
+        const execution = () => {
+          if (curStyle !== undefined && curStyle.attrList !== undefined) {
+            for (let i = 0; i < curStyle.attrList.length; i++) {
+              const attr = curStyle.attrList[i];
+              if (attr === undefined)
+                continue
+              if (Object.prototype.toString.call(attr.options) === "[object Object]") {
+                const keys = Object.keys(attr.options)
+                keys.filter(key => key.startsWith("on")).forEach((key: string) => {
+                  let str = attr.options[key]
+                  if (Array.isArray(str))
+                    str = str.join(";")
+                  const returnedValue = this.executionString(str)
+                })
+              }
+            }
+          }
+          return
+          return new Promise((resolve, reject) => {
+            resolve(undefined)
+          })
         }
 
-        if (attr.type === "color-picker" && attr.options !== undefined && attr.options.gradientType !== undefined && attr.options.gradientType === 'linear') {
-          const gradient = attr.options.value
+        let attributePath = curStyle.value.split("~~~")[0]
+        const cssData: any = { dataExcludeList: [] };
+        const pathVariables: string[] = []
+        curStyle.attrList.forEach((attr: any) => {
+          const variable = attr.variable.trim();
+          let attrKey = variable.startsWith("@") ? variable.substring(1) : variable;
+          if (attrKey === undefined || attrKey.trim() === "")
+            return
+
+          if (attrKey.includes("@")) {
+
+            const regex = /@[^\\.\\[\s]+/g;
+            const match = attrKey.match(regex); // ['@index', '@aaindex']
+            if (match !== null) {
+              match.forEach((placeholder: string) => {
+                placeholder = placeholder.trim()
+                if (placeholder === "" || placeholder.trim() === "@")
+                  return
+                if (placeholder.endsWith("]") || placeholder.endsWith("."))
+                  placeholder = placeholder.substring(0, placeholder.length - 1)
+                const attrKey = placeholder.startsWith("@") ? placeholder.substring(1) : placeholder;
+                const findAttr = curStyle.attrList.find((item: any) => item.variable === placeholder || item.variable === placeholder.substring(1))
+                if (findAttr.options.dataExclude === true)
+                  cssData.dataExcludeList.push(variable)
+                cssData[attrKey] = findAttr.value;
+              });
+            }
+          }
+
+          if (attr.type === "color-picker" && attr.options !== undefined && attr.options.gradientType !== undefined && attr.options.gradientType === 'linear') {
+            const gradient = attr.options.value
+            if (attr.options.dataExclude === true)
+              cssData.dataExcludeList.push(attrKey)
+            cssData[attrKey] = new echarts.graphic.LinearGradient(gradient.x, gradient.y, gradient.x2, gradient.y2, gradient.colorStops)
+            return
+          }
+          if (attrKey.includes("@")) {
+            const regex = /@[^\\.\\[\s]+/g;
+            const match = attrKey.match(regex); // ['@index', '@aaindex']
+            if (match !== null) {
+              match.forEach((placeholder: string) => {
+                placeholder = placeholder.trim()
+                if (placeholder === "" || placeholder.trim() === "@")
+                  return
+                if (placeholder.endsWith("]") || placeholder.endsWith("."))
+                  placeholder = placeholder.substring(0, placeholder.length - 1)
+                const key = placeholder.startsWith("@") ? placeholder.substring(1) : placeholder
+                pathVariables.push(key)
+                attrKey = attrKey.replaceAll(placeholder, cssData[key])
+              });
+            }
+          }
           if (attr.options.dataExclude === true)
             cssData.dataExcludeList.push(attrKey)
-          cssData[attrKey] = new echarts.graphic.LinearGradient(gradient.x, gradient.y, gradient.x2, gradient.y2, gradient.colorStops)
-          return
-        }
-        if (attrKey.includes("@")) {
-          const regex = /@[^\\.\\[\s]+/g;
-          const match = attrKey.match(regex); // ['@index', '@aaindex']
+          cssData[attrKey] = attr.value;
+        });
+
+        if (attributePath.includes("@")) {
+          const regex = /@\w+(?=[\x20\].])/g;
+          const match = attributePath.match(regex); // ['@index', '@aaindex']
           if (match !== null) {
             match.forEach((placeholder: string) => {
               placeholder = placeholder.trim()
               if (placeholder === "" || placeholder.trim() === "@")
                 return
-              if (placeholder.endsWith("]") || placeholder.endsWith("."))
-                placeholder = placeholder.substring(0, placeholder.length - 1)
-              const key = placeholder.startsWith("@") ? placeholder.substring(1) : placeholder
+              const key = placeholder.startsWith("@") ? placeholder.substring(1) : placeholder;
               pathVariables.push(key)
-              attrKey = attrKey.replaceAll(placeholder, cssData[key])
+              attributePath = attributePath.replaceAll(placeholder, cssData[key]);   // 变量赋值
+              delete cssData[key]
             });
           }
         }
-        if (attr.options.dataExclude === true)
-          cssData.dataExcludeList.push(attrKey)
-        cssData[attrKey] = attr.value;
-      });
 
-      if (attributePath.includes("@")) {
-        const regex = /@\w+(?=[\x20\].])/g;
-        const match = attributePath.match(regex); // ['@index', '@aaindex']
-        if (match !== null) {
-          match.forEach((placeholder: string) => {
-            placeholder = placeholder.trim()
-            if (placeholder === "" || placeholder.trim() === "@")
-              return
-            const key = placeholder.startsWith("@") ? placeholder.substring(1) : placeholder;
-            pathVariables.push(key)
-            attributePath = attributePath.replaceAll(placeholder, cssData[key]);   // 变量赋值
-            delete cssData[key]
-          });
-        }
-      }
+        if (attributePath.includes("@")) {
+          const regex = /@[^\\.\\[\s]+/g;
+          const match = attributePath.match(regex); // ['@index', '@aaindex']
+          if (match !== null) {
 
-      if (attributePath.includes("@")) {
-        const regex = /@[^\\.\\[\s]+/g;
-        const match = attributePath.match(regex); // ['@index', '@aaindex']
-        if (match !== null) {
+            match.forEach((placeholder: string) => {
 
-          match.forEach((placeholder: string) => {
-
-            placeholder = placeholder.trim()
-            if (placeholder === "" || placeholder.trim() === "@")
-              return
-            if (placeholder.endsWith("]") || placeholder.endsWith("."))
-              placeholder = placeholder.substring(0, placeholder.length - 1)
-            const key = placeholder.startsWith("@") ? placeholder.substring(1) : placeholder;
-            pathVariables.push(key)
-            attributePath = attributePath.replaceAll(placeholder, cssData[key]);  // 变量赋值
-            delete cssData[key]
-          });
-        }
-      }
-
-      this.$nextTick(() => {
-        execution()
-      })
-
-
-      console.log("css数据", cssData);
-
-
-
-      // 切换过来的
-      if (isSwitchStyle) {
-
-        console.log("样式1五34234AAA");
-
-
-        if (this.curStyle.type === "chart") {
-
-          let optionValue = getValueByAttributePath(this.curComponent.data.option, attributePath)
-          if (optionValue === undefined || optionValue === null) {
-
-            // todo 找不到的数据从echart实例获取
-
-            optionValue = {}
-            optionValue = { ...cssData }
-            let newOption = setJsonAttribute(this.curComponent.data.option, attributePath, optionValue)
-            newOption = SetValueAndAttributePathFromKey(newOption, attributePath, optionValue)
-            // 设置新的newOption
-            eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
-          } else {
-            // 绑定图形option数据
-            this.curStyle.attrList.forEach((attr: any) => {
-              let variable = attr.variable
-              if (variable === undefined || variable === null)
+              placeholder = placeholder.trim()
+              if (placeholder === "" || placeholder.trim() === "@")
                 return
-              variable = variable.startsWith("@") ? variable.substring(1).trim() : variable.trim()
-
-              if (variable.includes("@")) {
-                const regex = /@[^\\.\\[\s]+/g;
-                const match = variable.match(regex); // ['@index', '@aaindex']
-                if (match !== null) {
-                  match.forEach((placeholder: string) => {
-                    placeholder = placeholder.trim()
-                    if (placeholder === "" || placeholder.trim() === "@")
-                      return
-                    if (placeholder.endsWith("]") || placeholder.endsWith("."))
-                      placeholder = placeholder.substring(0, placeholder.length - 1)
-                    const key = placeholder.startsWith("@") ? placeholder.substring(1) : placeholder
-                    variable = variable.replaceAll(placeholder, cssData[key])
-                  });
-                }
-              }
-
-              let value = getValueByAttributePath(optionValue, variable)
-
-              if (value === undefined || value === null)
-                return
-
-              // Vue.set(attr, "value", value)
-
-              if (attr.type === "color-picker" && typeof value === "object" && value.type === "linear") {
-                attr.options.gradientType = "linear"
-                attr.options.value.x = value.x
-                attr.options.value.x2 = value.x2
-                attr.options.value.y = value.y
-                attr.options.value.y2 = value.y2
-                attr.options.value.colorStops = value.colorStops
-                attr.options.iconList[1].show = true
-                attr.options.iconList[2].show = true
-              } else {
-                // let newOption = setJsonAttribute(this.curComponent.data.option, attributePath + "." + variable, value)
-                // newOption = SetValueAndAttributePathFromKey(newOption, attributePath + "." + variable, value)
-                // eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
-
-                attr.value = value
-              }
-            })
-            this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
-          }
-          // this.isSwitchToStyle = false
-        } else if (this.curStyle.type === "css") {
-
-          let findStyle = null
-          // 从选择器中选择了样式
-          for (let i = 0; i < this.addedStyleTags.length; i++) {
-            const style = this.addedStyleTags[i];
-            if (style.hierarchy === this.curStyle.hierarchy && style.selector === this.curSelector) {
-              findStyle = style
-              break
-            } else if (style.hierarchy === this.curStyle.hierarchy) {
-              findStyle = style
-            }
-          }
-          if (findStyle !== null) {
-            this.handleStyleChange(this.getHierarchy(findStyle.hierarchy));
-            this.switchToStyle(findStyle);
+              if (placeholder.endsWith("]") || placeholder.endsWith("."))
+                placeholder = placeholder.substring(0, placeholder.length - 1)
+              const key = placeholder.startsWith("@") ? placeholder.substring(1) : placeholder;
+              pathVariables.push(key)
+              attributePath = attributePath.replaceAll(placeholder, cssData[key]);  // 变量赋值
+              delete cssData[key]
+            });
           }
         }
 
-      } else {
+        this.$nextTick(() => {
+          execution()
+        })
 
-        console.log("样式1五34234GGG");
+        // 切换过来的
+        if (isSwitchStyle) {
 
-        if (this.curStyle.type === "chart") {
-          // 如果是路径变量修改,则把数据绑定回来
-          let isPathChange = false
-          if (this.oldStyle.value === this.curStyle.value) {
-            const newValueList: any[] = []
-            const oldValueList: any[] = []
-            for (let i = 0; i < pathVariables.length; i++) {
-              const pathVariable = pathVariables[i];
-              for (let j = 0; j < this.curStyle.attrList.length; j++) {
-                const attr = this.curStyle.attrList[j]
-                if (attr.variable === pathVariable)
-                  newValueList.push(attr.value)
-              }
-              for (let j = 0; j < this.oldStyle.attrList.length; j++) {
-                const attr = this.oldStyle.attrList[j]
-                if (attr.variable === pathVariable)
-                  oldValueList.push(attr.value)
-              }
-            }
-            if (JSON.stringify(newValueList) !== JSON.stringify(oldValueList))
-              isPathChange = true
-          }
-          // todo 从别的项目回到这里会
-          // 路径改变, 需要绑定原有的数据
-          if (isPathChange) {
+          if (curStyle.type === "chart") {
+
             let optionValue = getValueByAttributePath(this.curComponent.data.option, attributePath)
             if (optionValue === undefined || optionValue === null) {
-              console.warn("获取不到数据", attributePath, this.curComponent.data.option);
+
+              // todo 找不到的数据从echart实例获取
+
+              cssData.dataExcludeList.forEach((key: string) => {
+                delete cssData[key]
+              });
+
+              Object.keys(cssData).forEach(key => {
+                if (key.includes("[") || key.includes("."))
+                  delete cssData[key]
+              })
+              delete cssData.dataExcludeList
+
+              optionValue = {}
+              optionValue = { ...cssData }
+              let newOption = setJsonAttribute(this.curComponent.data.option, attributePath, optionValue)
+              newOption = SetValueAndAttributePathFromKey(newOption, attributePath, optionValue)
+              // 设置新的newOption
+              eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
+            } else {
+              // 绑定图形option数据
+              curStyle.attrList.forEach((attr: any) => {
+                let variable = attr.variable
+                if (variable === undefined || variable === null)
+                  return
+                variable = variable.startsWith("@") ? variable.substring(1).trim() : variable.trim()
+
+                if (variable.includes("@")) {
+                  const regex = /@[^\\.\\[\s]+/g;
+                  const match = variable.match(regex); // ['@index', '@aaindex']
+                  if (match !== null) {
+                    match.forEach((placeholder: string) => {
+                      placeholder = placeholder.trim()
+                      if (placeholder === "" || placeholder.trim() === "@")
+                        return
+                      if (placeholder.endsWith("]") || placeholder.endsWith("."))
+                        placeholder = placeholder.substring(0, placeholder.length - 1)
+                      const key = placeholder.startsWith("@") ? placeholder.substring(1) : placeholder
+                      variable = variable.replaceAll(placeholder, cssData[key])
+                    });
+                  }
+                }
+
+                let value = getValueByAttributePath(optionValue, variable)
+
+                if (value === undefined || value === null)
+                  return
+
+                // Vue.set(attr, "value", value)
+
+                if (attr.type === "color-picker" && typeof value === "object" && value.type === "linear") {
+                  attr.options.gradientType = "linear"
+                  attr.options.value.x = value.x
+                  attr.options.value.x2 = value.x2
+                  attr.options.value.y = value.y
+                  attr.options.value.y2 = value.y2
+                  attr.options.value.colorStops = value.colorStops
+                  attr.options.iconList[1].show = true
+                  attr.options.iconList[2].show = true
+                } else {
+                  // let newOption = setJsonAttribute(this.curComponent.data.option, attributePath + "." + variable, value)
+                  // newOption = SetValueAndAttributePathFromKey(newOption, attributePath + "." + variable, value)
+                  // eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
+
+                  attr.value = value
+                }
+              })
+              this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
+            }
+            // this.isSwitchToStyle = false
+          } else if (curStyle.type === "css") {
+
+            let findStyle = null
+            // 从选择器中选择了样式
+            for (let i = 0; i < this.addedStyleTags.length; i++) {
+              const style = this.addedStyleTags[i];
+              if (style.hierarchy === curStyle.hierarchy && style.selector === this.curSelector) {
+                findStyle = style
+                break
+              } else if (style.hierarchy === curStyle.hierarchy) {
+                findStyle = style
+              }
+            }
+            if (findStyle !== null) {
+              this.handleStyleChange(this.getHierarchy(findStyle.hierarchy));
+              this.switchToStyle(findStyle);
+            }
+          }
+
+        } else {
+
+          if (curStyle.type === "chart") {
+            // 如果是路径变量修改,则把数据绑定回来
+            let isPathChange = false
+            if (this.oldStyle.value === curStyle.value) {
+              const newValueList: any[] = []
+              const oldValueList: any[] = []
+              for (let i = 0; i < pathVariables.length; i++) {
+                const pathVariable = pathVariables[i];
+                for (let j = 0; j < curStyle.attrList.length; j++) {
+                  const attr = curStyle.attrList[j]
+                  if (attr.variable === pathVariable)
+                    newValueList.push(attr.value)
+                }
+                for (let j = 0; j < this.oldStyle.attrList.length; j++) {
+                  const attr = this.oldStyle.attrList[j]
+                  if (attr.variable === pathVariable)
+                    oldValueList.push(attr.value)
+                }
+              }
+              if (JSON.stringify(newValueList) !== JSON.stringify(oldValueList))
+                isPathChange = true
+            }
+            // todo 从别的项目回到这里会
+            // 路径改变, 需要绑定原有的数据
+            if (isPathChange) {
+              let optionValue = getValueByAttributePath(this.curComponent.data.option, attributePath)
+              if (optionValue === undefined || optionValue === null) {
+                console.warn("获取不到数据", attributePath, this.curComponent.data.option);
+                cssData.dataExcludeList.forEach((key: string) => {
+                  delete cssData[key]
+                });
+                delete cssData.dataExcludeList
+                optionValue = { ...cssData }
+                let newOption = SetValueAndAttributePathFromKey(this.curComponent.data.option, attributePath, optionValue)
+                newOption = setJsonAttribute(newOption, attributePath, optionValue)
+
+                // 设置新的newOption
+                eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
+                this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
+                return
+              }
+
+              if (typeof optionValue !== "object") {
+                console.warn(`通过${attributePath}找到的数据不正确`, optionValue);
+                return
+              }
+
+              curStyle.attrList.forEach((attr: any) => {
+
+                let variable = attr.variable
+                if (variable === undefined || variable === null)
+                  return
+                if (variable.includes("@")) {
+                  const regex = /@[^\\.\\[\s]+/g;
+                  const match = variable.match(regex); // ['@index', '@aaindex']
+                  if (match !== null) {
+                    match.forEach((placeholder: string) => {
+                      placeholder = placeholder.trim()
+                      if (placeholder === "" || placeholder.trim() === "@")
+                        return
+                      if (placeholder.endsWith("]") || placeholder.endsWith("."))
+                        placeholder = placeholder.substring(0, placeholder.length - 1)
+                      const key = placeholder.startsWith("@") ? placeholder.substring(1) : placeholder
+                      variable = variable.replaceAll(placeholder, cssData[key])
+                    });
+                  }
+                }
+
+                if (variable === undefined || variable === null)
+                  return
+                if (cssData.dataExcludeList.includes(variable))
+                  return
+                const value = getValueByAttributePath(optionValue, variable)
+                if (value === undefined || value === null) {
+                  attr.value = ""
+                  return
+                }
+
+                if (attr.type === "color-picker" && typeof value === "object" && value.type === "linear") {
+                  attr.options.gradientType = "linear"
+                  attr.options.value.x = value.x
+                  attr.options.value.x2 = value.x2
+                  attr.options.value.y = value.y
+                  attr.options.value.y2 = value.y2
+                  attr.options.value.colorStops = value.colorStops
+                  attr.options.iconList[1].show = true
+                  attr.options.iconList[2].show = true
+                } else if (attr.type === "color-picker" && typeof value === "object" && (value.type === undefined || value.type === "undefined")) {
+                  attr.value = value
+                  attr.options.gradientType = "undefined"
+                  attr.options.iconList[1].show = false
+                  attr.options.iconList[2].show = false
+                } else {
+                  attr.value = value
+                }
+
+              })
+              this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
+              // if (this.STYLE_STATE === StyleState.created) {
+              //   this.STYLE_STATE = StyleState.recovered
+              // }
+            } else {
 
               cssData.dataExcludeList.forEach((key: string) => {
                 delete cssData[key]
               });
               delete cssData.dataExcludeList
-              optionValue = { ...cssData }
-              let newOption = SetValueAndAttributePathFromKey(this.curComponent.data.option, attributePath, optionValue)
-              newOption = setJsonAttribute(newOption, attributePath, optionValue)
 
-              // 设置新的newOption
-              eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
-              this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
-              return
-            }
-
-            if (typeof optionValue !== "object") {
-              console.warn(`通过${attributePath}找到的数据不正确`, optionValue);
-              return
-            }
-
-            this.curStyle.attrList.forEach((attr: any) => {
-
-              let variable = attr.variable
-              if (variable === undefined || variable === null)
-                return
-              if (variable.includes("@")) {
-                const regex = /@[^\\.\\[\s]+/g;
-                const match = variable.match(regex); // ['@index', '@aaindex']
-                if (match !== null) {
-                  match.forEach((placeholder: string) => {
-                    placeholder = placeholder.trim()
-                    if (placeholder === "" || placeholder.trim() === "@")
-                      return
-                    if (placeholder.endsWith("]") || placeholder.endsWith("."))
-                      placeholder = placeholder.substring(0, placeholder.length - 1)
-                    const key = placeholder.startsWith("@") ? placeholder.substring(1) : placeholder
-                    variable = variable.replaceAll(placeholder, cssData[key])
-                  });
+              //  todo 设置单位,需要放在最后
+              const keys = Object.keys(cssData)
+              curStyle.attrList.forEach((attr: any) => {
+                if (attr.type !== "integer" && attr.type !== "number")
+                  return
+                if (attr.options.unit === undefined)
+                  return
+                if (keys.includes(attr.variable)) {
+                  cssData[attr.variable] = attr.value + attr.options.unit
                 }
-              }
+              });
 
-              if (variable === undefined || variable === null)
-                return
-              if (cssData.dataExcludeList.includes(variable))
-                return
-              const value = getValueByAttributePath(optionValue, variable)
-              if (value === undefined || value === null) {
-                attr.value = ""
-                return
-              }
+              let newOption = SetValueAndAttributePathFromKey(this.curComponent.data.option, attributePath, cssData)
+              newOption = setJsonAttribute(newOption, attributePath, cssData)
 
-              if (attr.type === "color-picker" && typeof value === "object" && value.type === "linear") {
-                attr.options.gradientType = "linear"
-                attr.options.value.x = value.x
-                attr.options.value.x2 = value.x2
-                attr.options.value.y = value.y
-                attr.options.value.y2 = value.y2
-                attr.options.value.colorStops = value.colorStops
-                attr.options.iconList[1].show = true
-                attr.options.iconList[2].show = true
-              } else if (attr.type === "color-picker" && typeof value === "object" && (value.type === undefined || value.type === "undefined")) {
-                attr.value = value
-                attr.options.gradientType = "undefined"
-                attr.options.iconList[1].show = false
-                attr.options.iconList[2].show = false
-              } else {
-                attr.value = value
-              }
-
-            })
-            this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
-            if (this.STYLE_STATE === StyleState.created) {
-              this.STYLE_STATE = StyleState.recovered
+              eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
+              // this.STYLE_STATE = StyleState.latest
+              this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
             }
-          } else {
 
-
-            console.log("afaf啊实打实的发发");
-
-
-            cssData.dataExcludeList.forEach((key: string) => {
-              delete cssData[key]
-            });
-
-            delete cssData.dataExcludeList
-            let newOption = SetValueAndAttributePathFromKey(this.curComponent.data.option, attributePath, cssData)
-            newOption = setJsonAttribute(newOption, attributePath, cssData)
-            eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
-            this.STYLE_STATE = StyleState.latest
-            this.oldStyle = JSONfn.parse(JSONfn.stringify(val))
           }
-
         }
       }
+
+
+
+
 
     }, { deep: true, immediate: false })
 
@@ -944,24 +1031,19 @@ export default class StyleListBase extends tsc<Vue> {
 
     this.$watch('styleList', (val, old) => {
 
-      console.log("样式改变");
-
       // if (!this.isSwitchToStyle) return;
       if (
         this.addedStyleTags === undefined ||
         this.addedStyleTags.length === 0
       ) {
         console.warn("组件未应用任何样式...");
-        return;
       }
       if (val === undefined || val.length === 0) {
         console.warn("组件未配置任何样式...");
-        return;
       }
 
-      if (this.curComponent.component.startsWith("v-")) {
 
-      }
+
 
       // todo, 需要切换到组件最后一次编辑的项
       // const style = this.addedStyleTags[0];
@@ -1209,7 +1291,7 @@ export default class StyleListBase extends tsc<Vue> {
               CompileToModule(code).then((module: EsModule<any>) => {
 
                 if (Object.prototype.toString.call(module) === "[object Module]") {
-                  if ((methodName === undefined || methodName === null || module[methodName] === undefined || module[methodName] === null) || module.default === undefined) {
+                  if ((methodName === undefined || methodName === null || module[methodName] === undefined || module[methodName] === null) && module.default !== undefined) {
                     args[1].ParameterString = methodName
                     module.default.bind(this)(args[1])
                   } else if (Object.prototype.toString.call(methodName) === "[object String]" &&

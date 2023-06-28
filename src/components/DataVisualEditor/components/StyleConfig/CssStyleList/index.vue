@@ -11,6 +11,7 @@
             <el-select v-model="curSelector" clearable>
               <!-- <el-option key="main-style" label="主要样式" value="main-style"></el-option>
                                                                                                           <hr class="hr-edge-weak" style="margin-top: 6px;"> -->
+
               <el-option
                 v-for="(selector, index) in selectorList"
                 :key="selector.label"
@@ -258,6 +259,11 @@ export default {
     generateStyleId,
 
     addStyle() {
+
+
+
+
+
       // 检验并规范css
       // let css = this.curStyle.css.trim()
       // if (!css.startsWith("{") && !css.endsWith("}")) {
@@ -286,8 +292,7 @@ export default {
         return;
       }
 
-      let originalStyle = convertToCss(this.curStyle.css);
-
+      const originalStyle = this.curSelector.startsWith('~') ? this.curStyle.css : convertToCss(css);
       const cssData = {};
       this.curStyle.attrList.forEach(attr => {
         let attrKey = '';
@@ -352,11 +357,11 @@ export default {
             break;
           }
         }
-
+ 
         this.curComponent.styleList.push({
           styleId: this.canvasName + '-' + this.curStyle.value + '-{id}-' + this.curSelector,
           styleName: '[' + selectorName + '][' + this.curStyle.label + ']',
-          selector: this.curSelector,
+          selector: selector,
           cssData: cssData,
           css: originalStyle,
           hierarchy: this.curStyle.hierarchy,

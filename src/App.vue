@@ -24,8 +24,10 @@ import moment from 'moment';
 import BigNumber from 'bignumber.js';
 const JSONfn = require('jsonfn').JSONfn;
 import store from '@/store';
+const schedule = require('node-schedule');
+import * as ElementUI from 'element-ui';
 
-import eventBus from "./components/DataVisualEditor/utils/eventBus";
+import eventBus from './components/DataVisualEditor/utils/eventBus';
 
 // import * as ts from './compiler/typescript@5.0.4.js';
 
@@ -47,9 +49,34 @@ export default {
     window.bi.App = this;
     window.bi.store = store;
     window.bi.$watch = this.$watch;
+    window.bi.schedule = schedule;
+    window.bi.ElementUI = ElementUI;
 
-    console.log('bsddfdsdfi', store.state);
-    console.log('bsddfdsdfi', this.$watch);
+    // 在js中这样调用
+
+    if (false) {
+      const ui = bi.ElementUI
+      ui.Message({
+        message: 'aaa',
+        type: 'error',
+        duration: 300,
+      });
+
+      ui.Message.success('操作成功');
+
+      ui.Message.warning({
+        message: '警告',
+        duration: 3000,
+        showClose: true,
+      });
+
+      // 使用挂载的 ElementUI 调用 Button 组件
+      const button = new ui.Button();
+      button.text = 'Click me';
+      button.onClick(() => {
+        console.log('Button clicked');
+      });
+    }
 
     axios
       .get('/BI-API/Component/GetGlobalModuleScript', { timeout: 6000 })

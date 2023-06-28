@@ -422,6 +422,36 @@
                     </div>
                   </div>
 
+                  <div v-else-if="type === 'number-color-array'">
+                    <div
+                      v-for="(item, itemIndex) in curStyle.attrList[index].value"
+                      style="
+                        flex: 1;
+                        width: 100%;
+                        display: flex;
+                        flex-flow: row nowrap;
+                        justify-content: center;
+                        align-items: center;
+                        margin-top: 6px;
+                      "
+                    >
+                      <div style="display: flex; justify-content: center">
+                        <span style="margin-left: 10px; flex: 1"> <el-checkbox v-model="item[2]"></el-checkbox></span>
+                        <span style="margin-left: 10px; flex: 1">
+                          <el-input-number
+                            v-model.number="item[0]"
+                            type="number"
+                            :min="options.min"
+                            :max="options.max"
+                            :step="options.step"
+                        /></span>
+                        <span style="margin-left: 10px">
+                          <el-color-picker v-model="item[1]" :showAlpha="true" v-if="!item[2]"> </el-color-picker>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
                   <div v-else-if="type === 'checkbox'">
                     <el-checkbox v-model="curStyle.attrList[index].value"></el-checkbox>
                   </div>

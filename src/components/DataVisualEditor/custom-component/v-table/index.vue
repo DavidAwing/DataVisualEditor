@@ -7,6 +7,7 @@
       :border="element.data.showBorder"
       style="width: 100%"
       ref="table"
+      class="table-style"
     >
       <template v-for="(column, index) in element.data.columns">
         <el-table-column
@@ -22,7 +23,7 @@
 
     <el-pagination background layout="prev, pager, next" :total="10" v-if="false"> </el-pagination>
 
-    <top-el-dialog title="表头编辑" :visible.sync="element.data.editColumnsDialog" width="35%" v-el-drag-dialog center>
+    <top-el-dialog title="编辑表头" :visible.sync="element.data.editColumnsDialog" width="35%" v-el-drag-dialog center>
       <el-form :inline="true" label-width="80px">
         <el-form-item label="列名" class="full-width">
           <el-select
@@ -71,6 +72,24 @@
         <el-button type="primary" @click="element.data.editColumnsDialog = false">确 定</el-button>
       </span>
     </top-el-dialog>
+
+    <top-el-dialog title="编辑样式" :visible.sync="element.data.editStyleDialog" width="40%" v-el-drag-dialog center >
+      <div class="block">
+        <el-carousel trigger="click" height="350px" :autoplay="false" @change="index => (styleindex = index)">
+          <el-carousel-item v-for="(item, index) in styleList" :key="index">
+            <div style="height: 100%">
+              <el-image style="width: 100%; height: 100%" :src="item.img" fit="contain"></el-image>
+            </div>
+          </el-carousel-item>
+        </el-carousel>
+      </div>
+
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="element.data.editStyleDialog = false">取 消</el-button>
+        <el-button type="primary" @click="addStyle">确 定</el-button>
+        <el-button type="primary" @click="removeStyle">移 除</el-button>
+      </span>
+    </top-el-dialog>
   </div>
 </template>
 
@@ -85,6 +104,29 @@ import VResize from 'v-resize'
 import eventBus from '../../utils/eventBus'
 import elDragDialog from "../../directive/el-drag-dialog";
 import tableFit from "../../directive/tableFit";
+import {
+  stringToFunction,
+  CompileSourcecode,
+  CompileToModule,
+  CompileTypescriptToIIFE,
+} from '../../utils/compiler.ts';
+
+import {
+  styleData,
+  addSelectorToStyle,
+  isStyleExist,
+  addStyleToHead,
+  setStyleValues,
+  getCssKeys,
+  getStyleSelectorStrById,
+  updateStyle,
+  convertToCss,
+  removeStyleById,
+  parseCssExpressions,
+  addStyleListToHead,
+  generateStyleId,
+  removeAllStyleNotOfCanvasName,
+} from '../../utils/style';
 
 
 export default {
@@ -114,8 +156,9 @@ export default {
       column: {},
       selected: "",
       maxRows: undefined,
-      dom: undefined
-
+      dom: undefined,
+      styleList: null,
+      styleindex: 0
     };
   },
   computed: {
@@ -137,16 +180,12 @@ export default {
         if (this.element.data.editColumnsDialog === true) {
         }
 
-
-
-
         // if (!val)
         // return
         // if ((!this.column.label || !this.column.prop) && this.element.data.columns.length > 0) {
         //   this.column = this.element.data.columns[0]
         //   this.selected = this.column.prop
         // }
-
 
       },
       deep: true,
@@ -172,6 +211,31 @@ export default {
       if (name !== this.element.data.name) return
       Vue.set(this.element.data, "editColumnsDialog", true)
     });
+
+    eventBus.$on('onEditStyle', async (name, event) => {
+      if (name !== this.element.data.name) return
+      Vue.set(this.element.data, "editStyleDialog", true)
+
+      if (this.styleList === undefined || this.styleList === null) {
+        const { data } = await axios.get("/BI-API/Component/GetScript?name=Style/v-table-style/index.js")
+        const module = await CompileToModule.bind(this)(data.data)
+        let instance = null
+        if (Object.prototype.toString.call(module) === '[object Module]' && module.default === undefined) {
+        } else if (Object.prototype.toString.call(module.default) === '[object Function]') {
+          instance = new module.default();
+        } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
+          instance = module.default;
+        }
+
+        instance.init().then((list) => {
+          this.styleList = list
+        })
+      }
+
+    });
+
+
+
 
     // this.element.selectorList = [
     // { label: "奇数行颜色", value: "/deep/ .el-table tbody tr:nth-child(odd) .cell" }
@@ -226,6 +290,22 @@ export default {
     }
   },
   methods: {
+
+    addStyle() {
+      this.element.data.editStyleDialog = false
+      const css = this.styleList[this.styleindex].css.replaceAll("--id",   "#component" + this.element.id)
+      const canvasName =  bi.store.state.canvasName
+      const styleId = canvasName + "-" + this.element.data.name + "-style"
+      removeStyleById(styleId)
+      addStyleToHead(styleId, css, canvasName)
+    },
+
+    removeStyle() {
+      const canvasName =  bi.store.state.canvasName
+      const styleId = canvasName + "-" + this.element.data.name + "-style"
+      removeStyleById(styleId)
+      this.element.data.editStyleDialog = false
+    },
 
     rollTable() {
 
@@ -343,4 +423,5 @@ export default {
 
 <style lang="less" scoped>
 @import 'index.less';
+@import 'table-style.less';
 </style>

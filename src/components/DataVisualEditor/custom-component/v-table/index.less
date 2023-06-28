@@ -42,11 +42,13 @@
         background: rgba(213, 215, 220, 0.3);
         border: none;
     }
+
     &::-webkit-scrollbar-track {
         // 滚动条轨道
         border: none;
     }
 }
+
 // --------------------隐藏table gutter列和内容区右侧的空白 start
 /deep/ .el-table th.gutter {
     display: none;
@@ -61,4 +63,39 @@
 /deep/ .el-table__body {
     width: 100% !important;
 }
+
 // --------------------隐藏table gutter列和内容区右侧的空白 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 样式选择器
+
+.el-carousel__item:nth-child(2n) {
+    background-color: #99a9bf;
+    padding: 12px;
+    border-radius: 3px;
+}
+
+.el-carousel__item:nth-child(2n+1) {
+    background-color: #d3dce6;
+    padding: 12px;
+    border-radius: 3px;
+}
+
+/deep/ .el-carousel__indicators--horizontal {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: none;
+}

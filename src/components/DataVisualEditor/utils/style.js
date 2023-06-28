@@ -173,7 +173,7 @@ export function setStyleValue(cssLine, keyValuePairs) {
       cssKey = key
     if (!new RegExp(cssKey, 'gi').test(cssLine)) {
       console.warn(`setStyleValue|样式[${cssLine}]中不存在变量${cssKey}`);
-      return
+      return cssLine
     }
     cssLine = cssLine.replaceAll(new RegExp(`(${cssKey})`, 'gi'), keyValuePairs[key])
   })
@@ -181,7 +181,16 @@ export function setStyleValue(cssLine, keyValuePairs) {
   return cssLine
 }
 
-
+// 样式是否存在
+export function isStyleExist(id) {
+  if (!id)
+    return false
+  const style = document.getElementById(id)
+  if (style === null)
+    return false
+  else
+    return true
+}
 
 // 删除样式的选择器
 export function deleteSelectorForStyle(id, selector) {
@@ -577,12 +586,10 @@ export function addStyleListToHead(component, canvasName) {
     })
     return
   }
-
   if (!component.styleList) {
     console.warn("addStyleListToHead|组件样式不存在");
     return
   }
-
   if (!canvasName) {
     console.warn("addStyleListToHead|画布名称未指定不存在");
     return
@@ -612,19 +619,46 @@ export function addStyleListToHead(component, canvasName) {
     }
 
     // 样式会添加到页面的head标签内
-    const css = parseCssExpressions(style.css, evalCssExpression, style.cssData);
-    const id = generateStyleId(style.styleId, component.id);
+    let css = ""
+    debugger
+    if (style.selector === "~") {
+      css = style.css
+    } else {
+      css = parseCssExpressions(style.css, evalCssExpression, style.cssData);
+    }
 
+    const id = generateStyleId(style.styleId, component.id);
     let selector = ""
     if (style.selector.includes(",")) {
       const selectorArr = style.selector.split(",")
       selectorArr.forEach(str => {
-        if (str.trim() !== "")
+        if (str.trim() !== "") {
           selector += "#component" + component.id + " " + str + ","
+        }
       })
       selector = selector.substring(0, selector.length - 1)
     } else {
       selector = "#component" + component.id + " " + style.selector.trim()
+    }
+
+    if (style.selector === "~") {
+      let placeholders = css.match(/@~[^ \t]+/gi)
+      if (placeholders !== null && placeholders.length > 0) {
+        placeholders.forEach(key => {
+          if (key.toLocaleLowerCase() === "@~component") {
+            css = css.replaceAll(key, "#component" + component.id)
+          }
+        });
+      }
+      // 正则匹配@开头的字符串但是不配@~开头的,遇到空格或tab或;停止
+      placeholders = css.match(/@(?!~)[^ \t;]+/g)
+      if (placeholders !== null && placeholders.length > 0) {
+        placeholders.forEach(key => {
+          css = css.replaceAll(key, style.cssData[key.substring(1)])
+        });
+      }
+    } else {
+      css = selector + css
     }
 
     if (isStyleExist(id)) {
@@ -635,9 +669,9 @@ export function addStyleListToHead(component, canvasName) {
       //     ? (selectorStr = selectorStr + "," + selector)
       //     : (selectorStr = selectorStr + selector);
 
-      updateStyle(id, selector + css); // 更新样式和选择器
+      updateStyle(id, css); // 更新样式和选择器
     } else {
-      addStyleToHead(id, selector + css, canvasName);
+      addStyleToHead(id, css, canvasName);
     }
   });
 
@@ -655,16 +689,7 @@ export function removeStyleById(id) {
   return true
 }
 
-// 样式是否存在
-export function isStyleExist(id) {
-  if (!id)
-    return false
-  const style = document.getElementById(id)
-  if (style === null)
-    return false
-  else
-    return true
-}
+
 
 
 

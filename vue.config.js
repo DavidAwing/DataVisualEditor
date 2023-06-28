@@ -136,7 +136,7 @@ module.exports = defineConfig({
         changeOrigin: true,
         ws: true,
         pathRewrite: {
-          '^/BI-API': '/'
+          '^/BI-API': ''
         }
       },
       '/H5': {

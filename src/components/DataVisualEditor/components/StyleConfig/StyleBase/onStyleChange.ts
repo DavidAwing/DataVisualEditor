@@ -25,7 +25,7 @@ const JSONfn = require("jsonfn").JSONfn;
 const equal = require('fast-deep-equal')
 
 
-let StyleChangeState:any = {
+let StyleChangeState: any = {
   code: "",
   date: new Date()
 }
@@ -233,8 +233,6 @@ export default async function onStyleChange(this: any, val: any, old: any) {
 
     if (curStyle.type === "chart") {
 
-      console.log("无限循环AAA2");
-
       let optionValue = getValueByAttributePath(this.curComponent.data.option, attributePath)
       if (optionValue === undefined || optionValue === null) {
 
@@ -330,8 +328,6 @@ export default async function onStyleChange(this: any, val: any, old: any) {
 
     if (curStyle.type === "chart") {
 
-      console.log("无限循环AAA3");
-
       // 如果是路径变量修改,则把数据绑定回来
       let isPathChange = false
       if (this.oldStyle.value === curStyle.value) {
@@ -356,7 +352,6 @@ export default async function onStyleChange(this: any, val: any, old: any) {
       // todo 从别的项目回到这里会
       // 路径改变, 需要绑定原有的数据
       if (isPathChange) {
-        console.log("无限循环AAA4");
         let optionValue = getValueByAttributePath(this.curComponent.data.option, attributePath)
         if (optionValue === undefined || optionValue === null) {
           console.warn("获取不到数据", attributePath, this.curComponent.data.option);
@@ -436,8 +431,6 @@ export default async function onStyleChange(this: any, val: any, old: any) {
         // }
       } else {
 
-        console.log("无限循环AAA5");
-
         cssData.dataExcludeList.forEach((key: string) => {
           delete cssData[key]
         });
@@ -448,10 +441,15 @@ export default async function onStyleChange(this: any, val: any, old: any) {
         curStyle.attrList.forEach((attr: any) => {
           if (attr.type !== "integer" && attr.type !== "number")
             return
-          if (attr.options.unit === undefined)
+          if (attr.options.unit === undefined || attr.options.unit === null || attr.options.unit.trim() === "")
+            return
+          if (attr.options.unit.trim() !== "px" && attr.options.unit.trim() !== "%")
             return
           if (keys.includes(attr.variable)) {
-            cssData[attr.variable] = attr.value + attr.options.unit
+            let newValue = parseFloat(attr.value)
+            if (isNaN(newValue))
+              newValue = 0
+            cssData[attr.variable] = newValue + attr.options.unit
           }
         });
 

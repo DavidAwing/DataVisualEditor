@@ -1011,6 +1011,8 @@ const list = [
         type: "input-file",
         label: '选择图片',
         bind: function (self, event) {
+          window.bi.Vue.set(self.data, "imageUrl", "")
+          self.data.imageUrl = ""
           const file = event.target.files[0]
           const reader = new FileReader();
           reader.readAsDataURL(file);
@@ -1389,6 +1391,7 @@ const list = [
       tableData: [],
       showBorder: true,
       editColumnsDialog: false,
+      editStyleDialog: false,
       showMode: "roll",
       rollingSpeed: 1, // 滚动速度
       total: 0,//总条目数
@@ -1523,6 +1526,15 @@ const list = [
           label: '编辑表头',
           click: "onEditColumns",
           dblclick: "onEditColumns"
+        }
+      },
+      {
+        type: "eventbus-button",
+        label: '',
+        bind: {
+          label: '编辑样式',
+          click: "onEditStyle",
+          dblclick: "onEditStyle"
         }
       },
 

@@ -589,10 +589,7 @@ export default class StyleListBase extends tsc<Vue> {
 
 
     this.$watch('curStyle', (val, old) => {
-
-
-
-
+ 
       onStyleChange.bind(this)(val, old)
       return
 

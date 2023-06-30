@@ -1,5 +1,5 @@
 import * as DB from "../utils/indexDB";
-import { getRandStr } from "../utils/utils";
+import { getRandStr, warn } from "../utils/utils";
 import { CompileToModule, CompileTypescriptToIIFE, codeToInstance } from "../utils/compiler";
 import CronExpressionValidator from "../utils/CronExpressionValidator";
 import axios from 'axios'
@@ -449,10 +449,16 @@ function convertDataFormat(token, data) {
 
 export function commitData(store, task, response) {
 
-  if ((Array.isArray(response) && task.componentName && task.dataSourceType && task.name) ||
+  if (
+    (Array.isArray(response) &&
+      (task.componentName !== undefined && task.componentName !== null && task.componentName.trim() !== "") &&
+      task.dataSourceType && task.name) ||
     (response.data.headers === undefined &&
       response.data.request === undefined &&
       response.data.status === undefined &&
+      response.attributeName !== undefined &&
+      response.attributeName !== null &&
+      response.attributeName.trim() !== "" &&
       typeof response === 'object' &&
       typeof response.name === "string")) {
 
@@ -482,6 +488,119 @@ export function commitData(store, task, response) {
         data
       ]);
     }
+  } else if (response.attributeName === undefined || response.attributeName === null || response.attributeName === "" ||
+    response.name === undefined || response.name === null || response.name === "") {
+
+    if (task.componentName !== undefined && task.componentName !== null && task.componentName.trim() !== "" &&
+      task.componentType !== undefined && task.componentType !== null && task.componentType.trim() !== "") {
+      let attributeName = ""
+      let data = null
+      const item = response.data
+      if (task.componentType === "vc-chart") {
+        data = { data: item.data, dataTypeToken: item.dataTypeToken }
+      } else if (task.componentType === "v-table") {
+        attributeName = "data.tableData"
+        data = Array.isArray(item) ? item : item.data
+      }
+
+      store.commit("setCanvasComponentAttribute", [
+        attributeName,
+        task.componentName,
+        data
+      ]);
+
+    } else {
+
+      let index = 0
+      response.data.forEach(item => {
+
+        try {
+          if (task.sqlMap !== undefined && task.sqlMap[`sql[${index}]`] !== undefined) {
+            if (Object.prototype.toString.call(item) === '[object Array]') {
+
+              let attributeName = ""
+              let data = null
+              const name = task.sqlMap[`sql[${index}]`].find(val => val.trim().startsWith("@NAME")).split(":")[1].trim()
+
+              const component = window.bi.utils.getComponentData(name)
+              if (component === undefined) {
+                console.log("未找到组件", name);
+                return
+              }
+
+              if (component.component === "vc-chart") {
+                data = { data: item, dataTypeToken: getDataTypeToken(item) }
+              } else if (component.component === "v-table") {
+                attributeName = "data.tableData"
+                data = item
+              } else {
+                console.warn("数据不对劲...");
+                return
+              }
+
+              store.commit("setCanvasComponentAttribute", [
+                attributeName,
+                name,
+                data
+              ]);
+            }
+          } else if (Object.prototype.toString.call(item) === '[object Object]' || (Array.isArray(item) && item.length === 1 &&
+            Object.prototype.toString.call(item[0]) === '[object Object]' && Object.keys(item[0])[0].trim().startsWith("@NAME"))) {
+            if (Array.isArray(item))
+              item = item[0]
+            const keys = Object.keys(item)
+            keys.forEach(key => {
+              if (key.trim().startsWith("@NAME")) {
+                const name = key.trim().substring("@NAME".length).trim()
+                const component = window.bi.utils.getComponentData(name)
+                if (component === undefined) {
+                  console.log("未找到组件", name);
+                  return
+                }
+                let attributeName = ""
+                let data = null
+                if (component.component === 'v-text') {
+                  attributeName = "data.text"
+                  data = item[key]
+                } else if (component.component === 'v-picture') {
+                  data = item[key]
+                  if (data.startsWith("/") || data.startsWith("http")) {
+                    attributeName = "data.imageUrl"
+                  } else {
+                    attributeName = "data.image"
+                  }
+                } else if (component.component === "v-video") {
+                  attributeName = "data.video"
+                  data = item[key]
+                } else {
+                  console.warn("无法设置数据", item);
+                  return
+                }
+                if (attributeName === "" || data === undefined || data === null) {
+                  console.log("组件数据错误");
+                  return
+                }
+                store.commit("setCanvasComponentAttribute", [
+                  attributeName,
+                  name,
+                  data
+                ]);
+              }
+            })
+          } else {
+            throw new Error("数据发生了异常,请检查sql")
+          }
+
+        } finally {
+          index++
+        }
+
+      })
+
+    }
+
+
+
   } else {
     const data = response.data.data
     if (Array.isArray(data)) {
@@ -545,6 +664,9 @@ export function requestCanvasData(canvasName, callback) {
 
             sourceList.forEach(task => {
 
+              if (task.componentType)
+                delete task.componentType
+
               for (let i = 0; i < canvasComponentData.length; i++) {
                 let component = canvasComponentData[i];
                 if (component.component === "Group")
@@ -557,8 +679,9 @@ export function requestCanvasData(canvasName, callback) {
                 }
               }
 
-              if (task.componentType === undefined)
-                throw new Error("组件丢失了: " + task.componentName)
+              if (task.componentType === undefined) {
+                console.warn("组件丢失了: " + task.componentName);
+              }
 
               if (task.dataSourceType === "script") {
 
@@ -589,13 +712,11 @@ export function requestCanvasData(canvasName, callback) {
 
                 let attributeName = ""
                 if (task.componentType === "v-table") {
-                  attributeName = "data.tableData"
+                  // attributeName = "data.tableData"
                 } else if (task.componentType === "vc-chart") {
-                  attributeName = "data.option.series[@index0].data[@index1].value"
+                  // attributeName = "data.option.series[@index0].data[@index1].value"
                 } else {
-
-                  console.log("数据异常", task);
-                  throw new Error("不支持的数据类型: " + task.componentName + ";" + task.componentType)
+                  console.log("数据异常", task, "componentName: " + task.componentName, "componentType: " + task.componentType);
                 }
 
                 task.call = () => {
@@ -606,168 +727,27 @@ export function requestCanvasData(canvasName, callback) {
                       return
                     }
 
-                    // type: [n][n]{SameAttributeName}
-                    const data0 = [
-                      [
-                        {
-                          RUNCARD_QTY: 5
-                        },
-                        {
-                          RUNCARD_QTY: 30
-                        },
-                        {
-                          RUNCARD_QTY: 5
-                        },
-                        {
-                          RUNCARD_QTY: 5
-                        },
-                        {
-                          RUNCARD_QTY: 5
-                        },
-                        {
-                          RUNCARD_QTY: 5
-                        },
-                        {
-                          RUNCARD_QTY: 5
-                        }
-                      ],
-                      [
-                        {
-                          TARGET_QTY: 100
-                        },
-                        {
-                          TARGET_QTY: 0
-                        },
-                        {
-                          TARGET_QTY: 100
-                        },
-                        {
-                          TARGET_QTY: 1000
-                        },
-                        {
-                          TARGET_QTY: 1000
-                        }
-                      ]
-                    ]
-                    // type: [n][1]{NumberAttributeName}
-                    const data1 = [
-                      [
-                        {
-                          1: 120,
-                          2: 234,
-                          3: 41231,
-                          4: 231,
-                          5: 543,
-                          6: 652,
-                          7: 1232
-                        }
-                      ],
-                      [
-                        {
-                          1: 123,
-                          2: 224,
-                          3: 431,
-                          4: 631,
-                          5: 943,
-                          6: 602,
-                          7: 232
-                        }
-                      ]
-                    ]
-                    // type: [n][1]{StringAttributeName}
-                    const data2 = [
-                      [{ Mon: 5, Tue: 70, Wed: 15, Thu: 30, Fri: 55, Sat: 60, Sun: 15 }],
-                      [{ Mon: 5, Tue: 70, Wed: 15, Thu: 30, Fri: 55, Sat: 60 }],
-                    ]
-
-                    const data3 = [[
-                      {
-                        "@PATH   xAxis.data[]": "AA1",
-                        "@PATH   series[0].data[].value ": 100
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA2",
-                        "@PATH   series[0].data[].value ": 150
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA3",
-                        "@PATH   series[0].data[].value": 50
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA4",
-                        "@PATH   series[0].data[].value": 60
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA5",
-                        "@PATH   series[0].data[].value": 70
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA6",
-                        "@PATH   series[0].data[].value": 90
-                      }
-                    ],
-                    [
-                      {
-                        "@PATH   xAxis.data[]": "AA2",
-                        "@PATH   series[1].data[].value ": 50
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA2",
-                        "@PATH   series[1].data[].value ": 150
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA3",
-                        "@PATH   series[1].data[].value": 50
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA4",
-                        "@PATH   series[1].data[].value": 60
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA5",
-                        "@PATH   series[1].data[].value": 70
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA6",
-                        "@PATH   series[1].data[].value": 90
-                      }
-                    ],
-                    [
-                      {
-                        "@PATH   xAxis.data[]": "AA2",
-                        "@PATH   series[2].data[].value ": 50
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA2",
-                        "@PATH   series[2].data[].value ": 150
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA3",
-                        "@PATH   series[2].data[].value": 50
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA4",
-                        "@PATH   series[2].data[].value": 60
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA5",
-                        "@PATH   series[2].data[].value": 70
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA6",
-                        "@PATH   series[2].data[].value": 90
-                      }
-                    ]
-                    ]
-
-                    // data.data = data3
-
                     if (task.dataTypeToken === undefined && task.componentType === "vc-chart") {
                       task.dataTypeToken = getDataTypeToken(data.data)  // data.data
                     }
                     if (task.componentType === "vc-chart") {
                       data.data = convertDataFormat(task.dataTypeToken, data.data)
                     }
+
+                    if (task.sqlMap === undefined) {
+                      task.sqlMap = {}
+                      const sqlList = task.sql.split(/\n{2,}/g)
+                      for (let i = 0; i < sqlList.length; i++) {
+                        let sql = sqlList[i].trim();
+                        if (sql.startsWith("--")) {
+                          sql = sql.substring(0, sql.indexOf("\n"))
+                          const kvArr = sql.match(/@[\wa-zA-Z0-9]+\s*:\s*[a-zA-Z0-9_\-\u4e00-\u9fa5~!@#$%^&*()+]+/g)
+                          if (kvArr !== null)
+                            task.sqlMap[`sql[${i}]`] = kvArr
+                        }
+                      }
+                    }
+
                     commitData(this.$store, task, {
                       name: task.componentName,
                       attributeName: attributeName,
@@ -791,9 +771,6 @@ export function requestCanvasData(canvasName, callback) {
                 job.invoke();
                 jobList.push(job)
               }
-
-
-
             })
 
 
@@ -818,7 +795,6 @@ export function requestCanvasData(canvasName, callback) {
               }
 
               // 合并任务
-              console.log("任务列表2", task);
               testTask(task).then((task) => {
 
                 if (task.cron === undefined)
@@ -988,3 +964,161 @@ export function requestCanvasData(canvasName, callback) {
 
   getCanvasData(canvasName, callback);
 }
+/**
+ *
+                    // type: [n][n]{SameAttributeName}
+                    const data0 = [
+                      [
+                        {
+                          RUNCARD_QTY: 5
+                        },
+                        {
+                          RUNCARD_QTY: 30
+                        },
+                        {
+                          RUNCARD_QTY: 5
+                        },
+                        {
+                          RUNCARD_QTY: 5
+                        },
+                        {
+                          RUNCARD_QTY: 5
+                        },
+                        {
+                          RUNCARD_QTY: 5
+                        },
+                        {
+                          RUNCARD_QTY: 5
+                        }
+                      ],
+                      [
+                        {
+                          TARGET_QTY: 100
+                        },
+                        {
+                          TARGET_QTY: 0
+                        },
+                        {
+                          TARGET_QTY: 100
+                        },
+                        {
+                          TARGET_QTY: 1000
+                        },
+                        {
+                          TARGET_QTY: 1000
+                        }
+                      ]
+                    ]
+                    // type: [n][1]{NumberAttributeName}
+                    const data1 = [
+                      [
+                        {
+                          1: 120,
+                          2: 234,
+                          3: 41231,
+                          4: 231,
+                          5: 543,
+                          6: 652,
+                          7: 1232
+                        }
+                      ],
+                      [
+                        {
+                          1: 123,
+                          2: 224,
+                          3: 431,
+                          4: 631,
+                          5: 943,
+                          6: 602,
+                          7: 232
+                        }
+                      ]
+                    ]
+                    // type: [n][1]{StringAttributeName}
+                    const data2 = [
+                      [{ Mon: 5, Tue: 70, Wed: 15, Thu: 30, Fri: 55, Sat: 60, Sun: 15 }],
+                      [{ Mon: 5, Tue: 70, Wed: 15, Thu: 30, Fri: 55, Sat: 60 }],
+                    ]
+
+                    const data3 = [[
+                      {
+                        "@PATH   xAxis.data[]": "AA1",
+                        "@PATH   series[0].data[].value ": 100
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA2",
+                        "@PATH   series[0].data[].value ": 150
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA3",
+                        "@PATH   series[0].data[].value": 50
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA4",
+                        "@PATH   series[0].data[].value": 60
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA5",
+                        "@PATH   series[0].data[].value": 70
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA6",
+                        "@PATH   series[0].data[].value": 90
+                      }
+                    ],
+                    [
+                      {
+                        "@PATH   xAxis.data[]": "AA2",
+                        "@PATH   series[1].data[].value ": 50
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA2",
+                        "@PATH   series[1].data[].value ": 150
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA3",
+                        "@PATH   series[1].data[].value": 50
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA4",
+                        "@PATH   series[1].data[].value": 60
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA5",
+                        "@PATH   series[1].data[].value": 70
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA6",
+                        "@PATH   series[1].data[].value": 90
+                      }
+                    ],
+                    [
+                      {
+                        "@PATH   xAxis.data[]": "AA2",
+                        "@PATH   series[2].data[].value ": 50
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA2",
+                        "@PATH   series[2].data[].value ": 150
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA3",
+                        "@PATH   series[2].data[].value": 50
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA4",
+                        "@PATH   series[2].data[].value": 60
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA5",
+                        "@PATH   series[2].data[].value": 70
+                      },
+                      {
+                        "@PATH      xAxis.data[]": "AA6",
+                        "@PATH   series[2].data[].value": 90
+                      }
+                    ]
+                    ]
+
+                    // data.data = data3
+ */

@@ -260,10 +260,6 @@ export default {
 
     addStyle() {
 
-
-
-
-
       // 检验并规范css
       // let css = this.curStyle.css.trim()
       // if (!css.startsWith("{") && !css.endsWith("}")) {
@@ -292,7 +288,7 @@ export default {
         return;
       }
 
-      const originalStyle = this.curSelector.startsWith('~') ? this.curStyle.css : convertToCss(css);
+      const originalStyle = this.curSelector.startsWith('~') ? this.curStyle.css : convertToCss(this.curStyle.css);
       const cssData = {};
       this.curStyle.attrList.forEach(attr => {
         let attrKey = '';
@@ -357,7 +353,7 @@ export default {
             break;
           }
         }
- 
+
         this.curComponent.styleList.push({
           styleId: this.canvasName + '-' + this.curStyle.value + '-{id}-' + this.curSelector,
           styleName: '[' + selectorName + '][' + this.curStyle.label + ']',

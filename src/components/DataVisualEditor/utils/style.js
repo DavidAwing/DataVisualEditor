@@ -620,7 +620,6 @@ export function addStyleListToHead(component, canvasName) {
 
     // 样式会添加到页面的head标签内
     let css = ""
-    debugger
     if (style.selector === "~") {
       css = style.css
     } else {

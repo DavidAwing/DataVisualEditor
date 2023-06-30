@@ -25,7 +25,15 @@
         </div>
 
         <div class="canvas-hint" v-html="editorHint"></div>
-        <img class="canvas-maximize" src="../../assets/maximize.png" v-show="showMaximize" @click="maximize"></img>
+
+
+        <div class="canvas-iocn-container" v-show="showCanvasIocn">
+          <img class="canvas-iocn" src="../../assets/maximize.png"  @click="maximize"></img>
+          <img class="canvas-iocn" src="../../assets/publish.png" @click="openPublishingPage"></img>
+        </div>
+
+
+
       </section>
       <!-- 右侧属性列表 -->
       <section class="right">
@@ -115,7 +123,7 @@ export default {
       activeName: "attr",
       reSelectAnimateIndex: undefined,
       saveConfig: {},
-      showMaximize: false
+      showCanvasIocn: false
     };
   },
   computed: mapState([
@@ -306,9 +314,9 @@ export default {
       const content = document.getElementsByClassName("content")[0];
       const contentRect = content.getClientRects()[0];
       if (event.offsetY < 30 && event.offsetX > contentRect.width - 50) {
-        this.showMaximize = true
+        this.showCanvasIocn = true
         setTimeout(() => {
-          this.showMaximize = false
+          this.showCanvasIocn = false
         }, 6000);
       }
     },
@@ -316,6 +324,10 @@ export default {
     maximize(){
       const editor = document.getElementById("editor");
       editor.requestFullscreen()
+    },
+
+    openPublishingPage() {
+      window.open(`/bi/#/viewer?name=${this.canvasName}`, '_blank')
     },
 
     deselectCurComponent(e) {
@@ -377,11 +389,18 @@ export default {
         color: rgba(0, 0, 0, 0.6);
       }
 
-      .canvas-maximize {
+      .canvas-iocn-container {
         position: absolute;
         right: 16px;
         top: 6px;
-        width: 16px;
+        display: flex;
+        flex-flow: column nowrap;
+        .canvas-iocn {
+          width: 16px;
+          &:not(:nth-child(1)) {
+            margin-top: 6px;
+          }
+        }
       }
 
       .content {

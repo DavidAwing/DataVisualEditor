@@ -8,7 +8,7 @@
 
       <div>
         <div>组件</div>
-        <el-select v-model="canvasDataSource.componentName" placeholder="" :multiple="false">
+        <el-select v-model="canvasDataSource.componentName" placeholder="" :multiple="false" clearable >
           <el-option
             v-for="item in ComponentList"
             :key="item.data.name"
@@ -275,9 +275,11 @@ export default {
       return;
     }
 
+
     this.$store.commit('setCanvasName', this.canvasName);
 
     DB.CallbackMap.onOpenSucceedEventList.push(() => {
+
       DB.getAllItemByType('Canvas-Data').then(canvasList => {
         if (canvasList === undefined || canvasList === null || canvasList.length === 0) {
           toast('未找到存储的画布数据');
@@ -287,6 +289,7 @@ export default {
           if (item.name === this.canvasName) {
             this.canvas = item;
             this.$store.commit('setCanvasComponentData', JSONfn.parse(this.canvas.canvasComponentData));
+            break
           }
         }
         if (this.canvas === undefined || this.canvas === null) {
@@ -305,6 +308,8 @@ export default {
       .then(({ data }) => {
         this.canvasDataSourceList = JSON.parse(data.data);
         if (this.canvasDataSourceList.length > 0) this.canvasDataSource = this.canvasDataSourceList[0];
+        else
+        console.log("找不到数据源");
       });
   },
   mounted() {},
@@ -479,14 +484,38 @@ export default {
       return type;
     },
     saveCanvasDataSourceList() {
+
       // todo 保存之前先检测sql或脚本语法
       this.canvasDataSourceList.forEach(item => {
         if (item.dataSourceType === 'script') {
           // 检查类型注解
           if (/@[a-zA-Z]+/.test(item.script)) return 'ts';
-        }
+        } else if(item.dataSourceType==='database'){
+          const sqlArr = item.sql.split(/\n{2,}/g).filter(item=>item.trim() !== '')
+          const count = sqlArr.length
+          const commentLine = sqlArr[0].substring(0, sqlArr[0].indexOf("\n")).trim()
+          if (count === 1 && (item.componentName === undefined || item.componentName === null || item.componentName.trim() === "")) {
 
-        console.log('脚本语法', item);
+            const kv = commentLine.match(/@[\wa-zA-Z0-9]+\s*:\s*[a-zA-Z0-9_\-\u4e00-\u9fa5~!@#$%^&*()+]+/g)
+            if (!commentLine.startsWith("--") || kv === null) {
+              toast('单个sql项必须指定一个组件名称');
+              throw Error("单个sql查询必须指定组件名称")
+            } else  {
+              const value = kv.find(str=>str.startsWith("@NAME")).split(":")[1].trim()
+              if (this.ComponentList.find(item=>item.data.name === value) === undefined) {
+                toast('sql中指定的组件名称不存在');
+                throw Error()
+              }
+
+              Vue.set(item, "componentName", value)
+              // item.componentName = value
+            }
+
+          } else if (count > 1 && (item.componentName !== undefined && item.componentName !== null && item.componentName.trim() !== "")) {
+            toast('多个sql项查询无需组件名称');
+            throw Error("多个sql查询无需组件名称")
+          }
+        }
       });
 
       const dataSourceParameters = JSONfn.stringify(this.canvasDataSourceList);

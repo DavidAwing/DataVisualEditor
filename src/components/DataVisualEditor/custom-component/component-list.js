@@ -149,7 +149,7 @@ const list = [
       verticalAlign: "",
       writingMode: "horizontal",
       show: true,
-      isAlign: true
+      isAlign: false
     },
     attrExcludes: [],
     style: {
@@ -900,7 +900,7 @@ const list = [
       imageUrl: "",
       fit: "scale-down",
       show: true,
-      isAlign: true
+      isAlign: false
     },
     attrExcludes: [],
     style: {
@@ -1387,8 +1387,174 @@ const list = [
     icon: 'wenben',
     data: {
       name: "",
-      columns: [],
-      tableData: [],
+      columns: [
+        {
+            "prop": "date",
+            "label": "日期",
+            "width": 10,
+            "align": "center"
+        },
+        {
+            "prop": "name",
+            "label": "姓名",
+            "width": 10,
+            "align": "center"
+        },
+        {
+            "prop": "province",
+            "label": "省份",
+            "width": 10,
+            "align": "center"
+        },
+        {
+            "prop": "city",
+            "label": "市区",
+            "width": 10,
+            "align": "center"
+        },
+        {
+            "prop": "address",
+            "label": "地址",
+            "width": 10,
+            "align": "center"
+        },
+        {
+            "prop": "zip",
+            "label": "邮编",
+            "width": 10,
+            "align": "center"
+        }
+    ],
+      tableData: [
+        {
+          "date": "2016-05-02",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1518 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-04",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1517 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-01",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1519 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-03",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1516 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-04",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1517 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-01",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1519 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-03",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1516 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-04",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1517 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-01",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1519 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-03",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1516 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-04",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1517 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-01",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1519 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-03",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1516 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-04",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1517 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-01",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1519 弄",
+          "zip": 200333
+        },
+        {
+          "date": "2016-05-03",
+          "name": "王小虎",
+          "province": "上海",
+          "city": "普陀区",
+          "address": "上海市普陀区金沙江路 1516 弄",
+          "zip": 200333
+        }
+      ],
       showBorder: true,
       editColumnsDialog: false,
       editStyleDialog: false,
@@ -1398,7 +1564,7 @@ const list = [
       currentPage: 1,//当前页码
       pageSize: 10, //每页显示条目个数，支持 .sync 修饰符
       show: true,
-      isAlign: true
+      isAlign: false
     },
     attrExcludes: [],
     style: {
@@ -1465,22 +1631,22 @@ const list = [
         label: '高',
         bind: "style"
       },
-      {
-        key: "showBorder",
-        type: "select",
-        label: '显示边框',
-        bind: 'data',
-        options: [
-          {
-            label: '是',
-            value: true
-          },
-          {
-            label: '否',
-            value: false,
-          }
-        ]
-      },
+      // {
+      //   key: "showBorder",
+      //   type: "select",
+      //   label: '显示边框',
+      //   bind: 'data',
+      //   options: [
+      //     {
+      //       label: '是',
+      //       value: true
+      //     },
+      //     {
+      //       label: '否',
+      //       value: false,
+      //     }
+      //   ]
+      // },
       {
         key: "showMode",
         type: "select",
@@ -1528,15 +1694,15 @@ const list = [
           dblclick: "onEditColumns"
         }
       },
-      {
-        type: "eventbus-button",
-        label: '',
-        bind: {
-          label: '编辑样式',
-          click: "onEditStyle",
-          dblclick: "onEditStyle"
-        }
-      },
+      // {
+      //   type: "eventbus-button",
+      //   label: '',
+      //   bind: {
+      //     label: '编辑样式',
+      //     click: "onEditStyle",
+      //     dblclick: "onEditStyle"
+      //   }
+      // },
 
     ],
     events: {
@@ -1614,7 +1780,7 @@ const list = [
       loop: true,
       muted: false,
       show: true,
-      isAlign: true
+      isAlign: false
     },
     attrExcludes: [],
     style: {
@@ -1783,7 +1949,7 @@ const list = [
     data: {
       chartId: "",
       show: true,
-      isAlign: true,
+      isAlign: false,
       option:
       {
         xAxis: {
@@ -2075,7 +2241,7 @@ const list = [
       iframeWidth: "100%",
       iframeHeight: "100%",
       show: true,
-      isAlign: true
+      isAlign: false
     },
     attrExcludes: [],
     style: {

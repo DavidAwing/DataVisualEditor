@@ -177,7 +177,6 @@ const data = {
       const data = params[2]
       // const {dataTypeToken}   = params[3]
 
-
       for (const item of state.canvasComponentData) {
 
         let component = item

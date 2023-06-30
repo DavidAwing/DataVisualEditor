@@ -1,22 +1,146 @@
-// /deep/ .table-style {
+/deep/ .vc-table {
+    background: transparent;
+}
+
+/deep/ .vc-table thead,
+/deep/ .vc-table thead tr,
+/deep/ .vc-table thead th,
+/deep/ .vc-table tbody tr,
+/deep/ .vc-table tbody tr td {
+    background: transparent;
+}
+
+/deep/ .vc-table .el-table__header-wrapper table thead tr div,
+/deep/ .vc-table .el-table__body-wrapper tbody tr div {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    padding: 0px;
+}
+
+/deep/ .vc-table table {
+    height: 0px;
+    border-collapse: collapse;
+    border: 0px solid transparent;
+}
+
+// 去掉表头/表格体单元格的边框
+/deep/ .vc-table .el-table__body-wrapper table tbody tr td,
+/deep/ .vc-table .el-table__header-wrapper table thead tr th {
+    border: 0px dotted transparent;
+}
+
+/deep/ .vc-table .el-table__header-wrapper table thead tr {
+    // border: 1px dotted red;
+}
+
+/deep/ .el-table--border, .el-table--group {
+    border: 0px solid blue !important;
+  }
+
+/deep/  .vc-table .el-table__column-resize-proxy{
+    border-left: 0;
+}
+
+// 去掉最后一行横线
+/deep/ .vc-table {
+    &::before {
+        height: 0 !important;
+    }
+}
+
+// 偶数列
+// /deep/ .vc-table tbody tr td:nth-child(even) div {
+//     background-color: rgba(255, 2, 20, 0.35);
+//     height: 100%;
+//     width: 100%;
+//     vertical-align: middle;
+//     text-align: center;
+//     padding: 0;
+//     margin: 0;
+// }
+
+// // 表头行
+// /deep/ .vc-table .el-table__header-wrapper table thead tr {
+//     // background: yellow;
+//     // border: 2px dotted red;
+//     // border-bottom: 0px dotted red;
+// }
+
+// // 表头行的单元格/偶数/奇数
+// /deep/ .vc-table .el-table__header-wrapper table thead tr th {
+    
+//     // background-color: aqua !important;
+//     // border: 1px solid blue !important;
+// }
+
+// // 表体行,表体行偶数,表体行奇数
+// /deep/ .vc-table .el-table__body-wrapper tbody tr {
+//     // padding: 6px !important;
+//     // background: rgb(25, 150, 213);
+//     // border: 2px dotted blue;
+
+//     // border-bottom: 1px solid blue !important;
+//     // border-left: 1px solid blue !important;
+//     // border-right: 3px solid blue !important;
+//     // background-color: aqua;
+// }
+
+// // 表格单元格, 表格单元格偶数,表格单元格奇数
+// /deep/ .vc-table .el-table__body-wrapper table tbody tr td {
+//     background: rgb(25, 150, 213);
+// }
+
+
+
+// /deep/ .vc-table tbody tr td:nth-child(1) {
+//     background-color: rgba(255, 0, 0, 0.3);
+// }
+
+// /deep/ .vc-table thead th:nth-child(even) {
+//     background-color: transparent; 
+
+//     border: 1px solid red;
+//     font-size: 12px;
+//     color: aqua;
+
+// }
+
+
+
+// /deep/ .vc-table thead th div {
+
+//     position: absolute;
+//     background-color: blue; 
+
+//     min-width: 100%;
+//     max-width: 100%;
+//     height: 100%;
+//     min-height: 100%;
+//     max-height: 100%;
+
+
+
+// }
+
+// /deep/ .vc-table thead,
+// /deep/ .vc-table tr,
+// /deep/ .vc-table th {
 //     background: transparent;
 // }
 
-// /deep/ .table-style thead,
-// /deep/ .table-style tr,
-// /deep/ .table-style th {
-//     background: transparent;
+
+// /deep/ .table-style thead {
+//     background-color: rgba(56, 200, 21, 0.5);
 // }
 
 
-// // /deep/ .table-style thead {
-// //     background-color: rgba(56, 200, 21, 0.5);
-// // }
-
-
-// // 排除最后n个子元素
+// 排除最后n个子元素
 // /deep/ .table-style thead  th:not(:last-child):not(:nth-last-child(2)) {
 //     // background-color: aqua;
 //     border-right: 2px solid  rgba(56, 200, 21, 0.5);
 // }
-

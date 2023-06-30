@@ -4,10 +4,11 @@
     <el-table
       :data="element.data.tableData"
       height="250"
-      :border="element.data.showBorder"
-      style="width: 100%"
+      :border="false"
+      style="width: 100%;"
       ref="table"
-      class="table-style"
+      class="vc-table"
+      row-class-name="vc-table-row"
     >
       <template v-for="(column, index) in element.data.columns">
         <el-table-column
@@ -45,15 +46,15 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="prop" :style="{ width: '100%' }">
+        <el-form-item label="属性" :style="{ width: '100%' }">
           <el-input v-model="column.prop" autocomplete="off" style="width: 100%"></el-input>
         </el-form-item>
 
-        <el-form-item label="label" :style="{ width: '100%' }">
+        <el-form-item label="标签" :style="{ width: '100%' }">
           <el-input v-model="column.label" autocomplete="off" style="width: 100%"></el-input>
         </el-form-item>
-        <el-form-item label="width" :style="{ width: '100%' }">
-          <el-input v-model="column.width" autocomplete="off"></el-input>
+        <el-form-item label="宽度" :style="{ width: '100%' }">
+          <el-input v-model="column.width" type="number" :step="1" :min="0" autocomplete="off"></el-input>
         </el-form-item>
 
         <el-form-item label="对齐" class="full-width">
@@ -73,7 +74,7 @@
       </span>
     </top-el-dialog>
 
-    <top-el-dialog title="编辑样式" :visible.sync="element.data.editStyleDialog" width="40%" v-el-drag-dialog center >
+    <top-el-dialog title="编辑样式" :visible.sync="element.data.editStyleDialog" width="40%" v-el-drag-dialog center>
       <div class="block">
         <el-carousel trigger="click" height="350px" :autoplay="false" @change="index => (styleindex = index)">
           <el-carousel-item v-for="(item, index) in styleList" :key="index">
@@ -246,7 +247,6 @@ export default {
     this.$parent.$watch('element', (newValue, oldValue) => {
     }, { deep: true });
 
-
     const getMaxRows = () => {
       try {
         const table = this.$refs.table
@@ -276,21 +276,36 @@ export default {
     if (this.element.data.showMode === "roll")
       this.rollTable()
 
+    this.$refs.table.doLayout()
   },
   updated() {
+    this.$refs.table.doLayout()
 
     if (this.isFixedHead) {
 
-      const tableContainer = document.querySelectorAll(".table-container")[1]
-      const table = document.querySelectorAll(".table")[0]
+      // const tableContainer = document.querySelectorAll(".table-container")[1]
+      // const table = document.querySelectorAll(".table")[0]
 
       // todo 判断有没有滚动条
       // todo 获取滚动条宽度
-      console.log("组件更新");
+      // console.log("组件更新");
+
+
+      // const tdList = document.querySelectorAll(`#component${this.element.id} div .el-table__body-wrapper table tbody tr`)
+      // const tdList = document.getElementsByClassName(`#component${this.element.id} div .el-table__body-wrapper table tbody tr`)
+
+
     }
   },
   methods: {
 
+    cellStyle(){
+
+      // return {color: "red", "padding-left": "0px", "padding-right": "0px" }
+      return {}
+    },
+
+    // 不用了
     addStyle() {
       this.element.data.editStyleDialog = false
       const css = this.styleList[this.styleindex].css.replaceAll("--id",   "#component" + this.element.id)
@@ -315,8 +330,11 @@ export default {
         return
       }
       try {
-        this.dom = this.$refs.table.$el.children[2].children[0].children[1]
+
+        // this.dom = this.$refs.table.$el.children[2].children[0].children[1]
+        this.dom = document.querySelector(`#component${this.element.id} .vc-table .el-table__body-wrapper table`)
         this.dom.style.transform = "translate3d(0px, 0px, 0px)"
+
         // this.dom.style.transform = "translateY(0px)"
       } catch (error) {
         setTimeout(this.rollTable.bind(this), 300);

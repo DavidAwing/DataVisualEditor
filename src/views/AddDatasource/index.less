@@ -1,0 +1,204 @@
+.container {
+    display: flex;
+    position: relative;
+    flex-flow: row nowrap;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+
+
+    &>div:nth-child(1) {
+        width: 20%;
+        display: flex;
+        flex-flow: column wrap;
+        background-color: aliceblue;
+        // border: 1px #440ae311 solid;
+        border-radius: 10px;
+        padding: 0px 7px 0 7px;
+        margin-top: 8px;
+        margin-bottom: 8px;
+        margin-left: 8px;
+        background: linear-gradient(to right, #4298ca88, #2292ae33);
+
+
+        &>div:not(.canvas-data-source-list, :last-child) {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: flex-start;
+            align-content: center;
+            margin-top: 6px;
+            width: 100%;
+            max-width: 100%;
+            min-width: 100%;
+
+            &>div:nth-child(1) {
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                font-size: 16px;
+                min-width: 80px;
+            }
+
+            &>div:nth-child(2) {
+                flex: 1;
+                width: calc(100% - 80px);
+                padding-left: 10px;
+            }
+        }
+
+        &>.canvas-data-source-list {
+            display: flex;
+            flex-flow: column nowrap;
+            height: 50%;
+            flex: 1;
+            overflow-y: scroll;
+            text-align: left;
+            font-size: 12px;
+            margin-top: 10px;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+
+            &>div:nth-child(2) {
+
+                height: 100%;
+                background-color: aliceblue;
+                border-radius: 6px;
+                margin-top: 2px;
+                display: flex;
+                flex-flow: column nowrap;
+                overflow: auto;
+
+                &::-webkit-scrollbar {
+                    display: none;
+                }
+
+                &>div {
+                    display: flex;
+                    flex-flow: row nowrap;
+                    justify-content: space-around;
+
+                    &:first-child {
+                        background-color: rgb(146, 165, 165);
+                        margin: 6px;
+                        padding-top: 3px;
+                        padding-bottom: 3px;
+                        position: sticky;
+                        top: 6px;
+                    }
+
+                    &:not(:first-child):hover,
+                    &.selected-canvas-data-source {
+                        background-color: rgba(69, 164, 164, 0.35);
+                        cursor: pointer;
+
+                    }
+
+                    &:not(:first-child) {
+                        margin: 0px 6px 6px 6px;
+                        padding-top: 3px;
+                        padding-bottom: 3px;
+                    }
+
+                    &>div {
+                        width: 33.333%;
+                        height: 100%;
+                        text-align: center;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                    }
+
+                }
+
+                &>.component-missing {
+                    color: red;
+                }
+            }
+        }
+
+        &>div:last-child {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-evenly;
+            margin-bottom: 8px;
+            margin-top: 10px;
+        }
+    }
+
+    &>div:nth-child(2) {
+        flex: 1;
+        height: 100%;
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: space-between;
+
+        &>div:nth-child(1) {
+            padding: 8px 8px 8px 8px;
+            flex: 1;
+            height: 100%;
+
+            /deep/ div {
+                height: 100%;
+
+                & textarea {
+                    height: 100%;
+                }
+            }
+        }
+
+        &>div:nth-child(2) {
+            padding-bottom: 10px;
+        }
+
+
+    }
+}
+
+/deep/ .component-preview {
+    padding-top: 0;
+
+    &>div {
+        width: 90vw;
+        height: 90vh;
+        margin-top: 5vh !important;
+    }
+
+    & .el-dialog__body {
+        position: absolute;
+        padding: 0;
+        top: 7vh;
+        left: 20px;
+        bottom: 20px;
+        right: 20px;
+
+        &>div {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+    }
+}
+
+
+// 添加数据库对话框样式
+/deep/ .add-database-dialog  .el-dialog, /deep/ .add-database-dialog .el-dialog__header,/deep/ .add-database-dialog .el-dialog__body,/deep/ .add-database-dialog .el-dialog__footer {
+    top: -8vh;
+    width: 30% !important;
+}
+
+ 
+
+/deep/ .add-database-dialog .el-form-item__label-wrap {
+    margin-left: 0px !important;
+}
+
+/deep/ .add-database-dialog .el-dialog__footer {
+    width:  100% !important;
+    padding-top:  0;
+}
+

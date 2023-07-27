@@ -493,6 +493,7 @@ export function commitData(store, task, response) {
 
     if (task.componentName !== undefined && task.componentName !== null && task.componentName.trim() !== "" &&
       task.componentType !== undefined && task.componentType !== null && task.componentType.trim() !== "") {
+
       let attributeName = ""
       let data = null
       const item = response.data
@@ -501,6 +502,46 @@ export function commitData(store, task, response) {
       } else if (task.componentType === "v-table") {
         attributeName = "data.tableData"
         data = Array.isArray(item) ? item : item.data
+      } else if (task.componentType === "v-text") {
+        if (Array.isArray(item) && item.length > 1) {
+          throw Error("指定了组件名称的任务不能是多行,后续考虑兼容,类型:v-text,  组件名称: " + task.componentName)
+        }
+        const newItem = Array.isArray(item) ? item[0] : item
+        const keys = Object.keys(newItem)
+        attributeName = "data.text"
+        data = newItem[keys[0]]
+      } else if (task.componentType === "v-select") {
+        if (Array.isArray(item) && item.length > 0 && item[0].label !== undefined && item[0].value !== undefined) {
+          attributeName = "data.options"
+          data = item
+        }
+      } else if (task.componentType === 'v-picture') {
+
+        if (Array.isArray(item) && item.length > 1) {
+          throw Error("指定了组件名称的任务不能是多行,后续考虑兼容,类型:v-picture,  组件名称: " + task.componentName)
+        }
+        const newItem = Array.isArray(item) ? item[0] : item
+        const keys = Object.keys(newItem)
+
+        data = newItem[keys[0]]
+        if (data.startsWith("/") || data.startsWith("http")) {
+          attributeName = "data.imageUrl"
+        } else {
+          attributeName = "data.image"
+        }
+      } else if (task.componentType === "v-video") {
+
+        if (Array.isArray(item) && item.length > 1) {
+          throw Error("指定了组件名称的任务不能是多行,后续考虑兼容,类型: v-video, 组件名称: " + task.componentName)
+        }
+        const newItem = Array.isArray(item) ? item[0] : item
+        const keys = Object.keys(newItem)
+
+        attributeName = "data.video"
+        data = newItem[keys[0]]
+      } else {
+        console.warn("数据异常没有处理成功-f9828357-dc35-45eb-be88-1ee6a46143b0");
+        throw Error("数据异常没有处理成功-f9828357-dc35-45eb-be88-1ee6a46143b0")
       }
 
       store.commit("setCanvasComponentAttribute", [
@@ -511,8 +552,8 @@ export function commitData(store, task, response) {
 
     } else {
 
-      let index = 0
-      response.data.forEach(item => {
+      for (let index = 0; index < response.data.length; index++) {
+        const item = response.data[index];
 
         try {
           if (task.sqlMap !== undefined && task.sqlMap[`sql[${index}]`] !== undefined) {
@@ -520,12 +561,12 @@ export function commitData(store, task, response) {
 
               let attributeName = ""
               let data = null
-              const name = task.sqlMap[`sql[${index}]`].find(val => val.trim().startsWith("@NAME")).split(":")[1].trim()
+              const name = task.sqlMap[`sql[${index}]`].find(val => val.trim().startsWith("@NAME")).split(/\s+/g)[1].trim()
 
               const component = window.bi.utils.getComponentData(name)
               if (component === undefined) {
                 console.log("未找到组件", name);
-                return
+                continue
               }
 
               if (component.component === "vc-chart") {
@@ -533,11 +574,53 @@ export function commitData(store, task, response) {
               } else if (component.component === "v-table") {
                 attributeName = "data.tableData"
                 data = item
+              } else if (item.length === 1) {
+
+                const newItem = item[0]
+                const keys = Object.keys(newItem)
+                keys.forEach(key => {
+                  if (key.trim().startsWith("@NAME")) {
+                    const name = key.trim().substring("@NAME".length).trim()
+                    const component = window.bi.utils.getComponentData(name)
+                    if (component === undefined) {
+                      console.log("未找到组件", name);
+                      return
+                    }
+                    let attributeName = ""
+                    let data = null
+                    if (component.component === 'v-text') {
+                      attributeName = "data.text"
+                      data = newItem[key]
+                    } else if (component.component === 'v-picture') {
+                      data = newItem[key]
+                      if (data.startsWith("/") || data.startsWith("http")) {
+                        attributeName = "data.imageUrl"
+                      } else {
+                        attributeName = "data.image"
+                      }
+                    } else if (component.component === "v-video") {
+                      attributeName = "data.video"
+                      data = newItem[key]
+                    } else {
+                      console.warn("无法设置数据", newItem);
+                      return
+                    }
+                    if (attributeName === "" || data === undefined || data === null) {
+                      console.log("组件数据错误");
+                      return
+                    }
+                    store.commit("setCanvasComponentAttribute", [
+                      attributeName,
+                      name,
+                      data
+                    ]);
+                  }
+                })
+                continue
               } else {
                 console.warn("数据不对劲...");
-                return
+                continue
               }
-
               store.commit("setCanvasComponentAttribute", [
                 attributeName,
                 name,
@@ -546,9 +629,11 @@ export function commitData(store, task, response) {
             }
           } else if (Object.prototype.toString.call(item) === '[object Object]' || (Array.isArray(item) && item.length === 1 &&
             Object.prototype.toString.call(item[0]) === '[object Object]' && Object.keys(item[0])[0].trim().startsWith("@NAME"))) {
-            if (Array.isArray(item))
-              item = item[0]
-            const keys = Object.keys(item)
+
+            let newItem = item
+            if (Array.isArray(newItem))
+              newItem = newItem[0]
+            const keys = Object.keys(newItem)
             keys.forEach(key => {
               if (key.trim().startsWith("@NAME")) {
                 const name = key.trim().substring("@NAME".length).trim()
@@ -561,9 +646,9 @@ export function commitData(store, task, response) {
                 let data = null
                 if (component.component === 'v-text') {
                   attributeName = "data.text"
-                  data = item[key]
+                  data = newItem[key]
                 } else if (component.component === 'v-picture') {
-                  data = item[key]
+                  data = newItem[key]
                   if (data.startsWith("/") || data.startsWith("http")) {
                     attributeName = "data.imageUrl"
                   } else {
@@ -571,9 +656,9 @@ export function commitData(store, task, response) {
                   }
                 } else if (component.component === "v-video") {
                   attributeName = "data.video"
-                  data = item[key]
+                  data = newItem[key]
                 } else {
-                  console.warn("无法设置数据", item);
+                  console.warn("无法设置数据", newItem);
                   return
                 }
                 if (attributeName === "" || data === undefined || data === null) {
@@ -588,12 +673,22 @@ export function commitData(store, task, response) {
               }
             })
           } else {
-            throw new Error("数据发生了异常,请检查sql")
+            console.warn("数据发生了异常,请检查sql", item, task);
+            continue
           }
 
         } finally {
-          index++
+
         }
+
+
+
+      }
+
+
+      let index = 0
+      response.data.forEach(item => {
+
 
       })
 
@@ -738,10 +833,11 @@ export function requestCanvasData(canvasName, callback) {
                       task.sqlMap = {}
                       const sqlList = task.sql.split(/\n{2,}/g)
                       for (let i = 0; i < sqlList.length; i++) {
+                        console.log("调试点2");
                         let sql = sqlList[i].trim();
                         if (sql.startsWith("--")) {
                           sql = sql.substring(0, sql.indexOf("\n"))
-                          const kvArr = sql.match(/@[\wa-zA-Z0-9]+\s*:\s*[a-zA-Z0-9_\-\u4e00-\u9fa5~!@#$%^&*()+]+/g)
+                          const kvArr = sql.match(/@[\wa-zA-Z0-9]+\s+[a-zA-Z0-9_\-\u4e00-\u9fa5~!@#$%^&*()+]+/g)
                           if (kvArr !== null)
                             task.sqlMap[`sql[${i}]`] = kvArr
                         }

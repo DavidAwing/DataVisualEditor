@@ -34,7 +34,6 @@ export default async function onStyleChange(this: any, val: any, old: any) {
 
   if (StyleChangeState.code === "TAG-0") {
     const diff = new Date().getTime() - StyleChangeState.date.getTime();
-    console.log("导致无限循环的时间差", diff);
     if (diff < 50) {
       return
     }
@@ -43,10 +42,6 @@ export default async function onStyleChange(this: any, val: any, old: any) {
   const curStyle = val
   if (JSONfn.stringify(curStyle) === "{}")
     return
-
-
-  console.log("无限循环AAA1");
-
 
   // 解决修改数据死循环
   // this.functionTimeList.push(new Date())
@@ -315,9 +310,11 @@ export default async function onStyleChange(this: any, val: any, old: any) {
           findStyle = style
           break
         } else if (style.hierarchy === curStyle.hierarchy) {
-          findStyle = style
+          findStyle = JSONfn.parse(JSONfn.stringify(style))
+          findStyle.selector = this.curSelector
         }
       }
+
       if (findStyle !== null) {
         this.handleStyleChange(this.getHierarchy(findStyle.hierarchy));
         this.switchToStyle(findStyle);

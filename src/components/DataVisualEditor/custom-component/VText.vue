@@ -1,12 +1,7 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <div>
-    <div
-      v-if="editMode == 'edit'"
-      class="v-text"
-      @keydown="handleKeydown"
-      @keyup="handleKeyup"
-    >
+  <div @click="onEvent('onClick', $event)" @mouseover="onEvent('onMouseover', $event)" @mouseout="onEvent('onMouseout', $event)">
+    <div v-if="editMode == 'edit'" class="v-text" @keydown="handleKeydown" @keyup="handleKeyup">
       <!-- tabindex >= 0 使得双击时聚焦该元素 -->
       <div
         ref="text"
@@ -28,11 +23,11 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
-import axios from "axios";
-import { keycodes } from "../utils/shortcutKey";
-import ComponentBase from "./ComponentBase";
-import { getRandStr } from "../utils/utils";
+import { mapState } from 'vuex';
+import axios from 'axios';
+import { keycodes } from '../utils/shortcutKey';
+import ComponentBase from './ComponentBase';
+import { getRandStr } from '../utils/utils';
 
 // todo 文字支持超链接
 
@@ -49,17 +44,17 @@ export default {
       canEdit: false,
       ctrlKey: 17,
       isCtrlDown: false,
-      verticalAlign: "",
-      writingMode: "",
+      verticalAlign: '',
+      writingMode: '',
     };
   },
   computed: {
-    ...mapState(["editMode"]),
+    ...mapState(['editMode']),
     text() {
-      if (this.element.data.text === undefined) return "";
-      if (this.writingMode === "vertical") {
-        return this.element.data.text.split("").join("<br>");
-      } else if (this.writingMode === "horizontal") {
+      if (this.element.data.text === undefined) return '';
+      if (this.writingMode === 'vertical') {
+        return this.element.data.text.split('').join('<br>');
+      } else if (this.writingMode === 'horizontal') {
         return this.element.data.text;
       } else {
         return this.element.data.text;
@@ -72,27 +67,25 @@ export default {
   watch: {
     element: {
       handler: function (val) {
-        if (val.data.verticalAlign !== this.verticalAlign)
-          this.verticalAlign = val.data.verticalAlign;
-        if (val.data.writingMode !== this.writingMode)
-          this.writingMode = val.data.writingMode;
+        if (val.data.verticalAlign !== this.verticalAlign) this.verticalAlign = val.data.verticalAlign;
+        if (val.data.writingMode !== this.writingMode) this.writingMode = val.data.writingMode;
       },
       deep: true,
     },
     verticalAlign() {
-      this.$refs["text"].style["vertical-align"] = this.verticalAlign;
+      this.$refs['text'].style['vertical-align'] = this.verticalAlign;
     },
   },
-  created() {
-  },
+  created() {},
   mounted() {
-    this.$refs["text"].style["vertical-align"] = this.data.verticalAlign;
+    this.$refs['text'].style['vertical-align'] = this.data.verticalAlign;
     this.writingMode = this.data.writingMode;
     // this.$refs["text"].style["writing-mode"] = this.element.data.writingMode;
   },
   methods: {
+
     handleInput(e) {
-      this.$emit("input", this.element, e.target.innerHTML);
+      this.$emit('input', this.element, e.target.innerHTML);
     },
 
     handleKeydown(e) {
@@ -100,11 +93,7 @@ export default {
       this.canEdit && e.stopPropagation();
       if (e.keyCode == this.ctrlKey) {
         this.isCtrlDown = true;
-      } else if (
-        this.isCtrlDown &&
-        this.canEdit &&
-        keycodes.includes(e.keyCode)
-      ) {
+      } else if (this.isCtrlDown && this.canEdit && keycodes.includes(e.keyCode)) {
         e.stopPropagation();
       } else if (e.keyCode == 46) {
         // deleteKey
@@ -129,20 +118,19 @@ export default {
     clearStyle(e) {
       e.preventDefault();
       const clp = e.clipboardData;
-      const text = clp.getData("text/plain") || "";
-      if (text !== "") {
-        document.execCommand("insertText", false, text);
+      const text = clp.getData('text/plain') || '';
+      if (text !== '') {
+        document.execCommand('insertText', false, text);
       }
 
-      this.$emit("input", this.element, e.target.innerHTML);
+      this.$emit('input', this.element, e.target.innerHTML);
     },
 
     handleBlur(e) {
-
-      if (this.writingMode === "vertical") {
-        this.element.data.text = e.target.innerHTML.replace(/<br>+/g, "") || "";
+      if (this.writingMode === 'vertical') {
+        this.element.data.text = e.target.innerHTML.replace(/<br>+/g, '') || '';
       } else {
-        this.element.data.text = e.target.innerHTML || "";
+        this.element.data.text = e.target.innerHTML || '';
       }
 
       this.canEdit = false;

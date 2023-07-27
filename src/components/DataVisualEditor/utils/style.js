@@ -192,6 +192,17 @@ export function isStyleExist(id) {
     return true
 }
 
+// 移除样式
+export function removeStyleById(id) {
+  const style = document.getElementById(id)
+  if (style === null) {
+    console.warn(`removeStyleById|找不到指定id的样式[${id}]`);
+    return false
+  }
+  style.remove()
+  return true
+}
+
 // 删除样式的选择器
 export function deleteSelectorForStyle(id, selector) {
 
@@ -677,16 +688,6 @@ export function addStyleListToHead(component, canvasName) {
 }
 
 
-// 移除样式
-export function removeStyleById(id) {
-  const style = document.getElementById(id)
-  if (style === null) {
-    console.warn(`removeStyleById|找不到指定id的样式[${id}]`);
-    return false
-  }
-  style.remove()
-  return true
-}
 
 
 

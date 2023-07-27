@@ -45,6 +45,11 @@ const routes: Array<RouteConfig> = [
     component: () => import('@/views/DisplayBoardAdmin/index.vue')
   },
   {
+    path: '/CanvasTemplateAdmin',
+    name: 'CanvasTemplateAdmin',
+    component: () => import('@/views/CanvasTemplateAdmin/index.vue')
+  },
+  {
     path: '/DeviceInformation',
     name: 'DeviceInformation',
     component: () => import('@/views/DeviceInformation/index.vue')
@@ -53,6 +58,16 @@ const routes: Array<RouteConfig> = [
     path: '/DatasourceEditor',
     name: 'DatasourceEditor',
     component: () => import('@/views/DatasourceEditor/index.vue')
+  },
+  {
+    path: '/AddDatasource',
+    name: 'AddDatasource',
+    component: () => import('@/views/AddDatasource/index.vue')
+  },
+  {
+    path: '/WorkFlowEditor',
+    name: 'WorkFlowEditor',
+    component: () => import('@/views/WorkFlowEditor/index.vue')
   }
 ]
 

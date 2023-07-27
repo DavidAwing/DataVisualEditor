@@ -64,13 +64,24 @@
       </div>
     </div>
 
-    <el-dialog title="数据源" :visible.sync="canvasConfigDialogVisible">
+    <el-dialog title="业务配置" :visible.sync="canvasConfigDialogVisible">
       <el-form>
         <!-- <el-form-item label="数据来源">
 
         </el-form-item> -->
 
+        <div style="display: flex; justify-content: flex-end">
+          <a :href="'/bi/#/DatasourceEditor?name=' + currentCanvasName" target="_blank" class="">
+            <el-button type="text" style="font-size: 16px">进入数据源编辑器</el-button>
+          </a>
+        </div>
         <el-input type="textarea" v-model="canvasData.dataSource.parameters" autocomplete="off" :rows="10"></el-input>
+        <div style="display: flex; justify-content: flex-end">
+          <a :href="'/bi/#/WorkFlowEditor?name=' + currentCanvasName" target="_blank" class="">
+            <el-button type="text" style="font-size: 16px">进入工作流编辑器</el-button>
+          </a>
+        </div>
+        <el-input type="textarea" v-model="canvasData.dataSource.workFlow" autocomplete="off" :rows="10"></el-input>
 
         <el-form-item label="cron" v-show="false">
           <el-input v-model="canvasData.dataSource.cron" autocomplete="off"></el-input>
@@ -88,9 +99,15 @@
         </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <a :href="'/bi/#/DatasourceEditor?name=' + currentCanvasName" target="_blank" class="">
-          <el-button type="text">进入数据源编辑器</el-button>
-        </a>
+        <div>
+          <a :href="'/bi/#/DatasourceEditor?name=' + currentCanvasName" target="_blank" class="">
+            <el-button type="text"></el-button>
+          </a>
+          <a :href="'/bi/#/AddDatasource'" target="_blank" style="margin-left: 16px">
+            <el-button type="text"></el-button>
+          </a>
+        </div>
+
         <div>
           <el-button @click="canvasConfigDialogVisible = false">取 消</el-button>
           <el-button type="primary" @click="canvasConfigDialogVisible = false">确 定</el-button>
@@ -161,7 +178,13 @@ export default {
           return;
         }
 
-        DB.setItem('CurrentCanvasName', this.currentCanvasName);
+        if (
+          this.currentCanvasName !== undefined &&
+          this.currentCanvasName !== null &&
+          this.currentCanvasName.trim() !== ''
+        )
+          DB.setItem('CurrentCanvasName', this.currentCanvasName);
+
         this.setAttributeChangeable('name', false);
         for (const data of this.canvasList) {
           if (data.name == val) {
@@ -217,7 +240,6 @@ export default {
                   });
               }
             });
-
             return;
           }
         }
@@ -226,12 +248,18 @@ export default {
         this.$store.commit('setCanvasComponentData', []);
         this.$store.commit('recordSnapshot');
 
-        this.canvasList.push({
-          canvasComponentData: JSONfn.stringify(this.canvasComponentData),
-          canvasData: JSONfn.stringify(this.canvasData),
-          name: this.currentCanvasName,
-          type: 'Canvas-Data',
-        });
+        if (
+          this.currentCanvasName !== undefined &&
+          this.currentCanvasName !== null &&
+          this.currentCanvasName.trim() !== ''
+        ) {
+          this.canvasList.push({
+            canvasComponentData: JSONfn.stringify(this.canvasComponentData),
+            canvasData: JSONfn.stringify(this.canvasData),
+            name: this.currentCanvasName,
+            type: 'Canvas-Data',
+          });
+        }
       },
       deep: false,
       immediate: true,
@@ -252,9 +280,20 @@ export default {
     const that = this;
     DB.CallbackMap.onOpenSucceedEventList.push(async () => {
       this.canvasList = await DB.getAllItemByType('Canvas-Data');
-      DB.getItem('CurrentCanvasName').then(item => {
-        this.currentCanvasName = item;
-      });
+      const canvasTemplateName = await DB.getItem('CanvasTemplateName');
+      if (canvasTemplateName !== undefined && canvasTemplateName !== null && canvasTemplateName.trim() !== '') {
+        this.currentCanvasName = canvasTemplateName;
+        try {
+          requestCanvasData.bind(this)(this.currentCanvasName);
+        } catch (error) {
+          console.error('eventBus|数据绑定异常', error);
+        }
+        DB.removeItem('CanvasTemplateName');
+      } else {
+        DB.getItem('CurrentCanvasName').then(item => {
+          this.currentCanvasName = item;
+        });
+      }
     });
   },
   methods: {

@@ -1,7 +1,6 @@
 <template>
   <div class="home">
     <Toolbar ref="Toolbar" />
-
     <main>
       <!-- 左侧组件列表 -->
       <section class="left">
@@ -23,17 +22,11 @@
             v-if="canvasData.deviceType !== 'pc'"
           />
         </div>
-
         <div class="canvas-hint" v-html="editorHint"></div>
-
-
         <div class="canvas-iocn-container" v-show="showCanvasIocn">
           <img class="canvas-iocn" src="../../assets/maximize.png"  @click="maximize"></img>
           <img class="canvas-iocn" src="../../assets/publish.png" @click="openPublishingPage"></img>
         </div>
-
-
-
       </section>
       <!-- 右侧属性列表 -->
       <section class="right">
@@ -51,9 +44,7 @@
               v-if="curComponent && curComponent.component.startsWith('v-')"
             />
             <ChartStyleList
-              v-else-if="
-                curComponent && curComponent.component.startsWith('vc-')
-              "
+              v-else-if="curComponent && curComponent.component.startsWith('vc-')"
             />
             <p v-else class="placeholder">请选择组件</p>
           </el-tab-pane>
@@ -99,8 +90,12 @@ import generateID, {
 } from "../../components/DataVisualEditor/utils/generateID";
 import { listenGlobalKeyDown } from "../../components/DataVisualEditor/utils/shortcutKey";
 import eventBus from "../../components/DataVisualEditor/utils/eventBus";
+
+import * as DB from '../../components/DataVisualEditor/utils/indexDB';
 const JSONfn = require("jsonfn").JSONfn;
 const LZ = require("lz-string");
+
+
 
 // http://127.0.0.1:9538/#/DataVisualEditor?type=print&max=100&labelName=SN&labelPath=C%3A%5CMES_upload_file%5CLabel%5CSN.label&sqlPath=N%2FA&printData=%22C%3A%5C%5CMES_upload_file%5C%5CLabel%5C%5CTemp%5C%5C445bdeab-85e3-4f29-aa07-ae453078f177.tmp%22&id=0000&name=undefined&language=undefined&siteid=2035&userno=0000&sitename=HS1&cardid=undefined&address=undefined&authorization=undefined&userid=20000063
 
@@ -313,7 +308,7 @@ export default {
     handleMouseMove(event) {
       const content = document.getElementsByClassName("content")[0];
       const contentRect = content.getClientRects()[0];
-      if (event.offsetY < 30 && event.offsetX > contentRect.width - 50) {
+      if (event.offsetY < 60 && event.offsetX > contentRect.width - 100) {
         this.showCanvasIocn = true
         setTimeout(() => {
           this.showCanvasIocn = false

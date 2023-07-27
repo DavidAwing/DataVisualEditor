@@ -1,9 +1,8 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import Store from '../components/DataVisualEditor/store'
 
 Vue.use(Vuex)
-
-import Store from '../components/DataVisualEditor/store'
 
 const options = {
   state: {

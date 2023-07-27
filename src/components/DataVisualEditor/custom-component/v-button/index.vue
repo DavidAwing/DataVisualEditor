@@ -1,9 +1,11 @@
 <template>
-    <button class="v-button">{{ propValue }}</button>
+    <el-button class="v-button" @click="onEvent('onClick', $event)">{{ element.data.text }}</el-button>
 </template>
 
 <script>
+    import ComponentBase from "../ComponentBase";
 export default {
+    extends: ComponentBase,
     props: {
         propValue: {
             type: String,

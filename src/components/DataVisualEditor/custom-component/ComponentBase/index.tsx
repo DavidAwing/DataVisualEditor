@@ -38,4 +38,14 @@ export default class ComponentBase extends Vue {
     // todo  监听组件样式, 执行组件的配置事件
   }
 
+  public onEvent(name: string, event: any) {
+    const func = this.element.events[name];
+    if (!func) return;
+    func({
+      component: this,
+      event: event,
+      element:  this.element
+    });
+  }
+
 }

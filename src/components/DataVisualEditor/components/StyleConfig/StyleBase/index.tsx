@@ -589,7 +589,7 @@ export default class StyleListBase extends tsc<Vue> {
 
 
     this.$watch('curStyle', (val, old) => {
- 
+
       onStyleChange.bind(this)(val, old)
       return
 
@@ -1103,15 +1103,12 @@ export default class StyleListBase extends tsc<Vue> {
       const match = styleValue.match(regex); // ['@index', '@aaindex']
       if (match === null) {
         console.log("样式路径333", styleValue);
-
-
       } else {
         match.forEach((placeholder: string) => {
           const key = placeholder.substring(1);
           styleValue = styleValue.replaceAll(placeholder, cssData[key]);
         });
       }
-
     }
 
     const styleId = removeWhitespace(
@@ -1210,9 +1207,13 @@ export default class StyleListBase extends tsc<Vue> {
 
   switchToStyle(style: any) {
 
+    console.trace("switchToStyle")
+
     if (style === undefined)
       return
+
     this.curSelector = style.selector;
+
     const styleArr = this.getHierarchy(style.hierarchy);
     if (styleArr === undefined || styleArr.length !== 2) return;
     this.selectedStyle = styleArr;

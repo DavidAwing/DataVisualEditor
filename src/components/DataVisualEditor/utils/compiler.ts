@@ -34,14 +34,21 @@ function extractFunctionBody(str: string) {
 
 
 
-export function stringToFunction(soundCode: string) {
+export function stringToFunction(soundCode: string): any {
+
+  if ((soundCode.startsWith("\"") && soundCode.endsWith("\"")) || (soundCode.startsWith("'") && soundCode.endsWith("'")))
+    soundCode = soundCode.substring(1, soundCode.length - 1)
+
+  soundCode = soundCode.replace(/\\n/g, '\n');
+  soundCode = soundCode.replace(/\\"/g, '"');
+  soundCode = soundCode.trim()
 
   let funcName = null;
   let funcArguments: any[] = [];
   let funcBody = null;
-
-  soundCode = soundCode.replace(/\/\/.*/g, "").trim()
+  // soundCode = soundCode.replace(/^\s*\/\/.*/gm, "").trim()
   if (soundCode.startsWith("function") || soundCode.startsWith("export function") || soundCode.startsWith("export default function")) {
+
     const nameMatch: RegExpMatchArray | null = soundCode.match(
       /(?<=function(\s|\S|\t)*)(\w|_)*?(?=(\t|\s)*\()/g
     );
@@ -53,6 +60,13 @@ export function stringToFunction(soundCode: string) {
     );
     if (nameMatch !== null)
       funcName = nameMatch[0];
+
+    if (funcName === undefined || funcName === null || funcName.trim() === "") {
+      const functionName = 'func_' + Math.random().toString(36).substring(7);
+      soundCode = "function " + functionName + soundCode.substring("function".length)
+      return stringToFunction(soundCode)
+    }
+
     if (argumentsMatch !== null)
       funcArguments = argumentsMatch[0].split(",").map((item) => item.trim()).filter(item => item !== null && item !== undefined && item.trim() !== "");
     if (bodyMatch !== null)
@@ -64,6 +78,7 @@ export function stringToFunction(soundCode: string) {
 
   if (funcBody === null || funcBody === undefined)
     throw new Error("没有函数体")
+
   // @ts-ignore
   const func = new Function(funcArguments, funcBody);
   return func

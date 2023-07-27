@@ -83,7 +83,7 @@ const data = {
       unit: '%',
       dataSource: {
         cron: "*/30 * * * * *",
-        parameters: "http://172.16.2.40:9096/#/project"
+        parameters: ""
       },
       deviceType: "pc" // pc,tab,mobile
     },

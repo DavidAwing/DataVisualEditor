@@ -8,7 +8,7 @@
 
       <div>
         <div>组件</div>
-        <el-select v-model="canvasDataSource.componentName" placeholder="" :multiple="false" clearable >
+        <el-select v-model="canvasDataSource.componentName" placeholder="" :multiple="false" clearable>
           <el-option
             v-for="item in ComponentList"
             :key="item.data.name"
@@ -50,7 +50,7 @@
 
       <div>
         <div>执行计划</div>
-        <el-input v-model="canvasDataSource.cron"></el-input>
+        <el-input v-model="canvasDataSource.cron" type="text"></el-input>
       </div>
 
       <div class="canvas-data-source-list">
@@ -184,10 +184,11 @@
       </div>
       <div slot="footer">
         <el-button @click="addDatabaseDialogVisible = false">取 消</el-button>
+        <el-button type="primary" v-if="addDatabaseDialogTitle === '删除或更新数据库?'" @click="">更 新</el-button>
         <el-button
           type="primary"
           @click="addDatabaseDialogTitle === '添加数据库' ? addDatabase('add') : addDatabase('remove')"
-          >确 定</el-button
+          >{{ addDatabaseDialogTitle === '添加数据库' ? '确 定' : '删 除' }}</el-button
         >
       </div>
     </el-dialog>
@@ -275,11 +276,9 @@ export default {
       return;
     }
 
-
     this.$store.commit('setCanvasName', this.canvasName);
 
     DB.CallbackMap.onOpenSucceedEventList.push(() => {
-
       DB.getAllItemByType('Canvas-Data').then(canvasList => {
         if (canvasList === undefined || canvasList === null || canvasList.length === 0) {
           toast('未找到存储的画布数据');
@@ -289,7 +288,7 @@ export default {
           if (item.name === this.canvasName) {
             this.canvas = item;
             this.$store.commit('setCanvasComponentData', JSONfn.parse(this.canvas.canvasComponentData));
-            break
+            break;
           }
         }
         if (this.canvas === undefined || this.canvas === null) {
@@ -308,8 +307,7 @@ export default {
       .then(({ data }) => {
         this.canvasDataSourceList = JSON.parse(data.data);
         if (this.canvasDataSourceList.length > 0) this.canvasDataSource = this.canvasDataSourceList[0];
-        else
-        console.log("找不到数据源");
+        else console.log('找不到数据源');
       });
   },
   mounted() {},
@@ -332,7 +330,7 @@ export default {
       } else if (type === 'showRemove') {
         const name = document.getElementById('database-select').value;
         this.temp = this.databaseList.find(item => item.name === name);
-        this.addDatabaseDialogTitle = '确定删除此数据库吗?';
+        this.addDatabaseDialogTitle = '删除或更新数据库?';
         this.addDatabaseDialogVisible = true;
       } else if (type === 'remove') {
         this.addDatabaseDialogVisible = false;
@@ -484,36 +482,49 @@ export default {
       return type;
     },
     saveCanvasDataSourceList() {
-
       // todo 保存之前先检测sql或脚本语法
       this.canvasDataSourceList.forEach(item => {
         if (item.dataSourceType === 'script') {
           // 检查类型注解
           if (/@[a-zA-Z]+/.test(item.script)) return 'ts';
-        } else if(item.dataSourceType==='database'){
-          const sqlArr = item.sql.split(/\n{2,}/g).filter(item=>item.trim() !== '')
-          const count = sqlArr.length
-          const commentLine = sqlArr[0].substring(0, sqlArr[0].indexOf("\n")).trim()
-          if (count === 1 && (item.componentName === undefined || item.componentName === null || item.componentName.trim() === "")) {
+        } else if (item.dataSourceType === 'database') {
+          if (item.sql === undefined || item.sql === null || item.sql === '') {
+            toast('需要填写sql');
+            throw Error('需要填写sql');
+          }
 
-            const kv = commentLine.match(/@[\wa-zA-Z0-9]+\s*:\s*[a-zA-Z0-9_\-\u4e00-\u9fa5~!@#$%^&*()+]+/g)
-            if (!commentLine.startsWith("--") || kv === null) {
+          const sqlArr = item.sql.split(/\n{2,}/g).filter(item => item.trim() !== '');
+          const count = sqlArr.length;
+          const commentLine = sqlArr[0].substring(0, sqlArr[0].indexOf('\n')).trim();
+          if (
+            count === 1 &&
+            (item.componentName === undefined || item.componentName === null || item.componentName.trim() === '')
+          ) {
+            const kv = commentLine.match(/@[\wa-zA-Z0-9]+\s*:\s*[a-zA-Z0-9_\-\u4e00-\u9fa5~!@#$%^&*()+]+/g);
+            if (!commentLine.startsWith('--') || kv === null) {
               toast('单个sql项必须指定一个组件名称');
-              throw Error("单个sql查询必须指定组件名称")
-            } else  {
-              const value = kv.find(str=>str.startsWith("@NAME")).split(":")[1].trim()
-              if (this.ComponentList.find(item=>item.data.name === value) === undefined) {
+              throw Error('单个sql查询必须指定组件名称');
+            } else {
+              const value = kv
+                .find(str => str.startsWith('@NAME'))
+                .split(':')[1]
+                .trim();
+              if (this.ComponentList.find(item => item.data.name === value) === undefined) {
                 toast('sql中指定的组件名称不存在');
-                throw Error()
+                throw Error();
               }
 
-              Vue.set(item, "componentName", value)
+              Vue.set(item, 'componentName', value);
               // item.componentName = value
             }
-
-          } else if (count > 1 && (item.componentName !== undefined && item.componentName !== null && item.componentName.trim() !== "")) {
+          } else if (
+            count > 1 &&
+            item.componentName !== undefined &&
+            item.componentName !== null &&
+            item.componentName.trim() !== ''
+          ) {
             toast('多个sql项查询无需组件名称');
-            throw Error("多个sql查询无需组件名称")
+            throw Error('多个sql查询无需组件名称');
           }
         }
       });

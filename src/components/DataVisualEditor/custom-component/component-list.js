@@ -349,37 +349,65 @@ const list = [
         bind: "data"
       }
     ],
+    eventOptions: [
+      {
+        label: "beforeCreate",
+        value: "onBeforeCreate"
+      },
+      {
+        label: "mounted",
+        value: "onMounted"
+      },
+      {
+        label: "click",
+        value: "onClick"
+      },
+      {
+        label: "hover",
+        value: "onHover"
+      },
+      {
+        label: "mouseover",
+        value: "onMouseover"
+      }
+    ],
     events: {
 
-      onBeforeCreate: (self, caller) => {
+      onBeforeCreate: function (params) {
 
-        console.log("生命周期组件onBeforeCreate-self", self);
-        console.log("生命周期组件onBeforeCreate-caller", caller);
-
-        // return new Promise((resolve, reject) => {
-        //   setTimeout(() => {
-        //     console.log("更新之前2");
-        //     caller.$set(self.styleList, 0, {
-        //       value: 'border',
-        //       label: '边框',
-        //       children: [
-        //         {
-        //           type: 'css',
-        //           value: 'fg',
-        //           label: '效果1',
-        //           activeClassList: [],
-        //           style: "{color: red;}",
-        //           img: "",
-        //           attrList: []
-        //         }
-        //       ]
-        //     })
-        //     // self.styleList = textStyleList
-        //     resolve()
-        //   }, 5000);
-        // })
+        console.log("onBeforeCreate函数编译",params);
 
       },
+
+      // onBeforeCreate: (self, caller) => {
+
+      //   console.log("生命周期组件onBeforeCreate-self", self);
+      //   console.log("生命周期组件onBeforeCreate-caller", caller);
+
+      //   // return new Promise((resolve, reject) => {
+      //   //   setTimeout(() => {
+      //   //     console.log("更新之前2");
+      //   //     caller.$set(self.styleList, 0, {
+      //   //       value: 'border',
+      //   //       label: '边框',
+      //   //       children: [
+      //   //         {
+      //   //           type: 'css',
+      //   //           value: 'fg',
+      //   //           label: '效果1',
+      //   //           activeClassList: [],
+      //   //           style: "{color: red;}",
+      //   //           img: "",
+      //   //           attrList: []
+      //   //         }
+      //   //       ]
+      //   //     })
+      //   //     // self.styleList = textStyleList
+      //   //     resolve()
+      //   //   }, 5000);
+      //   // })
+
+      // },
 
       onMounted: (self, caller) => {
 
@@ -419,14 +447,10 @@ const list = [
        * @param {*} oldData 旧数据
        */
       onBeforeDataChange: (self, caller, newData, oldData) => {
-
         console.log("数据已经改变1111111");
-
       },
       onAfterDataChange: (self, caller, newData, oldData) => {
-
         console.log("数据已经改变222222222");
-
       }
     },
     styleList: //todo: 从后台读取组件支持的样式列表
@@ -733,11 +757,42 @@ const list = [
         // }
       ]
   },
+  // 按钮
   {
     component: 'v-button',
     label: '按钮',
     propValue: '按钮',
     icon: 'button',
+    data: {
+      text: "点击",
+      show: true,
+      isAlign: false
+    },
+    eventOptions: [
+      {
+        label: "beforeCreate",
+        value: "onBeforeCreate"
+      },
+      {
+        label: "mounted",
+        value: "onMounted"
+      },
+      {
+        label: "click",
+        value: "onClick"
+      },
+      {
+        label: "hover",
+        value: "onHover"
+      },
+      {
+        label: "mouseover",
+        value: "onMouseover"
+      }
+    ],
+    events: {
+
+    },
     style: {
       width: 100,
       height: 34,
@@ -752,138 +807,419 @@ const list = [
       color: 'rgba(0, 0, 0, 1)',
       backgroundColor: '',
     },
+    styleUnit: {
+      top: "px",
+      left: "px",
+      width: 'px',
+      height: 'px',
+      fontSize: 'px',
+      borderRadius: 'px',
+      letterSpacing: 'px'
+    },
     attrList: [
       {
-        key: "id",
+        key: "name",
         type: "text",
-        label: 'id',
-        events: {
-          onInput: function (self, value) { }
-        },
+        label: '名称',
         bind: "data"
+      },
+      {
+        key: "show",
+        type: "checkbox",
+        label: '显示',
+        bind: "data"
+      },
+      {
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
       },
       {
         key: "left",
         type: "number",
         label: 'x 坐标',
-        bind: "style",
-        events: {
-          onInput: function (self, value) { }
-        }
+        bind: "style"
       },
       {
         key: "top",
         type: "number",
         label: 'y 坐标',
-        bind: "style",
-        events: {
-          onInput: function (self, value) {
-          }
-        }
+        bind: "style"
       },
       {
         key: "width",
         type: "number",
         label: '宽',
-        bind: "style",
-        events: {
-          onInput: function (self, value) { }
-        }
+        bind: "style"
       },
       {
         key: "rotate",
         type: "number",
         label: '旋转',
-        bind: "style",
-        events: {
-          onInput: function (self, value) { }
-        }
-      },
-      {
-        key: "color",
-        type: "color-picker",
-        label: '颜色',
-        bind: 'style',
-        options: {
-          showAlpha: false
-        }
-      },
-      {
-        key: "backgroundColor",
-        type: "color-picker",
-        label: '背景色',
-        bind: 'style',
-        options: {
-          showAlpha: true
-        }
-      },
-      {
-        key: "borderRadius",
-        type: "number",
-        label: '边框半径',
-        bind: 'style'
-      },
-      {
-        key: "fontSize",
-        type: "number",
-        label: '字体大小',
-        bind: 'style'
-      },
-      {
-        key: "fontWeight",
-        type: "number",
-        label: '字体粗细',
-        bind: 'style'
-      },
-      {
-        key: "lineHeight",
-        type: "number",
-        label: '行高',
-        bind: 'style'
-      },
-      {
-        key: "letterSpacing",
-        type: "number",
-        label: '字间距',
-        bind: 'style'
-      },
-      {
-        key: "textAlign",
-        type: "select",
-        label: '左右对齐',
-        bind: 'style',
-        options: [
-          {
-            label: '左对齐',
-            value: 'left'
-          },
-          {
-            label: '居中',
-            value: 'center',
-          },
-          {
-            label: '右对齐',
-            value: 'right',
-          }
-        ]
-      },
-      {
-        key: "opacity",
-        type: "number",
-        label: '透明度',
-        bind: 'style'
-      },
-      {
-        key: "fontFamily",
-        type: "select",
-        label: '字体',
-        options: fontFamilyOpts,
-        bind: 'style'
+        bind: "style"
       },
       {
         key: "text",
         type: "text",
         label: '文本',
+        bind: "data"
+      },
+    ]
+  },
+  // 输入框
+  {
+    component: 'v-input',
+    label: '输入框',
+    propValue: '',
+    icon: 'button',
+    eventOptions: [
+      {
+        label: "focus",
+        value: "onFocus"
+      },
+      {
+        label: "blur",
+        value: "onBlur"
+      },
+      {
+        label: "change",
+        value: "onChange"
+      },
+      {
+        label: "input",
+        value: "onInput"
+      },
+      {
+        label: "clear",
+        value: "onClear"
+      },
+      {
+        label: "keyup",
+        value: "onKeyup"
+      },
+      {
+        label: "keydown",
+        value: "onKeydown"
+      },
+      {
+        label: "keypress",
+        value: "onKeypress"
+      }
+    ],
+    events: {
+
+    },
+    data: {
+      text: "",
+      placeholder: "请输入文字",
+      show: true,
+      isAlign: false,
+      type: "text"
+    },
+    style: {
+      width: 200,
+      height: 34,
+      borderWidth: 1,
+      borderColor: '',
+      borderRadius: '',
+      fontSize: 14,
+      fontWeight: 500,
+      lineHeight: '',
+      letterSpacing: 0,
+      textAlign: '',
+      color: 'rgba(0, 0, 0, 1)',
+      backgroundColor: '',
+    },
+    styleUnit: {
+      top: "px",
+      left: "px",
+      width: 'px',
+      height: 'px',
+      fontSize: 'px',
+      borderRadius: 'px',
+      letterSpacing: 'px'
+    },
+    attrList: [
+      {
+        key: "name",
+        type: "text",
+        label: '名称',
+        bind: "data"
+      },
+      {
+        key: "show",
+        type: "checkbox",
+        label: '显示',
+        bind: "data"
+      },
+      {
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
+      },
+      {
+        key: "left",
+        type: "number",
+        label: 'x 坐标',
+        bind: "style"
+      },
+      {
+        key: "top",
+        type: "number",
+        label: 'y 坐标',
+        bind: "style"
+      },
+      {
+        key: "width",
+        type: "number",
+        label: '宽',
+        bind: "style"
+      },
+      {
+        key: "rotate",
+        type: "number",
+        label: '旋转',
+        bind: "style"
+      },
+      {
+        key: "text",
+        type: "text",
+        label: '文本',
+        bind: "data"
+      },
+      {
+        key: "placeholder",
+        type: "text",
+        label: '提示',
+        bind: "data"
+      },
+      {
+        key: "type",
+        type: "select",
+        label: '类型',
+        bind: 'data',
+        options: [
+          {
+            label: 'text',
+            value: 'text'
+          },
+          {
+            label: 'textarea ',
+            value: 'textarea ',
+          },
+          {
+            label: 'number',
+            value: 'number',
+          },
+          {
+            label: 'password',
+            value: 'password',
+          }
+        ]
+      },
+    ]
+  },
+  // 选择器
+  {
+    component: 'v-select',
+    label: '选择器',
+    propValue: '',
+    icon: 'button',
+    data: {
+      text: "",
+      show: true,
+      isAlign: false,
+      selectedValue: "",
+      placeholder: "请选择",
+      clearable: false,
+      multiple: false,
+      options: []
+    },
+    style: {
+      width: 200,
+      height: 34,
+      borderWidth: 1,
+      borderColor: '',
+      borderRadius: '',
+      fontSize: 14,
+      fontWeight: 500,
+      lineHeight: '',
+      letterSpacing: 0,
+      textAlign: '',
+      color: 'rgba(0, 0, 0, 1)',
+      backgroundColor: '',
+    },
+    styleUnit: {
+      top: "px",
+      left: "px",
+      width: 'px',
+      height: 'px',
+      fontSize: 'px',
+      borderRadius: 'px',
+      letterSpacing: 'px'
+    },
+    attrList: [
+      {
+        key: "name",
+        type: "text",
+        label: '名称',
+        bind: "data"
+      },
+      {
+        key: "show",
+        type: "checkbox",
+        label: '显示',
+        bind: "data"
+      },
+      {
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
+      },
+      {
+        key: "left",
+        type: "number",
+        label: 'x 坐标',
+        bind: "style"
+      },
+      {
+        key: "top",
+        type: "number",
+        label: 'y 坐标',
+        bind: "style"
+      },
+      {
+        key: "width",
+        type: "number",
+        label: '宽',
+        bind: "style"
+      },
+      {
+        key: "rotate",
+        type: "number",
+        label: '旋转',
+        bind: "style"
+      },
+      {
+        key: "placeholder",
+        type: "text",
+        label: '提示',
+        bind: "data"
+      },
+      {
+        key: "clearable",
+        type: "checkbox",
+        label: '可清空',
+        bind: "data"
+      },
+      {
+        key: "multiple",
+        type: "checkbox",
+        label: '多选',
+        bind: "data"
+      }
+    ]
+  },
+   // 日期选择器
+   {
+    component: 'v-date-picker',
+    label: '日期',
+    propValue: '',
+    icon: '',
+    data: {
+      text: "",
+      show: true,
+      isAlign: false,
+      date: "",
+      placeholder: "选择日期",
+      format: "yyyy 年 MM 月 dd 日",
+      align: "left"
+    },
+    style: {
+      width: 200,
+      height: 34,
+      borderWidth: 1,
+      borderColor: '',
+      borderRadius: '',
+      fontSize: 14,
+      fontWeight: 500,
+      lineHeight: '',
+      letterSpacing: 0,
+      textAlign: '',
+      color: 'rgba(0, 0, 0, 1)',
+      backgroundColor: '',
+    },
+    styleUnit: {
+      top: "px",
+      left: "px",
+      width: 'px',
+      height: 'px',
+      fontSize: 'px',
+      borderRadius: 'px',
+      letterSpacing: 'px'
+    },
+    attrList: [
+      {
+        key: "name",
+        type: "text",
+        label: '名称',
+        bind: "data"
+      },
+      {
+        key: "show",
+        type: "checkbox",
+        label: '显示',
+        bind: "data"
+      },
+      {
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
+      },
+      {
+        key: "left",
+        type: "number",
+        label: 'x 坐标',
+        bind: "style"
+      },
+      {
+        key: "top",
+        type: "number",
+        label: 'y 坐标',
+        bind: "style"
+      },
+      {
+        key: "width",
+        type: "number",
+        label: '宽',
+        bind: "style"
+      },
+      {
+        key: "rotate",
+        type: "number",
+        label: '旋转',
+        bind: "style"
+      },
+      {
+        key: "date",
+        type: "text",
+        label: '日期',
+        bind: "data"
+      },
+      {
+        key: "placeholder",
+        type: "text",
+        label: '提示',
+        bind: "data"
+      },
+      {
+        key: "format",
+        type: "text",
+        label: '格式',
         bind: "data"
       }
     ]
@@ -1389,42 +1725,42 @@ const list = [
       name: "",
       columns: [
         {
-            "prop": "date",
-            "label": "日期",
-            "width": 10,
-            "align": "center"
+          "prop": "date",
+          "label": "日期",
+          "width": 10,
+          "align": "center"
         },
         {
-            "prop": "name",
-            "label": "姓名",
-            "width": 10,
-            "align": "center"
+          "prop": "name",
+          "label": "姓名",
+          "width": 10,
+          "align": "center"
         },
         {
-            "prop": "province",
-            "label": "省份",
-            "width": 10,
-            "align": "center"
+          "prop": "province",
+          "label": "省份",
+          "width": 10,
+          "align": "center"
         },
         {
-            "prop": "city",
-            "label": "市区",
-            "width": 10,
-            "align": "center"
+          "prop": "city",
+          "label": "市区",
+          "width": 10,
+          "align": "center"
         },
         {
-            "prop": "address",
-            "label": "地址",
-            "width": 10,
-            "align": "center"
+          "prop": "address",
+          "label": "地址",
+          "width": 10,
+          "align": "center"
         },
         {
-            "prop": "zip",
-            "label": "邮编",
-            "width": 10,
-            "align": "center"
+          "prop": "zip",
+          "label": "邮编",
+          "width": 10,
+          "align": "center"
         }
-    ],
+      ],
       tableData: [
         {
           "date": "2016-05-02",

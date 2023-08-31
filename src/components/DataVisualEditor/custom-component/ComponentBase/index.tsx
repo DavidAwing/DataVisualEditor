@@ -8,11 +8,23 @@ export default class ComponentBase extends Vue {
 
   @Prop({ required: true }) element!: any;
 
+  public onEvent(name: string, data = {}) {
+    const func = this.element.events[name];
+    if (!func) return;
+    func({
+      component: this,
+      data: { ...data },
+      element: this.element
+    });
+  }
+
   // todo: 撑满父组件
 
   constructor() {
     super()
-    console.log();
+    this.$watch('element', (newValue, oldValue) => {
+      console.log("");
+    }, { deep: true, immediate: true });
   }
 
   // render(createElement: any) {
@@ -28,24 +40,13 @@ export default class ComponentBase extends Vue {
   // }
 
   public created() {
-    this.element.data.p = "父组件挂载的数据"
+    // this.element.data.p = "父组件挂载的数据"
+    this.onEvent('onCreated')
   }
 
   public mounted() {
-    this.$watch('element', (newValue, oldValue) => {
-    }, { deep: false });
-
-    // todo  监听组件样式, 执行组件的配置事件
+    this.onEvent('onMounted')
   }
 
-  public onEvent(name: string, event: any) {
-    const func = this.element.events[name];
-    if (!func) return;
-    func({
-      component: this,
-      event: event,
-      element:  this.element
-    });
-  }
 
 }

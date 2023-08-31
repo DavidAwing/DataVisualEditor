@@ -28,6 +28,7 @@ const dev_addr = process.env.NODE_ENV === 'development' ? devIPList['开发'] : 
 const { defineConfig } = require('@vue/cli-service')
 
 module.exports = defineConfig({
+  runtimeCompiler: true,
   transpileDependencies: true,
   publicPath: IS_PROD ? './' : process.env.VUE_APP_BASE_URL, //署应用包时的基本 URL。  vue-router history模式使用
   outputDir: 'dist',
@@ -40,6 +41,7 @@ module.exports = defineConfig({
     name: "数据可视化编辑器",
     resolve: {
       alias: {
+        vue: 'vue/dist/vue.esm.js',
         compiler: path.resolve(__dirname, 'src/compiler'),
         '@': resolve('src')
       },
@@ -96,6 +98,14 @@ module.exports = defineConfig({
         maxSize: 1024 * 1024 * 2, // Maximum chunk size (in bytes)
       },
     },
+    module: {
+      rules: [
+        {
+          test: /\.(txt)$/,
+          loader: 'text-loader'
+        }
+      ]
+    }
   },
   chainWebpack: config => {
     config.resolve.alias.set("@", path.join(__dirname, "src"))

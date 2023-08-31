@@ -7,7 +7,7 @@
       </div>
 
       <div>
-        <div>组件</div>
+        <div>组件名称</div>
         <el-select v-model="canvasDataSource.componentName" placeholder="" :multiple="false" clearable>
           <el-option
             v-for="item in ComponentList"
@@ -30,6 +30,13 @@
           >
           </el-option>
         </el-select>
+        <div
+          style="display: flex; align-items: center; width: 26px; justify-content: center"
+          v-if="canvasDataSource.dataSourceType === 'database'"
+          @click="switchPattern"
+        >
+          <i class="el-icon-refresh-right"></i>
+        </div>
       </div>
 
       <div v-if="canvasDataSource.dataSourceType === 'database'">
@@ -101,10 +108,19 @@
       <div class="subcomponent" v-if="Component.component === 'Group'"></div>
     </div>
 
-    <div v-if="canvasDataSource.dataSourceType === 'database'">
+    <div v-if="canvasDataSource.dataSourceType === 'database' && databasePattern === 'sql'">
       <div>
         <el-input v-model="canvasDataSource.sql" type="textarea"></el-input>
       </div>
+    </div>
+
+    <div v-if="canvasDataSource.dataSourceType === 'database' && databasePattern === 'QueryBuilder'">
+
+      <iframe id="QueryBuilder" key="QueryBuilder" @load='onQueryBuilderLoad' src="http://127.0.0.1:5502/sql-build/index.html"
+      height="100%" width="100%"
+     frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="no" allowtransparency="yes" seamless
+     allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+
     </div>
 
     <div v-if="canvasDataSource.dataSourceType === 'script'">
@@ -222,6 +238,22 @@ import {
 import Shape from '../../components/DataVisualEditor/components/Editor/Shape';
 
 import generateID, { resetID } from '../../components/DataVisualEditor/utils/generateID';
+
+
+//   <link rel="stylesheet" href="./dist/css/query-builder.default.css" id="qb-theme">
+//   <link rel="stylesheet" href="http://mistic100.github.io/jQuery-QueryBuilder/assets/flags/flags.css">
+// import  'bootstrap';
+// import 'bootstrap-select';
+// import 'chosenjs';
+// import * as bootbox from 'bootbox';
+// import 'bootstrap-slider';
+// import 'selectize';
+// import 'jquery-extendext';
+// import 'sql-parser-mistic/browser/sql-parser.js';
+// import * as interact from 'interactjs';
+// import 'jQuery-QueryBuilder';
+
+
 const JSONfn = require('jsonfn').JSONfn;
 
 export default {
@@ -231,12 +263,15 @@ export default {
       canvas: [],
       databaseList: [],
       canvasDataSourceList: [],
-      canvasDataSource: {},
+      canvasDataSource: {
+        dataSourceType: 'database',
+      },
       canvasName: '',
       componentPreviewDialogVisible: false,
       addDatabaseDialogVisible: false,
       temp: {},
       addDatabaseDialogTitle: '添加数据库',
+      databasePattern: 'sql',
     };
   },
   components: { CodeEditor, Shape },
@@ -264,6 +299,8 @@ export default {
       }
       return {};
     },
+  },
+  beforeCreate() {
   },
   created() {
     document.title = '组件数据源编辑';
@@ -310,7 +347,11 @@ export default {
         else console.log('找不到数据源');
       });
   },
-  mounted() {},
+  mounted() {
+    setTimeout(() => {
+
+    }, 1000);
+  },
   methods: {
     addDatabase(type, event) {
       if (type === 'show') {
@@ -361,10 +402,7 @@ export default {
     },
     testDataSource() {
       this.componentPreviewDialogVisible = true;
-
       const task = this.canvasDataSource;
-      console.log('测试数据', task);
-
       for (let i = 0; i < this.canvasComponentData.length; i++) {
         let component = this.canvasComponentData[i];
         if (component.component === 'Group')
@@ -557,9 +595,23 @@ export default {
           result.transform = 'rotate(' + style[attr] + 'deg)';
         }
       });
-
+ghbt 5'pkjr,f0 wod,lp9
       return result;
     },
+    switchPattern() {
+      if (this.databasePattern === 'sql') {
+        this.databasePattern = 'QueryBuilder';
+      } else {
+        this.databasePattern = 'sql';
+      }
+
+     setInterval(() => {
+
+     }, 1000);
+    },
+    onQueryBuilderLoad() {
+      console.log("页面加载...");
+    }
   },
 };
 </script>

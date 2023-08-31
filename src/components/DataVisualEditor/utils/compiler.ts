@@ -34,6 +34,8 @@ function extractFunctionBody(str: string) {
 
 
 
+
+
 export function stringToFunction(soundCode: string): any {
 
   if ((soundCode.startsWith("\"") && soundCode.endsWith("\"")) || (soundCode.startsWith("'") && soundCode.endsWith("'")))

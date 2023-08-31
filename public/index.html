@@ -15,6 +15,27 @@
   <link rel="dns-prefetch" href="//mc.meituan.net">
   <link rel="dns-prefetch" href="//p1.meituan.net">
 
+
+  <!-- <link rel="stylesheet" href="./query-builder/node_modules/bootstrap/dist/css/bootstrap.css" id="bt-theme">
+  <link rel="stylesheet" href="./query-builder/node_modules/bootstrap-select/dist/css/bootstrap-select.css">
+  <link rel="stylesheet" href="./query-builder/node_modules/chosenjs/chosen.css">
+  <link rel="stylesheet" href="./query-builder/node_modules/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css">
+  <link rel="stylesheet" href="./query-builder/node_modules/bootstrap-slider/dist/css/bootstrap-slider.css">
+  <link rel="stylesheet" href="./query-builder/node_modules/selectize/dist/css/selectize.bootstrap3.css">
+  <link rel="stylesheet" href="./query-builder/css/query-builder.default.css" id="qb-theme">
+  <link rel="stylesheet" href="./query-builder/css/flags.css">
+  <script src="./query-builder/node_modules/jquery/dist/jquery.js"></script>
+  <script src="./query-builder/node_modules/bootstrap/dist/js/bootstrap.js"></script>
+  <script src="./query-builder/node_modules/bootstrap-select/dist/js/bootstrap-select.js"></script>
+  <script src="./query-builder/node_modules/chosenjs/chosen.jquery.js"></script>
+  <script src="./query-builder/node_modules/bootbox/bootbox.js"></script>
+  <script src="./query-builder/node_modules/bootstrap-slider/dist/bootstrap-slider.js"></script>
+  <script src="./query-builder/node_modules/selectize/dist/js/standalone/selectize.js"></script>
+  <script src="./query-builder/node_modules/jquery-extendext/jquery-extendext.js"></script>
+  <script src="./query-builder/node_modules/sql-parser-mistic/browser/sql-parser.js"></script>
+  <script src="./query-builder/node_modules/interactjs/dist/interact.js"></script>
+  <script src="./query-builder/js/query-builder.js"></script> -->
+ 
   <% if(htmlWebpackPlugin.options.cdn) {%>
     <% for(var css of htmlWebpackPlugin.options.cdn.css) { %>
     <link rel="stylesheet" type="text/css" href="<%=css%>"></link>
@@ -48,17 +69,17 @@
       width: 100%;
     }
  
-  .el-table--border .el-table__cell:first-child .cell {
+    .el-table--border .el-table__cell:first-child .cell {
+        padding: 0 !important;
+    }
+
+    .el-table--small .el-table__cell {
       padding: 0 !important;
-  }
-
-  .el-table--small .el-table__cell {
-    padding: 0 !important;
-  }
-
+    }
   
-
- 
+    .flag {
+      display: inline-block;
+    }
 
   </style>
 
@@ -76,6 +97,8 @@
     <script src="<%=js%>"></script>
     <% } %>
   <% } %>
+ 
+
 </body>
 
 </html>

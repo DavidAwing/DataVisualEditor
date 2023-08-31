@@ -32,7 +32,7 @@
           </el-select>
         </div>
 
-        <div style="margin-top: 8px; margin-left: 8px; margin-right: 8px; flex: 1">
+        <div style="margin-top: 8px; margin-left: 8px; margin-right: 8px; flex: 1; overflow-y: scroll">
           <!-- <button @click="changeDb">修改数据库</button> -->
           <js-editor ref="jsEditor" />
           <!-- <json-editor ref="jsonEditor" v-model="jsonValue" /> -->
@@ -124,7 +124,6 @@ export default {
       dbInfo: dbInfo1,
       value: jsonData.toString(),
       jsonValue: JSON.stringify(dbInfo1, null, '\t'),
-
     };
   },
   computed: {
@@ -134,15 +133,15 @@ export default {
     },
     selectedEventCode: {
       get() {
-        if (!this.selectedEvent) return "";
+        if (!this.selectedEvent) return '';
         const event = this.curComponent.events[this.selectedEvent];
         if (!event) {
-          return JSONfn.stringify(`function anonymous(param) {
+          return JSONfn.stringify(`function ${this.selectedEvent}(param) {
 
     const component = param.component
     const event = param.event
     const element = param.element
-    console.log("组件onClick事件", component, event, element);
+    console.log("组件${this.selectedEvent}事件", component, event, element);
 
 }`);
         }
@@ -155,16 +154,15 @@ export default {
   },
   watch: {
     selectedEventCode() {
-      if (!this.$refs.jsEditor) 
-        return
+      if (!this.$refs.jsEditor) return;
       this.$refs.jsEditor.updateDoc(this.selectedEventCode);
     },
-    isShowEvent (){
-      console.log("组件显示", this.isShowEvent);
+    isShowEvent() {
+      console.log('组件显示', this.isShowEvent);
       if (this.isShowEvent) {
-        this.selectedEvent = null
+        this.selectedEvent = null;
       }
-    }
+    },
   },
   created() {
     this.$nextTick(() => {
@@ -187,9 +185,13 @@ export default {
         return;
       }
 
-      const code = this.$refs.jsEditor.getCode()
-      const func = stringToFunction(code);
-      this.curComponent.events[this.selectedEvent] = func;
+      try {
+        const code = this.$refs.jsEditor.getCode();
+        const func = stringToFunction(code);
+        this.curComponent.events[this.selectedEvent] = func;
+      } catch (error) {
+        toast('脚本编译发生错误: ' + error.message + '\n' + error.stack);
+      }
     },
   },
 };

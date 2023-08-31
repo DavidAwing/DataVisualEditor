@@ -1,0 +1,20 @@
+
+.user-component-item  {
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+.user-component-item>img {
+    background-size: contain;
+    /* 让图片填充整个容器 */
+    background-repeat: no-repeat;
+    background-position: center center;
+    object-fit: contain;
+}
+
+.user-component-item > label{
+    width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden; /* 超出部分隐藏 */ 
+    white-space: nowrap; /* 禁止文本换行 */
+}

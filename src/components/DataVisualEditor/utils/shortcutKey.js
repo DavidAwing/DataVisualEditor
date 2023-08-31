@@ -119,7 +119,6 @@ const unlockMap = {
 
 let isCtrlOrCommandDown = false
 
-
 export function isCtrlDown() {
   return isCtrlOrCommandDown
 }
@@ -149,17 +148,14 @@ export function listenGlobalKeyDown() {
   }
 
   window.onkeyup = (e) => {
-
     if (e.keyCode === ctrlKey || e.keyCode === commandKey) {
       isCtrlOrCommandDown = false
     }
-
     // Tab切换激活的组件
     if (e.keyCode === 9) {
       e.preventDefault()
       eventBus.$emit("SwitchNextComponent", e)
     }
-
   }
 
   window.onmousedown = (e) => {

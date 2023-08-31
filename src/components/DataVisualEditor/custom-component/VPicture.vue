@@ -17,7 +17,7 @@ import { mapState } from 'vuex';
 import axios from 'axios';
 // import {  } from "../utils/style";
 import { changeStyleWithScale } from '../utils/translate';
-
+import BaseMixins from './BaseMixins';
 function convertImgToBase64(url, callback, outputFormat) {
   const canvas = document.createElement('CANVAS');
   const ctx = canvas.getContext('2d');
@@ -48,6 +48,7 @@ function imgToBase64(img, callback, outputFormat) {
 
 export default {
   extends: ComponentBase,
+  mixins: [BaseMixins],
   data() {
     return {};
   },

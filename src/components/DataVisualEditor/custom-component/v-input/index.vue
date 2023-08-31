@@ -5,41 +5,40 @@
     v-model="element.data.text"
     :type="element.data.type"
     :placeholder="element.data.placeholder"
-    @focus="onEvent('onFocus', $event)"
-    @input="onEvent('onInput', $event)"
-    @clear="onEvent('onClear', $event)"
+    @focus="onEvent('onFocus', { $event })"
+    @input="onEvent('onInput', { $event })"
+    @clear="onEvent('onClear', { $event })"
     @change="onEvent('onChange', $event)"
-    @blur="onEvent('onBlur', $event)"
-    @keyup.native="onEvent('onKeyup', $event)"
-    @keydown.native="onEvent('onKeydown', $event)"
-    @keypress.native="onEvent('onKeypress', $event)"
+    @blur="onEvent('onBlur', { $event })"
+    @keyup.native="onEvent('onKeyup', { $event })"
+    @keydown.native="onEvent('onKeydown', { $event })"
+    @keypress.native="onEvent('onKeypress', { $event })"
   />
 </template>
 
 <script>
-  import ComponentBase from "../ComponentBase";
-
+import ComponentBase from '../ComponentBase';
+import BaseMixins from '../BaseMixins';
 export default {
-    extends: ComponentBase,
-    props: {
-        propValue: {
-            type: String,
-            default: '',
-        },
-        element: {
-            type: Object,
-            default: () => {},
-        },
+  extends: ComponentBase,
+  mixins: [BaseMixins],
+  props: {
+    propValue: {
+      type: String,
+      default: '',
     },
-    mounted() {
-
+    element: {
+      type: Object,
+      default: () => {},
     },
-    methods: {
-      test(a,b) {
-        console.log("数据",a,b);
-      }
+  },
+  mounted() {},
+  methods: {
+    test(a, b) {
+      console.log('数据', a, b);
     },
-}
+  },
+};
 </script>
 
 <style lang="less" scoped>

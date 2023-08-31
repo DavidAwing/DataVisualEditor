@@ -18,6 +18,8 @@ import {
   SetValueAndAttributePathFromKey,
 } from './components/DataVisualEditor/utils/chartUtils';
 
+import { printByTemplate, compileVueTemplate } from './components/DataVisualEditor/utils/print';
+
 import Vue from 'vue';
 import axios from 'axios';
 import moment from 'moment';
@@ -27,6 +29,7 @@ import store from '@/store';
 const schedule = require('node-schedule');
 import * as ElementUI from 'element-ui';
 import * as xlsx from 'xlsx-js-style';
+
 
 import eventBus from './components/DataVisualEditor/utils/eventBus';
 
@@ -742,72 +745,6 @@ export default function addAxisData(extraData) {
       }
     });
 
-    setTimeout(() => {
-      bi.utils
-        .executeSQL(
-          '公司SQLServer',
-          `--@NAME 完成率   这是完成率的数据
-select top 1 (select  Round(rand()*100, 2)) '@PATH series[0].data[].value'
-
-
---@NAME 不良率   这是不良率的数据
-select top 1 (select  Round(rand()*100, 2)) '@PATH series[0].data[].value'
-
-
---@NAME 完成率2   这是完成率的数据
-select top 1 (select  Round(rand()*100, 2)) '@PATH series[0].data[].value'
-
-
---@NAME 不良率2   这是不良率的数据
-select top 1 (select  Round(rand()*100, 2)) '@PATH series[0].data[].value'
-
---@NAME 完成率3   这是完成率的数据
-select top 1 (select  Round(rand()*100, 2)) '@PATH series[0].data[].value'
-
-
---@NAME 不良率3   这是不良率的数据
-select top 1 (select  Round(rand()*100, 2)) '@PATH series[0].data[].value'
-
-
--- 文本
-select top 1 'A-213-2111040252' '@NAME 工单' ,
-(select ('EE ' + CONVERT(varchar(100), (select cast(ceiling(rand()*1000) as int ))))) '@NAME 产品',
-(select cast( ceiling(rand()*1000) as int )) '@NAME 目标',
-(select cast( ceiling(rand()*50000) as int )) '@NAME 投入',
-(select cast( ceiling(rand()*30000) as int )) '@NAME 产出',
-(select cast( ceiling(rand()*50000) as int )) '@NAME 不良',
-(select ('EE ' + CONVERT(varchar(100), (select cast(ceiling(rand()*1000) as int ))))) '@NAME 产品2',
-(select cast( ceiling(rand()*1000) as int )) '@NAME 目标2',
-(select cast( ceiling(rand()*50000) as int )) '@NAME 投入2',
-(select cast( ceiling(rand()*30000) as int )) '@NAME 产出2',
-(select cast( ceiling(rand()*50000) as int )) '@NAME 不良2',
-(select ('EE ' + CONVERT(varchar(100), (select cast(ceiling(rand()*1000) as int ))))) '@NAME 产品3',
-(select cast( ceiling(rand()*1000) as int )) '@NAME 目标3',
-(select cast( ceiling(rand()*50000) as int )) '@NAME 投入3',
-(select cast( ceiling(rand()*30000) as int )) '@NAME 产出3',
-(select cast( ceiling(rand()*50000) as int )) '@NAME 不良3'
-
--- @NAME  占位余量   这是柱状图的数据
-SELECT TOP 7  workorder  '@PATH yAxis.data[].value',target_qty  '@PATH series[0].data[].value' FROM MES.RT_WORKORDER
-
---@NAME   占位余量2  这是柱状图的数据
-SELECT top 7 WORKORDER '@PATH yAxis.data[]',TARGET_QTY '@PATH series[0].data[].value'  FROM MES.RT_WORKORDER
-`
-        )
-        .then(({ data }) => {
-          console.log('测试', data);
-        });
-
-      bi.utils
-        .request(
-          'http://www.emacrosys.cn:8031/H5/prod/requestVueData',
-          `{"id":0,"message":"","action":"GB/GB_getContractList","user":{"id":"0000","name":"管理员","language":"Chinese","siteid":"1001","userno":"0000","sitename":"苏州冠礼","cardid":"WFM600000","avatar":"http://localhost:8056/video/touxiang.png","address":"苏州市","company":"XX 系統技術公司","factoryList":"0@Unassign,1002@上海冠礼,1003@苏州二部,1001@苏州冠礼","authorization":"CPA","userid":"10000001","settings":"生管系统,工单管理,专案号维护,100555,Full Control,/GBCustomize/mPMGContract","timestamp":1690178744783},"data":{"startDate":"","endDate":"2023-07-24","contractNo":"","customer":""}}`
-        )
-        .then(({ data }) => {
-          // bi.utils.setComponentData('表格', data);
-        });
-    }, 2000);
-
     // 在js中这样调用
 
     if (false) {
@@ -894,6 +831,8 @@ SELECT top 7 WORKORDER '@PATH yAxis.data[]',TARGET_QTY '@PATH series[0].data[].v
             bi.utils.setJsonAttribute = setJsonAttribute;
             bi.utils.SetValueAndAttributePathFromKey = SetValueAndAttributePathFromKey;
             bi.utils.eventBus = eventBus;
+            bi.utils.printByTemplate = printByTemplate;
+            bi.utils.compileVueTemplate = compileVueTemplate;
           });
         });
       })

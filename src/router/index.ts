@@ -68,6 +68,11 @@ const routes: Array<RouteConfig> = [
     path: '/WorkFlowEditor',
     name: 'WorkFlowEditor',
     component: () => import('@/views/WorkFlowEditor/index.vue')
+  },
+  {
+    path: '/PrintTemplateTest',
+    name: 'PrintTemplateTest',
+    component: () => import('@/views/PrintTemplateTest/index.vue')
   }
 ]
 

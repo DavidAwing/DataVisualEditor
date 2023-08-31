@@ -5,10 +5,13 @@
       :data="element.data.tableData"
       height="250"
       :border="false"
-      style="width: 100%;"
+      style="width: 100%"
       ref="table"
       class="vc-table"
       row-class-name="vc-table-row"
+      @row-click="(row, column, event) => onEvent('onRowClick', { row, column, event })"
+      @row-dblclick="(row, column, event) => onEvent('onRowDblClick', { row, column, event })"
+      @row-contextmenu="(row, column, event) => onEvent('onRowContextmenu', { row, column, event })"
     >
       <template v-for="(column, index) in element.data.columns">
         <el-table-column
@@ -128,10 +131,11 @@ import {
   generateStyleId,
   removeAllStyleNotOfCanvasName,
 } from '../../utils/style';
-
+import BaseMixins from '../BaseMixins';
 
 export default {
   extends: ComponentBase,
+  mixins:[BaseMixins],
   directives: {
     resize: VResize,
     elDragDialog

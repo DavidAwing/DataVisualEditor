@@ -19,6 +19,7 @@
 <!--  src="http://192.168.0.107:99/map5/earth.min.js" -->
 
 <script>
+import  QueryBuilder from "jQuery-QueryBuilder";
 import MobilePreview from "@/components/DataVisualEditor/components/MobilePreview";
 import CssEditor from "@/components/DataVisualEditor/components/CssEditor";
 import { getRandStr } from "@/components/DataVisualEditor/utils/utils";

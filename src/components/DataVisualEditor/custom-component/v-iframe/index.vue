@@ -1,11 +1,26 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <div class="container">
-    <iframe v-if="iframeShow" :onload="onload()" ref="iframe" :src="iframeSrc" :id="iframeId" height="100%" width="100%"
-      frameborder="no" border="10" marginwidth="0" marginheight="0" scrolling="no" allowtransparency="yes" seamless
-      allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
-    <div class="mask-layer">
-        </div>
+    <iframe
+      v-if="iframeShow"
+      :onload="onload()"
+      ref="iframe"
+      :src="iframeSrc"
+      :id="iframeId"
+      height="100%"
+      width="100%"
+      frameborder="no"
+      border="10"
+      marginwidth="0"
+      marginheight="0"
+      scrolling="no"
+      allowtransparency="yes"
+      seamless
+      allowfullscreen="true"
+      webkitallowfullscreen="true"
+      mozallowfullscreen="true"
+    ></iframe>
+    <div class="mask-layer"></div>
   </div>
 </template>
 
@@ -17,9 +32,10 @@ import ComponentBase from "../ComponentBase";
 import { getRandStr } from "../../utils/utils";
 import VResize from 'v-resize'
 import eventBus from '../../utils/eventBus'
-
+import BaseMixins from '../BaseMixins';
 export default {
   extends: ComponentBase,
+  mixins:[BaseMixins],
   props: {
   },
   mixins: [],
@@ -86,5 +102,5 @@ export default {
 </script>
 
 <style lang="less" scoped>
-@import "index.less";
+@import 'index.less';
 </style>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="../lib/vue-2.7.14/vue.js"></script>
+  </head>
+  <body>
+    <div
+      style="
+        width: 210mm;
+        height: 297mm;
+        position: relative;
+        transform: translate(0%, 0%);
+        box-shadow: 1px 1px 5px #000;
+        background: #fff;
+        padding: 20px;
+        border-radius: 3px;
+        left: 0px;
+      "
+    >
+      <div
+        style="
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+          margin-top: 20px;
+        "
+      >
+        <span
+          class="span"
+          style="margin-right: 10px; font-size: 20px; font-weight: 600"
+        >
+          工艺流程卡
+        </span>
+      </div>
+
+      <div
+        style="
+          width: 100%;
+          height: 30px;
+          font-size: 15px;
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-start;
+          align-items: center;
+          margin-top: 10px;
+          text-align: left;
+        "
+      >
+        <p style="width: 33%">
+          <span style="margin-right: 10px; font-weight: 600"> 日期 </span>
+          <label style="width: 100px; margin-right: 30px">{{ 日期 }} </label>
+        </p>
+        <p style="width: 33%">
+          <span class="span" style="margin-right: 10px; font-weight: 600"
+            >生产单</span
+          >
+          <label>{{ 生产单 }}</label>
+        </p>
+
+        <p style="width: 33%">
+          <span class="span" style="margin-right: 10px; font-weight: 600"
+            >总数量</span
+          >
+          <label>{{ 总数量 }}</label>
+        </p>
+      </div>
+
+      <div
+        style="
+          width: 100%;
+          height: 30px;
+          display: flex;
+          font-size: 15px;
+          flex-direction: row;
+          justify-content: flex-start;
+          align-items: center;
+          margin-bottom: 5px;
+          text-align: left;
+        "
+      >
+        <p style="width: 33%">
+          <span class="span" style="margin-right: 10px; font-weight: 600"
+            >料号</span
+          >
+          <label>{{ 料号 }}</label>
+        </p>
+
+        <p style="width: 33%">
+          <span class="span" style="margin-right: 10px; font-weight: 600"
+            >品名</span
+          >
+          <label>{{ 料号 }}</label>
+        </p>
+
+        <p style="width: 33%">
+          <span class="span" style="margin-right: 10px; font-weight: 600"
+            >物料规格</span
+          >
+          <label>{{ 物料规格 }}</label>
+        </p>
+      </div>
+
+      <div>
+        <table
+          border="1"
+          style="border-collapse: collapse; width: 100%"
+          id="NewTable"
+        >
+          <thead>
+            <tr>
+              <th style="border: #000 3px solid">序号</th>
+              <th>工序名称</th>
+              <th>工艺要求</th>
+              <th>计划日期</th>
+              <th>数量</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- <tr style="width: 100%" p-delete>
+            <td colspan="5" style="width: 100%; padding-top: 12px; padding-bottom: 12px; text-align: center">
+              <input type="text" value="[[TableData]]" style="width: 50%; border: none; text-align: center" />
+            </td>
+          </tr> -->
+            <tr v-for="(row, index) in TableData" :key="index">
+              <td style="text-align: center">{{ index + 1 }}</td>
+              <td style="text-align: center">{{ row.stageName }}</td>
+              <td style="text-align: center"></td>
+              <td style="text-align: center">{{ row.planInputDate }}</td>
+              <td style="text-align: center">{{ row.targetQty }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <button onclick="requestDevice()">Request device</button><br /><br />
+    <button id="device"></button>
+    <!-- <button id="connectButton">Connect to USB Device</button> -->
+
+    <script>
+      // 参考 https://hackernoon.com/exploring-the-webusb-api-connecting-to-usb-devices-and-printing-with-tspltspl2
+      async function requestDevice() {
+        try {
+          const device = await navigator.usb.requestDevice({ filters: [] });
+          const elem = document.querySelector("#device");
+          elem.textContent = `Print with '${device.productName}'`;
+          elem.onclick = () => testPrint(device);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      async function testPrint(device) {
+        const cmds = [
+          "SIZE 48 mm,25 mm",
+          "CLS",
+          'TEXT 30,10,"4",0,1,1,"HackerNoon"',
+          'TEXT 30,50,"2",0,1,1,"WebUSB API"',
+          'BARCODE 30,80,"128",70,1,0,2,2,"altospos.com"',
+          "PRINT 1",
+          "END",
+        ];
+
+        await device.open();
+        await device.selectConfiguration(1);
+        await device.claimInterface(1);
+        await device.transferOut(
+          device.configuration.interfaces[1].alternate.endpoints.find(
+            (obj) => obj.direction === "out"
+          ).endpointNumber,
+          new Uint8Array(new TextEncoder().encode(cmds.join("\r\n")))
+        );
+        await device.close();
+      }
+    </script>
+
+    <script>
+      function compileVuetemplate(
+        printTemplateString,
+        templateData,
+        id = "#print-page-container-0"
+      ) {
+        let vueTemplate = {
+          template: printTemplateString,
+          data: function () {
+            return templateData;
+          },
+        };
+
+        if (!id.startsWith("#")) id = "#" + id;
+        if (document.getElementById(id) === null) {
+          const div = document.createElement("div");
+          div.setAttribute("id", id.substring(1));
+          document.body.appendChild(div);
+        }
+
+        const componentConstructor = Vue.extend(vueTemplate);
+        const intance = new componentConstructor({ el: id });
+        intance.$el.setAttribute("id", id.substring(1));
+      }
+
+      window.onload = () => {
+        import("./data.js").then((data) => {
+          if (Array.isArray(data.TemplateData)) {
+            const templateEle = document.body.children[0];
+            for (let i = 0; i < data.TemplateData.length; i++) {
+              const item = data.TemplateData[i];
+              compileVuetemplate(
+                templateEle.outerHTML,
+                item,
+                `#print-page-container-${i}`
+              );
+            }
+            templateEle.remove();
+          } else if (typeof data.TemplateData === "object") {
+            const templateEle = document.body.children[0];
+            compileVuetemplate(templateEle.outerHTML, data.TemplateData);
+            templateEle.remove();
+          }
+        });
+
+        setTimeout(() => {
+          // const tdElement = document.querySelector(
+          //   "#NewTable > tbody > tr:nth-child(1) > td:nth-child(2)"
+          // );
+          // const spanElement = document.createElement("span");
+          // spanElement.innerText = "冲丝";
+          // // Replace the text content with the span element
+          // tdElement.innerHTML = "";
+          // tdElement.appendChild(spanElement);
+        }, 300);
+
+        // 获取文本的坐标
+
+        // 获取元素的边界
+        function getRelativeBounding(container, element) {
+          // 获取包含元素和目标元素的位置信息
+          const containerRect = container.getBoundingClientRect();
+          const elementRect = element.getBoundingClientRect();
+
+          // 计算目标元素相对于包含元素的位置
+          const relativeLeft = elementRect.left - containerRect.left;
+          const relativeTop = elementRect.top - containerRect.top;
+
+          return {
+            height: elementRect.height,
+            width: elementRect.width,
+            left: relativeLeft,
+            top: relativeTop,
+          };
+        }
+
+        // 获取元素的线框
+
+        setTimeout(() => {
+          // const container = document.getElementById("print-page-container");
+          // const element = document.querySelector(
+          //   "#NewTable > tbody > tr:nth-child(1) > td:nth-child(2)"
+          // );
+          // const { border, left } = window.getComputedStyle(element, null);
+          // console.log("style", border);
+        }, 200);
+      };
+    </script>
+  </body>
+</html>

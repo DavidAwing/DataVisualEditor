@@ -1,14 +1,17 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <div class="container">
-
-    <video  :autoplay="element.data.autoplay" :controls="element.data.controls" :loop="element.data.loop"
-    :muted="element.data.muted" :poster="element.data.poster">
+    <video
+      :autoplay="element.data.autoplay"
+      :controls="element.data.controls"
+      :loop="element.data.loop"
+      :muted="element.data.muted"
+      :poster="element.data.poster"
+    >
       <source :src="element.data.video" type="video/webm" />
-      <track kind="subtitles" src="foo.en.vtt" srclang="en" label="English">
-      <track kind="subtitles" src="foo.sv.vtt" srclang="sv" label="中文">
+      <track kind="subtitles" src="foo.en.vtt" srclang="en" label="English" />
+      <track kind="subtitles" src="foo.sv.vtt" srclang="sv" label="中文" />
     </video>
-
   </div>
 </template>
 
@@ -22,10 +25,11 @@ import { getRandStr } from "../../utils/utils";
 import VResize from 'v-resize'
 import eventBus from '../../utils/eventBus'
 import elDragDialog from "../../directive/el-drag-dialog";
-
+import BaseMixins from '../BaseMixins';
 
 export default {
   extends: ComponentBase,
+  mixins:[BaseMixins],
   directives: {
     resize: VResize,
     elDragDialog
@@ -155,5 +159,5 @@ export default {
 </script>
 
 <style lang="less" scoped>
-@import "index.less";
+@import 'index.less';
 </style>

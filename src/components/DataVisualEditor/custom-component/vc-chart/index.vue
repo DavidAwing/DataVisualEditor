@@ -96,9 +96,10 @@ import elDragDialog from '../../directive/el-drag-dialog';
 import draggable from 'vuedraggable';
 import eventBus from '../../utils/eventBus';
 const JSONfn = require('jsonfn').JSONfn;
-
+import BaseMixins from '../BaseMixins';
 export default {
   extends: ChartComponentBase,
+  mixins: [BaseMixins],
   components: {
     draggable,
   },

@@ -4,7 +4,14 @@
     <main>
       <!-- 左侧组件列表 -->
       <section class="left">
-        <ComponentList />
+        <el-tabs v-model="activeLeft">
+          <el-tab-pane label="组件" name="ComponentList">
+            <ComponentList />
+          </el-tab-pane>
+          <el-tab-pane label="列表" name="Canvas">
+            <CanvasElementList />
+          </el-tab-pane>
+        </el-tabs>
       </section>
       <!-- 中间画布 -->
       <section class="center">
@@ -41,7 +48,7 @@
           </el-tab-pane>
           <el-tab-pane label="样式" name="style">
             <StyleList
-              v-if="curComponent && curComponent.component.startsWith('v-')"
+              v-if="curComponent && (curComponent.component.startsWith('v-') ||  curComponent.component === 'Group' )"
             />
             <ChartStyleList
               v-else-if="curComponent && curComponent.component.startsWith('vc-')"
@@ -65,6 +72,7 @@
 <script>
 import Editor from "../../components/DataVisualEditor/components/Editor/index";
 import ComponentList from "../../components/DataVisualEditor/components/ComponentList"; // 左侧列表组件
+import CanvasElementList from "../../components/DataVisualEditor/components/CanvasElementList"; // 左侧画布元素列表
 import AttrList from "../../components/DataVisualEditor/components/AttrList"; // 右侧属性列表
 import GroupAttrList from "../../components/DataVisualEditor/components/GroupAttrList";
 import LayoutList from "../../components/DataVisualEditor/components/LayoutList";
@@ -74,7 +82,7 @@ import AnimationList from "../../components/DataVisualEditor/components/Animatio
 import EventList from "../../components/DataVisualEditor/components/EventList"; // 右侧事件列表
 import MobilePreview from "../../components/DataVisualEditor/components/MobilePreview"; // 图片
 import componentList, {
-  getComponentSharedData,
+  getComponentSharedData,userComponentList
 } from "../../components/DataVisualEditor/custom-component/component-list"; // 左侧列表数据
 import Toolbar from "../../components/DataVisualEditor/components/Toolbar";
 import {
@@ -112,10 +120,12 @@ export default {
     ChartStyleList,
     MobilePreview,
     GroupAttrList,
+    CanvasElementList
   },
   data() {
     return {
       activeName: "attr",
+      activeLeft: "ComponentList",
       reSelectAnimateIndex: undefined,
       saveConfig: {},
       showCanvasIocn: false
@@ -266,31 +276,33 @@ export default {
     resetID,
 
     handleDrop(event) {
+
+      console.log("放下组件", event);
+
       event.preventDefault();
       event.stopPropagation();
       const index = event.dataTransfer.getData("index");
       const rectInfo = this.editor.getBoundingClientRect();
       if (index) {
-        const component = deepCopy(componentList[index]);
+        const component = deepCopy(componentList[index] || userComponentList.find(item=>item.data.name === index)) ;
+        if (component.component === 'Group') {
+            component.propValue.forEach(item => {
+            item.id = generateID();
+            item.data.name = getRandStr();
+          });
+        }
         component.style.top = parseInt(event.clientY - rectInfo.y);
         component.style.left = parseInt(event.clientX - rectInfo.x);
         component.id = generateID();
         component.data.name = getRandStr();
-        // 组件生命周期回调
-        // component.events &&
-        //   component.events.onBeforeCreate &&
-        //   component.events.onBeforeCreate(component, this);
-        this.$store.commit("addComponent", { component });
-        this.$store.commit("recordSnapshot");
 
-        this.$nextTick(() => {
-          setTimeout(() => {
-            // 组件生命周期回调
-            // component.events &&
-            //   component.events.onMounted &&
-            //   component.events.onMounted(component, this);
-          }, 1);
-        });
+        if (event.target.dataset.onDrop) {
+          
+        } else {
+          this.$store.commit("addComponent", { component });
+        }
+        
+        this.$store.commit("recordSnapshot");
       }
     },
 
@@ -354,7 +366,18 @@ export default {
       width: 200px;
       left: 0;
       top: 0;
-      padding-top: 10px;
+      padding-top: 0px;
+
+      & .el-tabs__content {
+        overflow: scroll;
+        &::-webkit-scrollbar {
+            width: 0;
+            border: none;
+        }
+        &::-webkit-scrollbar-track {
+            border: none;
+        }
+      }
     }
 
     .right {
@@ -363,6 +386,8 @@ export default {
       width: 262px;
       right: 0;
       top: 0;
+
+
     }
 
     .center {
@@ -414,4 +439,5 @@ export default {
     color: #333;
   }
 }
+
 </style>

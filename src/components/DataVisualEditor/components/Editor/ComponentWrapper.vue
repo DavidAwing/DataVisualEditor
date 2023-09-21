@@ -20,6 +20,11 @@ import { mapState } from "vuex";
 
 export default {
   mixins: [mixins],
+  data() {
+    return {
+     
+    };
+  },
   props: {
     config: {
       type: Object,

@@ -11,9 +11,6 @@ function resolve(dir) {
   return path.join(__dirname, dir)
 }
 
-const isDev = process.env.NODE_ENV === 'development'
-
-
 const IS_PROD = ['production', 'prod'].includes(process.env.NODE_ENV)
 
 const port = process.env.NODE_ENV === 'development' ? 9538 : 8019 // dev port
@@ -91,7 +88,7 @@ module.exports = defineConfig({
       },
     },
     optimization: {
-      runtimeChunk: !isDev,
+      runtimeChunk: IS_PROD,
       splitChunks: {
         chunks: 'all',
         minSize: 20000, // Minimum chunk size (in bytes)

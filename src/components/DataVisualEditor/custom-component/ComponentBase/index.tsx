@@ -1,6 +1,6 @@
-import Vue, { PropType, VNode } from "vue";
+import Vue, { PropType, VNode, CreateElement } from "vue";
 import { Component, Prop, Emit, Watch } from 'vue-property-decorator'
-
+import { getRandStr } from "../../utils/utils";
 @Component({
   components: {},
 })
@@ -27,16 +27,17 @@ export default class ComponentBase extends Vue {
     }, { deep: true, immediate: true });
   }
 
-  // render(createElement: any) {
-  //     return createElement(
-  //         'div',   // 标签名称
-  //         {
-  //             attrs: {
-  //                 id: this.element.data.id
-  //             }
-  //         },
-  //         this.$slots.default // 子节点数组
-  //     )
+  // render(createElement: CreateElement) {
+  //   const baseId = getRandStr()
+  //   return createElement(
+  //     'div',   // 标签名称
+  //     {
+  //       attrs: {
+  //         id: this.element.data.baseId ?? baseId
+  //       }
+  //     },
+  //     this.$slots.default // 子节点数组
+  //   )
   // }
 
   public created() {
@@ -46,7 +47,28 @@ export default class ComponentBase extends Vue {
 
   public mounted() {
     this.onEvent('onMounted')
+
+
+    // <top-el-dialog
+    // id="test-dialog"
+    //   title="编辑表头"
+    //   :visible.sync="visible"
+    //   :isModalDialog="isModalDialog"
+    //   width="35%"
+    //   v-el-drag-dialog
+    //   center
+    //   v-if="sssssss"
+    // >
+
+    // <div style="display: inline;">1113213232132</div>
+    // <span slot="footer" class="dialog-footer">
+    //   <el-button>取 消</el-button>
+    //   <el-button type="primary">确 定</el-button>
+    // </span>
+    // </top-el-dialog>
+
   }
+
 
 
 }

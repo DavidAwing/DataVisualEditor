@@ -29,16 +29,14 @@ import store from '@/store';
 const schedule = require('node-schedule');
 import * as ElementUI from 'element-ui';
 import * as xlsx from 'xlsx-js-style';
-
-
 import eventBus from './components/DataVisualEditor/utils/eventBus';
-
 // import * as ts from './compiler/typescript@5.0.4.js';
 
 export default {
   name: 'App',
   data() {
-    return {};
+    return {
+    };
   },
   components: {},
   props: {},
@@ -735,6 +733,7 @@ export default function addAxisData(extraData) {
     window.bi.schedule = schedule;
     window.bi.ElementUI = ElementUI;
     window.bi.xlsx = xlsx;
+    window.bi.$ = $;
 
     const userId = 'admin';
     axios.post(`/BI-API/DataSource/FindDatabaseByUserId?userId=${userId}`, { timeout: 6000 }).then(({ data }) => {
@@ -832,7 +831,7 @@ export default function addAxisData(extraData) {
             bi.utils.SetValueAndAttributePathFromKey = SetValueAndAttributePathFromKey;
             bi.utils.eventBus = eventBus;
             bi.utils.printByTemplate = printByTemplate;
-            bi.utils.compileVueTemplate = compileVueTemplate;
+            bi.utils.compileVueTemplate = compileVueTemplate; 
           });
         });
       })
@@ -842,10 +841,6 @@ export default function addAxisData(extraData) {
       .finally(() => {});
   },
   mounted() {
-    // store.commit("menuShow", false)
-    // setTimeout(() => {
-    //   store.commit("menuShow", true)
-    // }, 300);
   },
   methods: {},
 };

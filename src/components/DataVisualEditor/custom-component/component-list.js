@@ -152,7 +152,9 @@ const list = [
       verticalAlign: "",
       writingMode: "horizontal",
       show: true,
-      isAlign: false
+      isAlign: false,
+      isModal: false,
+      isModalVisible: false
     },
     attrExcludes: [],
     style: {
@@ -197,6 +199,18 @@ const list = [
         type: "checkbox",
         label: '对齐',
         bind: 'data'
+      },
+      {
+        key: "isModal",
+        type: "checkbox",
+        label: '悬浮框模式',
+        bind: "data"
+      },
+      {
+        key: "isModalVisible",
+        type: "checkbox",
+        label: '悬浮框显示',
+        bind: "data"
       },
       {
         key: "left",
@@ -867,6 +881,22 @@ const list = [
       options: []
     },
     eventOptions: [
+      {
+        label: "选中值变化",
+        value: "onChange"
+      },
+      {
+        label: "清空",
+        value: "onClear"
+      },
+      {
+        label: "失去焦点",
+        value: "onBlur"
+      },
+      {
+        label: "回车",
+        value: "onEnter"
+      },
     ],
     style: {
       width: 200,
@@ -951,8 +981,18 @@ const list = [
         type: "checkbox",
         label: '多选',
         bind: "data"
-      }
-    ]
+      },
+      {
+        type: "eventbus-button",
+        label: '',
+        bind: {
+          label: '删除下拉项',
+          click: "onDeleteItem",
+          dblclick: "onDeleteItem"
+        }
+      },
+    ],
+    styleList: []
   },
   // 日期选择器
   {

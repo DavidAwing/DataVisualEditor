@@ -1,4 +1,4 @@
-import Vue, { PropType, VNode } from "vue";
+import Vue, { PropType, VNode, CreateElement } from "vue";
 import ComponentBase from "../ComponentBase";
 import { Component, Prop, Emit, Watch } from 'vue-property-decorator'
 import * as echarts from "echarts";
@@ -127,10 +127,7 @@ export default class ChartsComponentBase extends ComponentBase {
 
   constructor() {
     super()
-
-
-
-
+    console.log('');
   }
 
   // render(createElement: any) {

@@ -4,6 +4,8 @@ import { CompileToModule, CompileTypescriptToIIFE, codeToInstance } from "../uti
 import CronExpressionValidator from "../utils/CronExpressionValidator";
 import axios from 'axios'
 import toast from "./toast";
+import Vue from 'vue';
+import eventBus from '../utils/eventBus';
 // import cron from 'cron-validate'
 const JSONfn = require("jsonfn").JSONfn;
 const schedule = require("node-schedule");
@@ -67,6 +69,116 @@ SCRIPT*AttributeEvent/testTask.js*Test2
 
 
 `
+
+
+
+export class TaskManager {
+
+  static _taskMap = {}
+
+  // 负责修改,更新,监听任务的数据
+  static _dataBinder = {}
+
+  static _addWatch(name, task) {
+    const $watch = window.bi.$watch
+    const getComponentData = window.bi.utils.getComponentData
+    function watchPlaceholder(p, placeholders) {
+      const str = p.substring(2, p.length - 2)
+      const component = getComponentData(str)
+
+      if (component.component === "v-select") {
+        placeholders[p] = component.data.selectedValue
+      } else if (component.component === 'v-input') {
+        placeholders[p] = component.data.text
+      } else if (component.component === 'v-date-picker') {
+        placeholders[p] = component.data.date
+      } else {
+
+      }
+
+      $watch(() => {
+        if (str.includes('.')) {
+
+        } else {
+          if (component.component === "v-select") {
+            return component.data.selectedValue
+          } else if (component.component === 'v-input') {
+            return component.data.text
+          } else if (component.component === 'v-date-picker') {
+            return component.data.date
+          } else {
+          }
+        }
+      }, (val) => {
+        placeholders[p] = val
+        // 是否立即调用? 默认尽量调用
+        const v = task.config['@watch_invoke'];
+        if (v) {
+          const isNotInvoke = /false/gi.test(v) || /0/g.test(v)
+          !isNotInvoke && TaskManager.invoke(name)
+        } else {
+          TaskManager.invoke(name)
+        }
+      }, { immediate: false })
+    }
+
+    if (task.dataSourceType === 'database') {
+      if (/{{[^{}]*[\w]+[.+-/*]*[^{}]*}}/g.test(task.sql) && !TaskManager._dataBinder[name]) {
+        const placeholders = task.sql.match(/{{[^{}]*[\w]+[.+-/*]*[^{}]*}}/g)
+        // 添加字符串到监听器
+        TaskManager._dataBinder[name] = {
+          sql: task.sql,
+          placeholders: {},
+        }
+        // 监听数据的改变
+        placeholders.forEach(p => {
+          watchPlaceholder(p, TaskManager._dataBinder[name].placeholders)
+        })
+      }
+    }
+
+    return TaskManager._dataBinder[name]
+  }
+
+  static _updateTask(name, task, dataBinder) {
+
+    if (!name || !task || !dataBinder)
+      return
+    // 更新数据
+    let newSql = dataBinder.sql
+    if (task.dataSourceType === 'database') {
+      Object.keys(dataBinder.placeholders).forEach(key => {
+        const value = dataBinder.placeholders[key]
+        newSql = newSql.replaceAll(key, value)
+      })
+      task.sql = newSql
+    }
+  }
+
+
+  static add(name, task, job) {
+
+    const dataBinder = TaskManager._addWatch(name, task)
+
+    TaskManager._updateTask(name, task, dataBinder)
+
+    TaskManager._taskMap[name] = { task, job }
+
+  }
+
+  static invoke(name) {
+    const task = TaskManager._taskMap[name].task
+    const dataBinder = TaskManager._dataBinder[name]
+    TaskManager._updateTask(name, task, dataBinder)
+
+    console.log('任务调用-1', task);
+    console.log('任务调用-2', dataBinder);
+
+    task.call()
+  }
+
+
+}
 
 // 解析数据配置表达式
 // // const ttt = `This is a @test(a,b,c) and a @time(  ) expression.  @test2(a,  @b  ,   c)  @_AAAtest22222(a,  bddjj,  cff)  @test22222(a,  bddjj, @cff, ghhh,  @_o99  )  @test77777   @__test77777`;
@@ -203,8 +315,6 @@ function parseText(text) {
 
   return list.filter(item => item.type !== undefined && item.jobName !== undefined);
 }
-
-const jobList = []
 
 function testTask(task) {
 
@@ -540,7 +650,6 @@ export function commitData(store, task, response) {
         attributeName = "data.video"
         data = newItem[keys[0]]
       } else {
-        console.warn("数据异常没有处理成功-f9828357-dc35-45eb-be88-1ee6a46143b0");
         throw Error("数据异常没有处理成功-f9828357-dc35-45eb-be88-1ee6a46143b0")
       }
 
@@ -676,13 +785,9 @@ export function commitData(store, task, response) {
             console.warn("数据发生了异常,请检查sql", item, task);
             continue
           }
-
         } finally {
 
         }
-
-
-
       }
 
 
@@ -713,6 +818,7 @@ export function commitData(store, task, response) {
 }
 
 // 数据绑定器
+// todo: 用户注册的回调函数修改数据请求
 export function requestCanvasData(canvasName, callback) {
 
   if (canvasName === undefined) {
@@ -773,11 +879,9 @@ export function requestCanvasData(canvasName, callback) {
                   break
                 }
               }
-
               if (task.componentType === undefined) {
                 console.warn("组件丢失了: " + task.componentName);
               }
-
               if (task.dataSourceType === "script") {
 
                 task.call = () => {
@@ -811,39 +915,71 @@ export function requestCanvasData(canvasName, callback) {
                 } else if (task.componentType === "vc-chart") {
                   // attributeName = "data.option.series[@index0].data[@index1].value"
                 } else {
-                  console.log("数据异常", task, "componentName: " + task.componentName, "componentType: " + task.componentType);
+                  // console.log("数据异常", task, "componentName: " + task.componentName, "componentType: " + task.componentType);
+                }
+
+                if (task.sqlMap === undefined) {
+
+                  // 解析任务的配置,提供给框架决策
+                  task.config = {}
+                  const newlineMathc = /(\s*\r?\n\s*){2}/g.exec(task.sql)
+                  if (newlineMathc) {
+                    const commentLines = task.sql.substring(0, newlineMathc.index).split(/\r?\n/)
+                    const isAllCommentLine = commentLines.every(s => s.trim().startsWith('--'))
+                    if (isAllCommentLine) {
+                      task.sql = task.sql.substring(newlineMathc.index).trim()
+                      const kvArr = []
+                      for (const line of commentLines) {
+                        const arr = line.match(/@[\wa-zA-Z0-9]+\s+[a-zA-Z0-9_\-\u4e00-\u9fa5~!@#$%^&*()+]+(?=@{0})/g)
+                        if (arr) {
+                          kvArr.push(...arr)
+                        }
+                      }
+                      if (kvArr.length > 0) {
+                        for (const item of kvArr) {
+                          const at = item.indexOf(' ')
+                          if (at === -1) {
+                            continue
+                          }
+                          const k = item.substring(0, at).trim().toLowerCase()
+                          const v = item.substring(at).trim()
+                          task.config[k] = v
+                        }
+                      }
+
+                    }
+                  }
+
+                  task.sqlMap = {}
+                  const sqlList = task.sql.split(/\n{2,}/g)
+                  for (let i = 0; i < sqlList.length; i++) {
+                    let sql = sqlList[i].trim();
+                    if (sql.startsWith("--")) {
+                      const commentLines = sql.match(/--.*/g)
+                      const kvArr = []
+                      for (const line of commentLines) {
+                        const arr = line.match(/@[\wa-zA-Z0-9]+\s+[a-zA-Z0-9_\-\u4e00-\u9fa5~!@#$%^&*()+]+/g)
+                        if (arr)
+                          kvArr.push(...arr)
+                      }
+                      if (kvArr.length > 0)
+                        task.sqlMap[`sql[${i}]`] = kvArr
+                    }
+                  }
                 }
 
                 task.call = () => {
                   axios.post('/BI-API/DataSource/GetData', task, { timeout: 100000 }).then(({ data }) => {
-
                     if (data.state !== 200) {
                       console.error("请求数据异常");
                       return
                     }
-
                     if (task.dataTypeToken === undefined && task.componentType === "vc-chart") {
                       task.dataTypeToken = getDataTypeToken(data.data)  // data.data
                     }
                     if (task.componentType === "vc-chart") {
                       data.data = convertDataFormat(task.dataTypeToken, data.data)
                     }
-
-                    if (task.sqlMap === undefined) {
-                      task.sqlMap = {}
-                      const sqlList = task.sql.split(/\n{2,}/g)
-                      for (let i = 0; i < sqlList.length; i++) {
-                        console.log("调试点2");
-                        let sql = sqlList[i].trim();
-                        if (sql.startsWith("--")) {
-                          sql = sql.substring(0, sql.indexOf("\n"))
-                          const kvArr = sql.match(/@[\wa-zA-Z0-9]+\s+[a-zA-Z0-9_\-\u4e00-\u9fa5~!@#$%^&*()+]+/g)
-                          if (kvArr !== null)
-                            task.sqlMap[`sql[${i}]`] = kvArr
-                        }
-                      }
-                    }
-
                     commitData(this.$store, task, {
                       name: task.componentName,
                       attributeName: attributeName,
@@ -851,30 +987,26 @@ export function requestCanvasData(canvasName, callback) {
                     })
                   });
                 }
-
               } else {
                 throw new Error("无法处理的任务配置: " + JSON.stringify(task))
               }
-
               schedule.cancelJob(task.jobName);
               const job = schedule.scheduleJob(
                 task.name,
                 task.cron,
-                task.call
+                function () {
+                  TaskManager.invoke(task.name)
+                }
               )
-
-              if (job !== null && job !== undefined) {
-                job.invoke();
-                jobList.push(job)
+              if (job) {
+                TaskManager.add(task.name, task, job)
+                TaskManager.invoke(task.name)
               }
             })
-
-
           } else {
             const sourceList = parseText(dataSourceText)
             sourceList.forEach(task => {
               for (let i = 0; i < canvasComponentData.length; i++) {
-
                 let component = canvasComponentData[i];
                 if (component.component === "Group")
                   component = component.propValue.find(item => Object.keys(task.element).includes(item.data.name))
@@ -885,17 +1017,13 @@ export function requestCanvasData(canvasName, callback) {
                   continue
                 element.componentType = component.component
                 if (element.componentType === "vc-chart") {
-                  console.log("图表组件22", component);
-                  console.log("图表组件33", component.data.option.series);
                 }
               }
 
               // 合并任务
               testTask(task).then((task) => {
-
                 if (task.cron === undefined)
                   task.cron = dataSource.cron
-
                 if (task.type === "get") {
                   task.call = () => {
                     axios.get(task.source).then(response => {
@@ -946,7 +1074,6 @@ export function requestCanvasData(canvasName, callback) {
                             console.warn("执行任务获取脚本异常", data);
                             return
                           }
-
                           codeToInstance(scriptPath, data.data).then(instance => {
                             let method = null
                             if (Object.prototype.toString.call(instance) === "[object Module]") {
@@ -960,15 +1087,12 @@ export function requestCanvasData(canvasName, callback) {
                             } else if (Object.prototype.toString.call(instance) === '[object Function]') {
                             } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
                             }
-
                             if (method === null) {
                               console.error(`找不到任务执行的方法`, "方法名: " + methodName, "实例类型: " + Object.prototype.toString.call(instance), "代码: " + data.data);
                               return
                             }
-
                             task.method = method
                           })
-
                         })
                         .catch((error) => {
                           console.error(`${scriptPath}脚本异常: `, error);
@@ -984,7 +1108,6 @@ export function requestCanvasData(canvasName, callback) {
                       } else {
                         commitData(this.$store, task, response)
                       }
-
                     }
                   }
 
@@ -1007,12 +1130,14 @@ export function requestCanvasData(canvasName, callback) {
                 const job = schedule.scheduleJob(
                   task.jobName,
                   task.cron,
-                  task.call
+                  function () {
+                    TaskManager.invoke(task.name)
+                  }
                 )
 
-                if (job !== null && job !== undefined) {
-                  job.invoke();
-                  jobList.push(job)
+                if (job) {
+                  TaskManager.add(task.name, task, job)
+                  TaskManager.invoke(task.name)
                 }
 
               })
@@ -1060,161 +1185,4 @@ export function requestCanvasData(canvasName, callback) {
 
   getCanvasData(canvasName, callback);
 }
-/**
- *
-                    // type: [n][n]{SameAttributeName}
-                    const data0 = [
-                      [
-                        {
-                          RUNCARD_QTY: 5
-                        },
-                        {
-                          RUNCARD_QTY: 30
-                        },
-                        {
-                          RUNCARD_QTY: 5
-                        },
-                        {
-                          RUNCARD_QTY: 5
-                        },
-                        {
-                          RUNCARD_QTY: 5
-                        },
-                        {
-                          RUNCARD_QTY: 5
-                        },
-                        {
-                          RUNCARD_QTY: 5
-                        }
-                      ],
-                      [
-                        {
-                          TARGET_QTY: 100
-                        },
-                        {
-                          TARGET_QTY: 0
-                        },
-                        {
-                          TARGET_QTY: 100
-                        },
-                        {
-                          TARGET_QTY: 1000
-                        },
-                        {
-                          TARGET_QTY: 1000
-                        }
-                      ]
-                    ]
-                    // type: [n][1]{NumberAttributeName}
-                    const data1 = [
-                      [
-                        {
-                          1: 120,
-                          2: 234,
-                          3: 41231,
-                          4: 231,
-                          5: 543,
-                          6: 652,
-                          7: 1232
-                        }
-                      ],
-                      [
-                        {
-                          1: 123,
-                          2: 224,
-                          3: 431,
-                          4: 631,
-                          5: 943,
-                          6: 602,
-                          7: 232
-                        }
-                      ]
-                    ]
-                    // type: [n][1]{StringAttributeName}
-                    const data2 = [
-                      [{ Mon: 5, Tue: 70, Wed: 15, Thu: 30, Fri: 55, Sat: 60, Sun: 15 }],
-                      [{ Mon: 5, Tue: 70, Wed: 15, Thu: 30, Fri: 55, Sat: 60 }],
-                    ]
 
-                    const data3 = [[
-                      {
-                        "@PATH   xAxis.data[]": "AA1",
-                        "@PATH   series[0].data[].value ": 100
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA2",
-                        "@PATH   series[0].data[].value ": 150
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA3",
-                        "@PATH   series[0].data[].value": 50
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA4",
-                        "@PATH   series[0].data[].value": 60
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA5",
-                        "@PATH   series[0].data[].value": 70
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA6",
-                        "@PATH   series[0].data[].value": 90
-                      }
-                    ],
-                    [
-                      {
-                        "@PATH   xAxis.data[]": "AA2",
-                        "@PATH   series[1].data[].value ": 50
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA2",
-                        "@PATH   series[1].data[].value ": 150
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA3",
-                        "@PATH   series[1].data[].value": 50
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA4",
-                        "@PATH   series[1].data[].value": 60
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA5",
-                        "@PATH   series[1].data[].value": 70
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA6",
-                        "@PATH   series[1].data[].value": 90
-                      }
-                    ],
-                    [
-                      {
-                        "@PATH   xAxis.data[]": "AA2",
-                        "@PATH   series[2].data[].value ": 50
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA2",
-                        "@PATH   series[2].data[].value ": 150
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA3",
-                        "@PATH   series[2].data[].value": 50
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA4",
-                        "@PATH   series[2].data[].value": 60
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA5",
-                        "@PATH   series[2].data[].value": 70
-                      },
-                      {
-                        "@PATH      xAxis.data[]": "AA6",
-                        "@PATH   series[2].data[].value": 90
-                      }
-                    ]
-                    ]
-
-                    // data.data = data3
- */

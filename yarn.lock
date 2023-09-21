@@ -3405,10 +3405,15 @@
   optionalDependencies:
     "prettier" "^1.18.2 || ^2.0.0"
 
-"@vue/composition-api@^1.0.0-rc.1", "@vue/composition-api@^1.0.5", "@vue/composition-api@^1.4.3", "@vue/composition-api@^1.4.6", "@vue/composition-api@^1.4.9":
+"@vue/composition-api@^1.0.0-rc.1", "@vue/composition-api@^1.0.5", "@vue/composition-api@^1.4.0", "@vue/composition-api@^1.4.3", "@vue/composition-api@^1.4.6", "@vue/composition-api@^1.4.9":
   "integrity" "sha512-QNeduwRllSRzo9ZOzZjtzCeGUx0sEfrEDHmQlf+goLw4calBPBbpYWf8ueh6VSBrWJGQRJPsRPmTVEeTKRKBMg=="
   "resolved" "https://registry.npmmirror.com/@vue/composition-api/-/composition-api-1.6.1.tgz"
   "version" "1.6.1"
+
+"@vue/devtools-api@^6.5.0":
+  "integrity" "sha512-o9KfBeaBmCKl10usN4crU53fYtC1r7jJwdGKjPT24t348rHxgfpZ0xL3Xm/gLUYnc0oTp8LAmrxOeLyu6tbk2Q=="
+  "resolved" "https://registry.npmmirror.com/@vue/devtools-api/-/devtools-api-6.5.0.tgz"
+  "version" "6.5.0"
 
 "@vue/eslint-config-standard@^6.1.0":
   "integrity" "sha512-9+hrEyflDzsGdlBDl9jPV5DIYUx1TOU5OSQqRDKCrNumrxRj5HRWKuk+ocXWnha6uoNRtLC24mY7d/MwqvBCNw=="
@@ -15190,6 +15195,14 @@
   "resolved" "https://registry.npmmirror.com/pify/-/pify-5.0.0.tgz"
   "version" "5.0.0"
 
+"pinia@^2.1.6":
+  "integrity" "sha512-bIU6QuE5qZviMmct5XwCesXelb5VavdOWKWaB17ggk++NUwQWWbP5YnsONTk3b752QkW9sACiR81rorpeOMSvQ=="
+  "resolved" "https://registry.npmmirror.com/pinia/-/pinia-2.1.6.tgz"
+  "version" "2.1.6"
+  dependencies:
+    "@vue/devtools-api" "^6.5.0"
+    "vue-demi" ">=0.14.5"
+
 "pirates@^4.0.4":
   "integrity" "sha512-8V9+HQPupnaXMA23c5hvl69zXvTwTzyAYasnkb0Tts4XvO4CliqONMOnvlq26rkhLC3nWDFBJf73LU1e1VZLaQ=="
   "resolved" "https://registry.npmmirror.com/pirates/-/pirates-4.0.5.tgz"
@@ -19133,7 +19146,7 @@
 "types@file:../../browser-md5-file":
   "resolved" "file:browser-md5-file"
 
-"typescript@*", "typescript@^4.4.3", "typescript@^4.9.5", "typescript@>= 2.7", "typescript@>=2", "typescript@>=2.7", "typescript@>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta", "typescript@>=3", "typescript@>=3.8 <5.0", "typescript@>=3.8.0":
+"typescript@*", "typescript@^4.4.3", "typescript@^4.9.5", "typescript@>= 2.7", "typescript@>=2", "typescript@>=2.7", "typescript@>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta", "typescript@>=3", "typescript@>=3.8 <5.0", "typescript@>=3.8.0", "typescript@>=4.4.4":
   "integrity" "sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g=="
   "resolved" "https://registry.npmmirror.com/typescript/-/typescript-4.9.5.tgz"
   "version" "4.9.5"
@@ -19703,7 +19716,7 @@
   "resolved" "https://registry.npmmirror.com/vue-demi/-/vue-demi-0.12.5.tgz"
   "version" "0.12.5"
 
-"vue-demi@^0.14.1":
+"vue-demi@^0.14.1", "vue-demi@>=0.14.5":
   "integrity" "sha512-o9NUVpl/YlsGJ7t+xuqJKx8EBGf1quRhCiT6D/J0pfwmk9zUwYkC7yrF4SZCe6fETvSM3UNL2edcbYrSyc4QHA=="
   "resolved" "https://registry.npmmirror.com/vue-demi/-/vue-demi-0.14.5.tgz"
   "version" "0.14.5"
@@ -19795,7 +19808,7 @@
   "resolved" "https://registry.npmmirror.com/vue-ref/-/vue-ref-2.0.0.tgz"
   "version" "2.0.0"
 
-"vue-router@^3.5.1", "vue-router@^3.6.5":
+"vue-router@^3.6.5":
   "integrity" "sha512-VYXZQLtjuvKxxcshuRAwjHnciqZVoXAjTjcqBTz4rKc8qih9g9pI3hbDjmqXaHdgL3v8pV6P8Z335XvHzESxLQ=="
   "resolved" "https://registry.npmmirror.com/vue-router/-/vue-router-3.6.5.tgz"
   "version" "3.6.5"
@@ -19840,7 +19853,7 @@
   "resolved" "https://registry.npmmirror.com/vue-tsx-support/-/vue-tsx-support-3.2.0.tgz"
   "version" "3.2.0"
 
-"vue@*", "vue@^2", "vue@^2 || ^3.2.13", "vue@^2.0.0", "vue@^2.4.4", "vue@^2.5.17", "vue@^2.6.0", "vue@^2.6.11", "vue@^2.6.12 || ^3.1.1", "vue@^2.6.14", "vue@^2.7.10", "vue@^2.7.14", "vue@^2.x", "vue@^3.0.0-0 || ^2.6.0", "vue@>= 2.2", "vue@>= 2.5 < 3", "vue@>=2.5.0", "vue@>=2.6.0", "vue@2.x":
+"vue@*", "vue@^2", "vue@^2 || ^3.2.13", "vue@^2.0.0", "vue@^2.4.4", "vue@^2.5.17", "vue@^2.6.0", "vue@^2.6.11", "vue@^2.6.12 || ^3.1.1", "vue@^2.6.14", "vue@^2.6.14 || ^3.3.0", "vue@^2.7.10", "vue@^2.7.14", "vue@^2.x", "vue@^3.0.0-0 || ^2.6.0", "vue@>= 2.2", "vue@>= 2.5 < 3", "vue@>=2.5.0", "vue@>=2.6.0", "vue@2.x":
   "integrity" "sha512-b2qkFyOM0kwqWFuQmgd4o+uHGU7T+2z3T+WQp8UBjADfEv2n4FEMffzBmCKNP0IGzOEEfYjvtcC62xaSKeQDrQ=="
   "resolved" "https://registry.npmmirror.com/vue/-/vue-2.7.14.tgz"
   "version" "2.7.14"

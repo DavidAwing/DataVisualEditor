@@ -115,12 +115,24 @@
     </div>
 
     <div v-if="canvasDataSource.dataSourceType === 'database' && databasePattern === 'QueryBuilder'">
-
-      <iframe id="QueryBuilder" key="QueryBuilder" @load='onQueryBuilderLoad' src="http://127.0.0.1:5502/sql-build/index.html"
-      height="100%" width="100%"
-     frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="no" allowtransparency="yes" seamless
-     allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
-
+      <iframe
+        id="QueryBuilder"
+        key="QueryBuilder"
+        @load="onQueryBuilderLoad"
+        src="http://127.0.0.1:5502/sql-build/index.html"
+        height="100%"
+        width="100%"
+        frameborder="no"
+        border="0"
+        marginwidth="0"
+        marginheight="0"
+        scrolling="no"
+        allowtransparency="yes"
+        seamless
+        allowfullscreen="true"
+        webkitallowfullscreen="true"
+        mozallowfullscreen="true"
+      ></iframe>
     </div>
 
     <div v-if="canvasDataSource.dataSourceType === 'script'">
@@ -239,7 +251,6 @@ import Shape from '../../components/DataVisualEditor/components/Editor/Shape';
 
 import generateID, { resetID } from '../../components/DataVisualEditor/utils/generateID';
 
-
 //   <link rel="stylesheet" href="./dist/css/query-builder.default.css" id="qb-theme">
 //   <link rel="stylesheet" href="http://mistic100.github.io/jQuery-QueryBuilder/assets/flags/flags.css">
 // import  'bootstrap';
@@ -252,7 +263,6 @@ import generateID, { resetID } from '../../components/DataVisualEditor/utils/gen
 // import 'sql-parser-mistic/browser/sql-parser.js';
 // import * as interact from 'interactjs';
 // import 'jQuery-QueryBuilder';
-
 
 const JSONfn = require('jsonfn').JSONfn;
 
@@ -300,8 +310,7 @@ export default {
       return {};
     },
   },
-  beforeCreate() {
-  },
+  beforeCreate() {},
   created() {
     document.title = '组件数据源编辑';
 
@@ -348,9 +357,7 @@ export default {
       });
   },
   mounted() {
-    setTimeout(() => {
-
-    }, 1000);
+    setTimeout(() => {}, 1000);
   },
   methods: {
     addDatabase(type, event) {
@@ -595,7 +602,7 @@ export default {
           result.transform = 'rotate(' + style[attr] + 'deg)';
         }
       });
-ghbt 5'pkjr,f0 wod,lp9
+
       return result;
     },
     switchPattern() {
@@ -605,13 +612,11 @@ ghbt 5'pkjr,f0 wod,lp9
         this.databasePattern = 'sql';
       }
 
-     setInterval(() => {
-
-     }, 1000);
+      setInterval(() => {}, 1000);
     },
     onQueryBuilderLoad() {
-      console.log("页面加载...");
-    }
+      console.log('页面加载...');
+    },
   },
 };
 </script>

@@ -1,6 +1,11 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <div @click="onEvent('onClick', {$event})" @mouseover="onEvent('onMouseover', {$event})" @mouseout="onEvent('onMouseout', {$event})">
+  <div
+    @click="onEvent('onClick', { $event })"
+    @mouseover="onEvent('onMouseover', { $event })"
+    @mouseout="onEvent('onMouseout', { $event })"
+    style="visibility: visible"
+  >
     <div v-if="editMode == 'edit'" class="v-text" @keydown="handleKeydown" @keyup="handleKeyup">
       <!-- tabindex >= 0 使得双击时聚焦该元素 -->
       <div
@@ -20,6 +25,7 @@
       <div v-html="!canEdit ? text : element.data.text"></div>
     </div>
   </div>
+
 </template>
 
 <script>
@@ -48,6 +54,8 @@ export default {
       isCtrlDown: false,
       verticalAlign: '',
       writingMode: '',
+      dialogVisible: true,
+      isModalDialog: true,
     };
   },
   computed: {
@@ -78,18 +86,17 @@ export default {
       this.$refs['text'].style['vertical-align'] = this.verticalAlign;
     },
   },
-  beforeCreate() {
-
-  },
-  created() { 
-  },
+  beforeCreate() {},
+  created() {},
   mounted() {
-    this.$refs['text'].style['vertical-align'] = this.data.verticalAlign;
-    this.writingMode = this.data.writingMode;
+    if (false) {
+      this.$refs['text'].style['vertical-align'] = this.data.verticalAlign;
+      this.writingMode = this.data.writingMode;
+    }
+
     // this.$refs["text"].style["writing-mode"] = this.element.data.writingMode;
   },
   methods: {
-
     handleInput(e) {
       this.$emit('input', this.element, e.target.innerHTML);
     },

@@ -96,6 +96,19 @@ export class TaskManager {
 
       }
 
+      function invoke() {
+        // 是否立即调用? 默认尽量调用
+        const v = task.config['@watch_invoke'];
+        if (v) {
+          const isNotInvoke = /false/gi.test(v) || /0/g.test(v)
+          !isNotInvoke && TaskManager.invoke(name)
+        } else {
+          TaskManager.invoke(name)
+        }
+      }
+
+      let timeoutId = null
+      const interval = 300
       $watch(() => {
         if (str.includes('.')) {
 
@@ -110,15 +123,15 @@ export class TaskManager {
           }
         }
       }, (val) => {
+
         placeholders[p] = val
-        // 是否立即调用? 默认尽量调用
-        const v = task.config['@watch_invoke'];
-        if (v) {
-          const isNotInvoke = /false/gi.test(v) || /0/g.test(v)
-          !isNotInvoke && TaskManager.invoke(name)
+        if (component.component === 'v-input') {
+          window.clearTimeout(timeoutId)
+          timeoutId = setTimeout(invoke, interval);
         } else {
-          TaskManager.invoke(name)
+          invoke()
         }
+
       }, { immediate: false })
     }
 
@@ -136,7 +149,6 @@ export class TaskManager {
         })
       }
     }
-
     return TaskManager._dataBinder[name]
   }
 
@@ -155,15 +167,10 @@ export class TaskManager {
     }
   }
 
-
   static add(name, task, job) {
-
     const dataBinder = TaskManager._addWatch(name, task)
-
     TaskManager._updateTask(name, task, dataBinder)
-
     TaskManager._taskMap[name] = { task, job }
-
   }
 
   static invoke(name) {
@@ -946,7 +953,6 @@ export function requestCanvasData(canvasName, callback) {
                           task.config[k] = v
                         }
                       }
-
                     }
                   }
 

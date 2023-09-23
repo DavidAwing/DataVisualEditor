@@ -5,622 +5,858 @@
 </template>
 
 <script>
-import {
-  stringToFunction,
-  CompileSourcecode,
-  CompileToModule,
-  CompileTypescriptToIIFE,
-} from './components/DataVisualEditor/utils/compiler.ts';
+  import {
+    stringToFunction,
+    CompileSourcecode,
+    CompileToModule,
+    CompileTypescriptToIIFE,
+  } from './components/DataVisualEditor/utils/compiler.ts';
 
-import {
-  getValueByAttributePath,
-  setJsonAttribute,
-  SetValueAndAttributePathFromKey,
-} from './components/DataVisualEditor/utils/chartUtils';
+  import {
+    getValueByAttributePath,
+    setJsonAttribute,
+    SetValueAndAttributePathFromKey,
+  } from './components/DataVisualEditor/utils/chartUtils';
 
-import { printByTemplate, compileVueTemplate } from './components/DataVisualEditor/utils/print';
+  import { printByTemplate, compileVueTemplate } from './components/DataVisualEditor/utils/print';
 
-import Vue from 'vue';
-import axios from 'axios';
-import moment from 'moment';
-import BigNumber from 'bignumber.js';
-const JSONfn = require('jsonfn').JSONfn;
-import store from '@/store';
-const schedule = require('node-schedule');
-import * as ElementUI from 'element-ui';
-import * as xlsx from 'xlsx-js-style';
-import eventBus from './components/DataVisualEditor/utils/eventBus';
-// import * as ts from './compiler/typescript@5.0.4.js';
+  import Vue from 'vue';
+  import axios from 'axios';
+  import moment from 'moment';
+  import BigNumber from 'bignumber.js';
+  const JSONfn = require('jsonfn').JSONfn;
+  import store from '@/store';
+  const schedule = require('node-schedule');
+  import * as ElementUI from 'element-ui';
+  import * as xlsx from 'xlsx-js-style';
+  import eventBus from './components/DataVisualEditor/utils/eventBus';
+  // import * as ts from './compiler/typescript@5.0.4.js';
 
-export default {
-  name: 'App',
-  data() {
-    return {
-    };
-  },
-  components: {},
-  props: {},
-  computed: {},
-  created() {
-    const exportExcle = (fileName, excelData, excelStyle = null) => {
-      // var data1 = [
-      //   ['id', 'name', 'value'],
-      //   [1, 'sheetjs', 7262],
-      //   [2, 'js-xlsx', 6969],
-      // ];
+  export default {
+    name: 'App',
+    data() {
+      return {
+      };
+    },
+    components: {},
+    props: {},
+    computed: {},
+    async beforeCreate() {
 
-      // var data2 = [
-      //   {
-      //     周一: '语文',
-      //     周二: '数学',
-      //     周三: '历史',
-      //     周四: '政治',
-      //     周五: '英语',
-      //   },
-      //   {
-      //     周一: '数学',
-      //     周二: '数学',
-      //     周三: '政治',
-      //     周四: '英语',
-      //     周五: '英语',
-      //   },
-      //   {
-      //     周一: '政治',
-      //     周二: '英语',
-      //     周三: '历史',
-      //     周四: '政治',
-      //     周五: '数学',
-      //   },
-      // ];
-
-      // const XLSX = xlsx
-
-      // //1. 新建一个工作簿
-      // let workbook = XLSX.utils.book_new();
-
-      // //2. 生成一个工作表，
-      // //2.1 aoa_to_sheet 把数组转换为工作表
-      // let sheet1 = XLSX.utils.aoa_to_sheet(data1);
-      // //2.2 把json对象转成工作表
-      // let sheet2 = XLSX.utils.json_to_sheet(data2);
-      // //3.在工作簿中添加工作表
-      // XLSX.utils.book_append_sheet(workbook, sheet1, 'sheetName1'); //工作簿名称
-      // XLSX.utils.book_append_sheet(workbook, sheet2, 'sheetName2'); //工作簿名称
-      // // XLSX.utils.sheet_add_json(sheet1,data2);//把已存在的sheet中数据替换成json数据
-
-      // //4.输出工作表,由文件名决定的输出格式
-      // XLSX.writeFile(workbook, 'workBook1.xlsx'); // 保存的文件名
-
-      // excel的表数据，根据实际情况生成
-
-      let workbook = xlsx.utils.book_new(); // 工作簿
-      let worksheet = xlsx.utils.aoa_to_sheet(excelData); // 数据表
-
-      // let cols = []; // 设置每列的宽度
-      // // wpx 字段表示以像素为单位，wch 字段表示以字符为单位
-      // for (let i = 0; i <= excelData[0].length; i++) {
-      //   let col = {};
-      //   if (i == 0) {
-      //     col.wch = 30;
-      //   } else {
-      //     col.wch = 18;
-      //   }
-      //   cols.push(col);
-      // }
-      // worksheet['!cols'] = cols; // 设置列宽信息到工作表
-
-      // console.log("数据啊啊啊啊", worksheet);
-
-      // worksheet['!cols'] = [{ wch: 30, hidden: true }];
-
-      //以下是样式设置，样式设置放在组织完数据之后，xlsx-js-style的核心API就是SheetJS的
-      // Object.keys(worksheet).forEach(key => {
-      //   // 非!开头的属性都是单元格
-      //   if (!key.startsWith('!')) {
-      //     worksheet[key].s = {
-      //       font: {
-      //         name: '黑体',
-      //         color: { rgb: '4b0082' },
-      //         sz: '12',
-      //       },
-      //       alignment: {
-      //         horizontal: 'left',
-      //         vertical: 'center',
-      //         wrapText: true,
-      //       },
-      //       border: {
-      //         top: { style: 'thin', color: { rgb: 'ff0000' } },
-      //         right: { style: 'thin', color: { rgb: 'ff0000' } },
-      //         bottom: { style: 'thin', color: { rgb: 'ff0000' } },
-      //         left: { style: 'thin' },
-      //       },
-      //     };
-      //   }
-      // });
-
-      // worksheet['A1'].s = {
-      //   font: {
-      //     name: '黑体',
-      //     color: { rgb: '4b0082' },
-      //     sz: '12',
-      //   },
-      //   alignment: {
-      //     horizontal: 'left',
-      //     vertical: 'center',
-      //     wrapText: true,
-      //   },
-      //   border: {
-      //     top: { style: 'thin', color: { rgb: 'ff0000' } },
-      //     right: { style: 'thin', color: { rgb: 'ff0000' } },
-      //     bottom: { style: 'thin', color: { rgb: 'ff0000' } },
-      //     left: { style: 'thin' },
-      //   },
-      // };
-
-      if (worksheet['!cols'] === undefined) worksheet['!cols'] = [];
-
-      if (Array.isArray(excelStyle)) {
-        for (let i = 0; i < excelStyle.length; i++) {
-          const style = excelStyle[i];
-          if (!style.key) continue;
-          if (!style.value || JSON.stringify(style.value) === '{}' || JSON.stringify(style.value) === '[]') continue;
-          if (style.key === 'cols') {
-            for (let j = 0; j < style.value.length; j++) {
-              const colStyle = style.value[j];
-              if (worksheet['!cols'][j] === undefined || worksheet['!cols'][j] === null) worksheet['!cols'][j] = {};
-              Object.keys(colStyle).forEach(key => {
-                worksheet['!cols'][j][key] = colStyle[key];
-              });
-            }
-          } else {
-            const key = style.key.toLocaleUpperCase().replace(/\s/g, '');
-            if (/^\[[A-Z]-[A-Z]\]\[\d{1,9}-\d{1,9}\]$/.test(key)) {
-              // [A-K][1-20]
-              const charMatch = key.match(/^\[([A-Z])-([A-Z])\]/);
-              const indexMatch = key.match(/\[(\d{1,9})-(\d{1,9})\]/);
-              for (let i = charMatch[1].charCodeAt(0); i <= charMatch[2].charCodeAt(0); i++) {
-                const c = String.fromCharCode(i);
-                for (let j = indexMatch[1]; j <= indexMatch[2]; j++) worksheet[c + j].s = style.value;
-              }
-            } else if (/^[A-Z]\[\d{1,9}-\d{1,9}\]$/.test(key)) {
-              // A[1-20]
-              const c = key.match(/^([A-Z])(?!=\[)/g)[0];
-              const indexMatch = key.match(/\[(\d{1,9})-(\d{1,9})\]/);
-              for (let i = indexMatch[1]; i <= indexMatch[2]; i++) worksheet[c + i].s = style.value;
-            } else if (/^\[[A-Z]-[A-Z]\]\d{1,9}$/.test(key)) {
-              // [A-K]3
-              const charMatch = key.match(/^\[([A-Z])-([A-Z])\]/);
-              const j = key.match(/(?!\])(\d{1,9})/g)[0];
-              for (let i = charMatch[1].charCodeAt(0); i <= charMatch[2].charCodeAt(0); i++) {
-                const c = String.fromCharCode(i);
-                worksheet[c + j].s = style.value;
-              }
-            } else if (/^[A-Z]\d{1,9}$/.test(key)) {
-              // C16
-              worksheet[key].s = style.value;
-            }
-          }
-        }
-      } else if (Object.prototype.toString.call(excelStyle) === '[object Object]') {
+      const userId = 'admin';
+      const { data } = await axios.post(`/BI-API/DataSource/FindDatabaseByUserId?userId=${userId}`, { timeout: 6000 })
+      if (data.state === 200 && data.data.length > 0) {
+        localStorage.setItem('UserDatabaseList', JSON.stringify(data.data));
+      } else {
+        localStorage.setItem('UserDatabaseList', '[]');
       }
 
-      if (!fileName.toLocaleLowerCase().endsWith('.xlsx')) fileName += '.xlsx';
-      xlsx.utils.book_append_sheet(workbook, worksheet, 'sheet1');
-      xlsx.writeFile(workbook, fileName);
-    };
+    },
+    created() {
 
-    let excelData = [
-      ['指标', '2021年', '2020年', '2019年', '2018年', '2017年', '2016年', '2015年', '2014年', '2013年', '2012年'],
-      [
-        '国民总收入(亿元)',
-        '1133239.8',
-        '1005451.3',
-        '983751.2',
-        '915243.5',
-        '830945.7',
-        '742694.1',
-        '685571.2',
-        '644380.2',
-        '588141.2',
-        '537329.0',
-      ],
-      [
-        '国内生产总值(亿元)',
-        '1143669.7',
-        '1013567.0',
-        '986515.2',
-        '919281.1',
-        '832035.9',
-        '746395.1',
-        '688858.2',
-        '643563.1',
-        '592963.2',
-        '538580.0',
-      ],
-      [
-        '第一产业增加值(亿元)',
-        '83085.5',
-        '78030.9',
-        '70473.6',
-        '64745.2',
-        '62099.5',
-        '60139.2',
-        '57774.6',
-        '55626.3',
-        '53028.1',
-        '49084.6',
-      ],
-      [
-        '第二产业增加值(亿元)',
-        '450904.5',
-        '383562.4',
-        '380670.6',
-        '364835.2',
-        '331580.5',
-        '295427.8',
-        '281338.9',
-        '277282.8',
-        '261951.6',
-        '244639.1',
-      ],
-      [
-        '第三产业增加值(亿元)',
-        '609679.7',
-        '551973.7',
-        '535371.0',
-        '489700.8',
-        '438355.9',
-        '390828.1',
-        '349744.7',
-        '310654.0',
-        '277983.5',
-        '244856.2',
-      ],
-      [
-        '人均国内生产总值(元)',
-        '80976',
-        '71828',
-        '70078',
-        '65534',
-        '59592',
-        '53783',
-        '49922',
-        '46912',
-        '43497',
-        '39771',
-      ],
-      ['指标', '2021年', '2020年', '2019年', '2018年', '2017年', '2016年', '2015年', '2014年', '2013年', '2012年'],
-      [
-        '国民总收入(亿元)',
-        '1133239.8',
-        '1005451.3',
-        '983751.2',
-        '915243.5',
-        '830945.7',
-        '742694.1',
-        '685571.2',
-        '644380.2',
-        '588141.2',
-        '537329.0',
-      ],
-      [
-        '国内生产总值(亿元)',
-        '1143669.7',
-        '1013567.0',
-        '986515.2',
-        '919281.1',
-        '832035.9',
-        '746395.1',
-        '688858.2',
-        '643563.1',
-        '592963.2',
-        '538580.0',
-      ],
-      [
-        '第一产业增加值(亿元)',
-        '83085.5',
-        '78030.9',
-        '70473.6',
-        '64745.2',
-        '62099.5',
-        '60139.2',
-        '57774.6',
-        '55626.3',
-        '53028.1',
-        '49084.6',
-      ],
-      [
-        '第二产业增加值(亿元)',
-        '450904.5',
-        '383562.4',
-        '380670.6',
-        '364835.2',
-        '331580.5',
-        '295427.8',
-        '281338.9',
-        '277282.8',
-        '261951.6',
-        '244639.1',
-      ],
-      [
-        '第三产业增加值(亿元)',
-        '609679.7',
-        '551973.7',
-        '535371.0',
-        '489700.8',
-        '438355.9',
-        '390828.1',
-        '349744.7',
-        '310654.0',
-        '277983.5',
-        '244856.2',
-      ],
-      [
-        '人均国内生产总值(元)',
-        '80976',
-        '71828',
-        '70078',
-        '65534',
-        '59592',
-        '53783',
-        '49922',
-        '46912',
-        '43497',
-        '39771',
-      ],
-      ['指标', '2021年', '2020年', '2019年', '2018年', '2017年', '2016年', '2015年', '2014年', '2013年', '2012年'],
-      [
-        '国民总收入(亿元)',
-        '1133239.8',
-        '1005451.3',
-        '983751.2',
-        '915243.5',
-        '830945.7',
-        '742694.1',
-        '685571.2',
-        '644380.2',
-        '588141.2',
-        '537329.0',
-      ],
-      [
-        '国内生产总值(亿元)',
-        '1143669.7',
-        '1013567.0',
-        '986515.2',
-        '919281.1',
-        '832035.9',
-        '746395.1',
-        '688858.2',
-        '643563.1',
-        '592963.2',
-        '538580.0',
-      ],
-      [
-        '第一产业增加值(亿元)',
-        '83085.5',
-        '78030.9',
-        '70473.6',
-        '64745.2',
-        '62099.5',
-        '60139.2',
-        '57774.6',
-        '55626.3',
-        '53028.1',
-        '49084.6',
-      ],
-      [
-        '第二产业增加值(亿元)',
-        '450904.5',
-        '383562.4',
-        '380670.6',
-        '364835.2',
-        '331580.5',
-        '295427.8',
-        '281338.9',
-        '277282.8',
-        '261951.6',
-        '244639.1',
-      ],
-      [
-        '第三产业增加值(亿元)',
-        '609679.7',
-        '551973.7',
-        '535371.0',
-        '489700.8',
-        '438355.9',
-        '390828.1',
-        '349744.7',
-        '310654.0',
-        '277983.5',
-        '244856.2',
-      ],
-      [
-        '人均国内生产总值(元)',
-        '80976',
-        '71828',
-        '70078',
-        '65534',
-        '59592',
-        '53783',
-        '49922',
-        '46912',
-        '43497',
-        '39771',
-      ],
-      ['指标', '2021年', '2020年', '2019年', '2018年', '2017年', '2016年', '2015年', '2014年', '2013年', '2012年'],
-      [
-        '国民总收入(亿元)',
-        '1133239.8',
-        '1005451.3',
-        '983751.2',
-        '915243.5',
-        '830945.7',
-        '742694.1',
-        '685571.2',
-        '644380.2',
-        '588141.2',
-        '537329.0',
-      ],
-      [
-        '国内生产总值(亿元)',
-        '1143669.7',
-        '1013567.0',
-        '986515.2',
-        '919281.1',
-        '832035.9',
-        '746395.1',
-        '688858.2',
-        '643563.1',
-        '592963.2',
-        '538580.0',
-      ],
-      [
-        '第一产业增加值(亿元)',
-        '83085.5',
-        '78030.9',
-        '70473.6',
-        '64745.2',
-        '62099.5',
-        '60139.2',
-        '57774.6',
-        '55626.3',
-        '53028.1',
-        '49084.6',
-      ],
-      [
-        '第二产业增加值(亿元)',
-        '450904.5',
-        '383562.4',
-        '380670.6',
-        '364835.2',
-        '331580.5',
-        '295427.8',
-        '281338.9',
-        '277282.8',
-        '261951.6',
-        '244639.1',
-      ],
-      [
-        '第三产业增加值(亿元)',
-        '609679.7',
-        '551973.7',
-        '535371.0',
-        '489700.8',
-        '438355.9',
-        '390828.1',
-        '349744.7',
-        '310654.0',
-        '277983.5',
-        '244856.2',
-      ],
-      [
-        '人均国内生产总值(元)',
-        '80976',
-        '71828',
-        '70078',
-        '65534',
-        '59592',
-        '53783',
-        '49922',
-        '46912',
-        '43497',
-        '39771',
-      ],
-    ]; // excel表数据
+      window.bi = new Object();
+      window.bi.Vue = Vue;
+      window.bi.axios = axios;
+      window.bi.moment = moment;
+      window.bi.BigNumber = BigNumber;
+      window.bi.JSONfn = JSONfn;
+      window.bi.App = this;
+      window.bi.store = store;
+      window.bi.$watch = this.$watch;
+      window.bi.schedule = schedule;
+      window.bi.ElementUI = ElementUI;
+      window.bi.xlsx = xlsx;
+      window.bi.$ = $;
+      window.bi.$route = this.$route
 
-    let excelStyle = [
-      {
-        key: 'cols',
-        value: [
-          {
-            wch: 30,
-            hidden: false,
-          },
-          {
-            wch: 50,
-            hidden: false,
-          },
-        ],
-      },
-      {
-        key: 'A[1-20]',
-        value: {},
-      },
-      {
-        key: '[A-K][1-20]',
-        value: {},
-      },
-      {
-        key: '[A-K]3',
-        value: {
-          font: {
-            name: '黑体',
-            color: { rgb: '4b0082' },
-            sz: '12',
-          },
-          alignment: {
-            horizontal: 'left',
-            vertical: 'center',
-            wrapText: true,
-          },
-          border: {
-            top: { style: 'thin', color: { rgb: 'ff0000' } },
-            right: { style: 'thin', color: { rgb: 'ff0000' } },
-            bottom: { style: 'thin', color: { rgb: 'ff0000' } },
-            left: { style: 'thin' },
-          },
-        },
-      },
-      {
-        key: 'C16',
-        value: {
-          font: {
-            name: '黑体',
-            color: { rgb: '4b0082' },
-            sz: '12',
-          },
-          alignment: {
-            horizontal: 'left',
-            vertical: 'center',
-            wrapText: true,
-          },
-          border: {
-            top: { style: 'thin', color: { rgb: 'ff0000' } },
-            right: { style: 'thin', color: { rgb: 'ff0000' } },
-            bottom: { style: 'thin', color: { rgb: 'ff0000' } },
-            left: { style: 'thin' },
-          },
-        },
-      },
-    ];
+      bi.utils = {}
 
-    // exportExcle('aaa', 'shsdd', excelData, excelStyle);
+      bi.utils.getValueByAttributePath = getValueByAttributePath;
+      bi.utils.setJsonAttribute = setJsonAttribute;
+      bi.utils.SetValueAndAttributePathFromKey = SetValueAndAttributePathFromKey;
+      bi.utils.eventBus = eventBus;
+      bi.utils.printByTemplate = printByTemplate;
+      bi.utils.compileVueTemplate = compileVueTemplate;
+      bi.utils.deepMerge = function (target, source) {
 
-    const exprotTable = (componentName, fileName, excelStyle = null) => {
-      const tableData = bi.utils.getComponentData(componentName).data.tableData;
-      const columns = bi.utils.getComponentData(componentName).data.columns;
+        function _(target, source) {
+          if (!target && !source) {
+            throw new Error('deepMerge的参数未定义')
+          }
+          if (!source) {
+            return target
+          }
+          if (!target) {
+            return source
+          }
+          for (const key in source) {
+            if (source.hasOwnProperty(key)) {
+              if (typeof source[key] === 'object' && !Array.isArray(source[key])) {
+                if (!target[key]) {
+                  target[key] = {};
+                }
+                _(target[key], source[key]);
+              } else {
+                target[key] = source[key];
+              }
+            }
+          }
+          return target;
+        }
 
-      const excelData = [];
-      excelData.push(columns.map(item => item.label));
+        return _(target, source)
+      }
+      bi.utils.test = "abc123";
+      bi.utils.getComponentData = (name) => {
+        return bi.store.state.canvasComponentData.find(item => item.data.name === name)
+      }
 
-      bi.utils.getComponentData(componentName).data.tableData.map(item => {
-        const row = [];
-        columns
-          .map(item => item.prop)
-          .forEach(key => {
-            row.push(item[key]);
+      bi.utils.makeDraggable = function makeDraggable(e) {
+
+        if (e instanceof HTMLElement) {
+          e.onmousedown = event =>
+            makeDraggable(event)
+          return
+        }
+
+        const dragDom = e.target
+
+        // 获取原有属性 ie dom元素.currentStyle 火狐谷歌 window.getComputedStyle(dom元素, null);
+        const getStyle = (function () {
+          if (window.document.currentStyle) {
+            return (dom, attr) => dom.currentStyle[attr]
+          } else {
+            return (dom, attr) => getComputedStyle(dom, false)[attr]
+          }
+        })()
+
+
+        const prevLeft = getStyle(dragDom, 'left')
+        const prevTop = getStyle(dragDom, 'top')
+        const observer = new MutationObserver((mutationsList, observer) => {
+          for (const mutation of mutationsList) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+              const element = mutation.target;
+              const computedStyle = getComputedStyle(element);
+              const isHidden = computedStyle.display === 'none';
+              if (isHidden) {
+                observer.disconnect()
+                observer = null
+              }
+            }
+          }
+        });
+        observer.observe(dragDom, { attributes: true });
+
+        // 鼠标按下，计算当前元素距离可视区的距离
+        const disX = e.clientX
+        const disY = e.clientY
+
+        const dragDomWidth = dragDom.offsetWidth
+        const dragDomheight = dragDom.offsetHeight
+
+        const screenWidth = document.body.clientWidth
+        const screenHeight = document.body.clientHeight
+
+        // const minDragDomLeft = dragDom.offsetLeft + 360
+        // const maxDragDomLeft = screenWidth - dragDom.offsetLeft - dragDomWidth + 360
+        // const minDragDomTop = dragDom.offsetTop
+        // const maxDragDomTop = screenHeight - dragDom.offsetTop - dragDomheight + 300
+
+        // 获取到的值带px 正则匹配替换
+        let styL = getStyle(dragDom, 'left')
+        let styT = getStyle(dragDom, 'top')
+
+        if (styL.includes('%')) {
+          styL = +document.body.clientWidth * (+styL.replace(/%/g, '') / 100)
+          styT = +document.body.clientHeight * (+styT.replace(/%/g, '') / 100)
+        } else {
+          styL = +styL.replace(/\px/g, '')
+          styT = +styT.replace(/\px/g, '')
+        }
+
+        document.onmousemove = function (e) {
+
+          // 通过事件委托，计算移动的距离
+          let left = e.clientX - disX
+          let top = e.clientY - disY
+          // 边界处理
+          // if (-(left) > minDragDomLeft) {
+          //   left = -minDragDomLeft
+          // } else if (left > maxDragDomLeft) {
+          //   left = maxDragDomLeft
+          // }
+          // if (-(top) > minDragDomTop) {
+          //   top = -minDragDomTop
+          // } else if (top > maxDragDomTop) {
+          //   top = maxDragDomTop
+          // }
+          // 移动当前元素
+          dragDom.style.cssText += `;left:${left + styL}px;top:${top + styT}px;`
+        }
+
+
+        document.onmouseup = function () {
+          document.onmousemove = null
+          document.onmouseup = null
+        }
+
+      }
+
+      axios
+        .get('/BI-API/Component/GetGlobalModuleScript', { timeout: 6000 })
+        .then(({ data }) => {
+          if (data.state !== 200) {
+            console.error('获取全局挂载脚本异常', error);
+            return;
+          }
+
+          data.data.forEach(item => {
+            if (item.type === 'ts') {
+              const iife = CompileTypescriptToIIFE(item.code);
+              const instance = new iife();
+              let name = iife.name;
+              if (instance.Name) name = instance.Name;
+              if (instance.MountTarget === undefined || instance.MountTarget === null) {
+                console.warn('GetGlobalModuleScript|MountTarget未赋值,挂载默认目标window', item);
+                instance.MountTarget = window;
+              }
+              if (name === undefined || name === null)
+                console.warn('GetGlobalModuleScript|Name未赋值,设置为文件名', item);
+
+              if (instance.MountTarget[name] === undefined) instance.MountTarget[name] = new Object();
+              for (const key in instance) {
+                // if (instance.hasOwnProperty(key) && Object.prototype.toString.call(instance[key]) == '[object Function]')
+                instance.MountTarget[name][key] = instance[key];
+              }
+              return;
+            }
+
+            CompileToModule.bind(this)(item.code).then(module => {
+              if (Object.prototype.toString.call(module) === '[object Module]' && module.default === undefined) {
+              } else if (Object.prototype.toString.call(module.default) === '[object Function]') {
+                const instance = new module.default();
+
+                let name = instance.Name;
+                if (instance.MountTarget === undefined || instance.MountTarget === null) {
+                  console.warn('GetGlobalModuleScript|MountTarget未赋值,挂载默认目标window', item);
+                  instance.MountTarget = window;
+                }
+                if (name === undefined || name === null) {
+                  console.warn('GetGlobalModuleScript|Name未赋值,设置为文件名', item);
+                  name = item.name;
+                }
+                instance.MountTarget[name] = { ...instance.MountTarget[name], ...instance };
+              } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
+                let name = module.Name;
+                if (module.MountTarget === undefined || module.MountTarget === null) {
+                  console.warn('GetGlobalModuleScript|MountTarget未赋值,挂载默认目标window', item);
+                  module.MountTarget = window;
+                }
+                if (!name) {
+                  console.warn('GetGlobalModuleScript|Name未赋值,设置为文件名', item);
+                  name = item.name;
+                }
+                const target = bi.utils.deepMerge(module.MountTarget[name], module.default)
+                module.MountTarget[name] = target;
+              }
+
+            });
           });
-        excelData.push(row);
-      });
-      // todo: 转换表格的样式
-      exportExcle(fileName, excelData);
-    };
+        })
+        .catch(error => {
+          console.error(`挂载全局脚本异常: `, error);
+        })
+        .finally(() => { });
 
-    setTimeout(() => {
-      // exprotTable('DuBtSYqvEsHVwJn', '导出表格');
-    }, 3000);
 
-    let code0 = `
+
+
+
+
+
+
+
+
+      const exportExcle = (fileName, excelData, excelStyle = null) => {
+        // var data1 = [
+        //   ['id', 'name', 'value'],
+        //   [1, 'sheetjs', 7262],
+        //   [2, 'js-xlsx', 6969],
+        // ];
+
+        // var data2 = [
+        //   {
+        //     周一: '语文',
+        //     周二: '数学',
+        //     周三: '历史',
+        //     周四: '政治',
+        //     周五: '英语',
+        //   },
+        //   {
+        //     周一: '数学',
+        //     周二: '数学',
+        //     周三: '政治',
+        //     周四: '英语',
+        //     周五: '英语',
+        //   },
+        //   {
+        //     周一: '政治',
+        //     周二: '英语',
+        //     周三: '历史',
+        //     周四: '政治',
+        //     周五: '数学',
+        //   },
+        // ];
+
+        // const XLSX = xlsx
+
+        // //1. 新建一个工作簿
+        // let workbook = XLSX.utils.book_new();
+
+        // //2. 生成一个工作表，
+        // //2.1 aoa_to_sheet 把数组转换为工作表
+        // let sheet1 = XLSX.utils.aoa_to_sheet(data1);
+        // //2.2 把json对象转成工作表
+        // let sheet2 = XLSX.utils.json_to_sheet(data2);
+        // //3.在工作簿中添加工作表
+        // XLSX.utils.book_append_sheet(workbook, sheet1, 'sheetName1'); //工作簿名称
+        // XLSX.utils.book_append_sheet(workbook, sheet2, 'sheetName2'); //工作簿名称
+        // // XLSX.utils.sheet_add_json(sheet1,data2);//把已存在的sheet中数据替换成json数据
+
+        // //4.输出工作表,由文件名决定的输出格式
+        // XLSX.writeFile(workbook, 'workBook1.xlsx'); // 保存的文件名
+
+        // excel的表数据，根据实际情况生成
+
+        let workbook = xlsx.utils.book_new(); // 工作簿
+        let worksheet = xlsx.utils.aoa_to_sheet(excelData); // 数据表
+
+        // let cols = []; // 设置每列的宽度
+        // // wpx 字段表示以像素为单位，wch 字段表示以字符为单位
+        // for (let i = 0; i <= excelData[0].length; i++) {
+        //   let col = {};
+        //   if (i == 0) {
+        //     col.wch = 30;
+        //   } else {
+        //     col.wch = 18;
+        //   }
+        //   cols.push(col);
+        // }
+        // worksheet['!cols'] = cols; // 设置列宽信息到工作表
+
+        // console.log("数据啊啊啊啊", worksheet);
+
+        // worksheet['!cols'] = [{ wch: 30, hidden: true }];
+
+        //以下是样式设置，样式设置放在组织完数据之后，xlsx-js-style的核心API就是SheetJS的
+        // Object.keys(worksheet).forEach(key => {
+        //   // 非!开头的属性都是单元格
+        //   if (!key.startsWith('!')) {
+        //     worksheet[key].s = {
+        //       font: {
+        //         name: '黑体',
+        //         color: { rgb: '4b0082' },
+        //         sz: '12',
+        //       },
+        //       alignment: {
+        //         horizontal: 'left',
+        //         vertical: 'center',
+        //         wrapText: true,
+        //       },
+        //       border: {
+        //         top: { style: 'thin', color: { rgb: 'ff0000' } },
+        //         right: { style: 'thin', color: { rgb: 'ff0000' } },
+        //         bottom: { style: 'thin', color: { rgb: 'ff0000' } },
+        //         left: { style: 'thin' },
+        //       },
+        //     };
+        //   }
+        // });
+
+        // worksheet['A1'].s = {
+        //   font: {
+        //     name: '黑体',
+        //     color: { rgb: '4b0082' },
+        //     sz: '12',
+        //   },
+        //   alignment: {
+        //     horizontal: 'left',
+        //     vertical: 'center',
+        //     wrapText: true,
+        //   },
+        //   border: {
+        //     top: { style: 'thin', color: { rgb: 'ff0000' } },
+        //     right: { style: 'thin', color: { rgb: 'ff0000' } },
+        //     bottom: { style: 'thin', color: { rgb: 'ff0000' } },
+        //     left: { style: 'thin' },
+        //   },
+        // };
+
+        if (worksheet['!cols'] === undefined) worksheet['!cols'] = [];
+
+        if (Array.isArray(excelStyle)) {
+          for (let i = 0; i < excelStyle.length; i++) {
+            const style = excelStyle[i];
+            if (!style.key) continue;
+            if (!style.value || JSON.stringify(style.value) === '{}' || JSON.stringify(style.value) === '[]') continue;
+            if (style.key === 'cols') {
+              for (let j = 0; j < style.value.length; j++) {
+                const colStyle = style.value[j];
+                if (worksheet['!cols'][j] === undefined || worksheet['!cols'][j] === null) worksheet['!cols'][j] = {};
+                Object.keys(colStyle).forEach(key => {
+                  worksheet['!cols'][j][key] = colStyle[key];
+                });
+              }
+            } else {
+              const key = style.key.toLocaleUpperCase().replace(/\s/g, '');
+              if (/^\[[A-Z]-[A-Z]\]\[\d{1,9}-\d{1,9}\]$/.test(key)) {
+                // [A-K][1-20]
+                const charMatch = key.match(/^\[([A-Z])-([A-Z])\]/);
+                const indexMatch = key.match(/\[(\d{1,9})-(\d{1,9})\]/);
+                for (let i = charMatch[1].charCodeAt(0); i <= charMatch[2].charCodeAt(0); i++) {
+                  const c = String.fromCharCode(i);
+                  for (let j = indexMatch[1]; j <= indexMatch[2]; j++) worksheet[c + j].s = style.value;
+                }
+              } else if (/^[A-Z]\[\d{1,9}-\d{1,9}\]$/.test(key)) {
+                // A[1-20]
+                const c = key.match(/^([A-Z])(?!=\[)/g)[0];
+                const indexMatch = key.match(/\[(\d{1,9})-(\d{1,9})\]/);
+                for (let i = indexMatch[1]; i <= indexMatch[2]; i++) worksheet[c + i].s = style.value;
+              } else if (/^\[[A-Z]-[A-Z]\]\d{1,9}$/.test(key)) {
+                // [A-K]3
+                const charMatch = key.match(/^\[([A-Z])-([A-Z])\]/);
+                const j = key.match(/(?!\])(\d{1,9})/g)[0];
+                for (let i = charMatch[1].charCodeAt(0); i <= charMatch[2].charCodeAt(0); i++) {
+                  const c = String.fromCharCode(i);
+                  worksheet[c + j].s = style.value;
+                }
+              } else if (/^[A-Z]\d{1,9}$/.test(key)) {
+                // C16
+                worksheet[key].s = style.value;
+              }
+            }
+          }
+        } else if (Object.prototype.toString.call(excelStyle) === '[object Object]') {
+        }
+
+        if (!fileName.toLocaleLowerCase().endsWith('.xlsx')) fileName += '.xlsx';
+        xlsx.utils.book_append_sheet(workbook, worksheet, 'sheet1');
+        xlsx.writeFile(workbook, fileName);
+      };
+
+      let excelData = [
+        ['指标', '2021年', '2020年', '2019年', '2018年', '2017年', '2016年', '2015年', '2014年', '2013年', '2012年'],
+        [
+          '国民总收入(亿元)',
+          '1133239.8',
+          '1005451.3',
+          '983751.2',
+          '915243.5',
+          '830945.7',
+          '742694.1',
+          '685571.2',
+          '644380.2',
+          '588141.2',
+          '537329.0',
+        ],
+        [
+          '国内生产总值(亿元)',
+          '1143669.7',
+          '1013567.0',
+          '986515.2',
+          '919281.1',
+          '832035.9',
+          '746395.1',
+          '688858.2',
+          '643563.1',
+          '592963.2',
+          '538580.0',
+        ],
+        [
+          '第一产业增加值(亿元)',
+          '83085.5',
+          '78030.9',
+          '70473.6',
+          '64745.2',
+          '62099.5',
+          '60139.2',
+          '57774.6',
+          '55626.3',
+          '53028.1',
+          '49084.6',
+        ],
+        [
+          '第二产业增加值(亿元)',
+          '450904.5',
+          '383562.4',
+          '380670.6',
+          '364835.2',
+          '331580.5',
+          '295427.8',
+          '281338.9',
+          '277282.8',
+          '261951.6',
+          '244639.1',
+        ],
+        [
+          '第三产业增加值(亿元)',
+          '609679.7',
+          '551973.7',
+          '535371.0',
+          '489700.8',
+          '438355.9',
+          '390828.1',
+          '349744.7',
+          '310654.0',
+          '277983.5',
+          '244856.2',
+        ],
+        [
+          '人均国内生产总值(元)',
+          '80976',
+          '71828',
+          '70078',
+          '65534',
+          '59592',
+          '53783',
+          '49922',
+          '46912',
+          '43497',
+          '39771',
+        ],
+        ['指标', '2021年', '2020年', '2019年', '2018年', '2017年', '2016年', '2015年', '2014年', '2013年', '2012年'],
+        [
+          '国民总收入(亿元)',
+          '1133239.8',
+          '1005451.3',
+          '983751.2',
+          '915243.5',
+          '830945.7',
+          '742694.1',
+          '685571.2',
+          '644380.2',
+          '588141.2',
+          '537329.0',
+        ],
+        [
+          '国内生产总值(亿元)',
+          '1143669.7',
+          '1013567.0',
+          '986515.2',
+          '919281.1',
+          '832035.9',
+          '746395.1',
+          '688858.2',
+          '643563.1',
+          '592963.2',
+          '538580.0',
+        ],
+        [
+          '第一产业增加值(亿元)',
+          '83085.5',
+          '78030.9',
+          '70473.6',
+          '64745.2',
+          '62099.5',
+          '60139.2',
+          '57774.6',
+          '55626.3',
+          '53028.1',
+          '49084.6',
+        ],
+        [
+          '第二产业增加值(亿元)',
+          '450904.5',
+          '383562.4',
+          '380670.6',
+          '364835.2',
+          '331580.5',
+          '295427.8',
+          '281338.9',
+          '277282.8',
+          '261951.6',
+          '244639.1',
+        ],
+        [
+          '第三产业增加值(亿元)',
+          '609679.7',
+          '551973.7',
+          '535371.0',
+          '489700.8',
+          '438355.9',
+          '390828.1',
+          '349744.7',
+          '310654.0',
+          '277983.5',
+          '244856.2',
+        ],
+        [
+          '人均国内生产总值(元)',
+          '80976',
+          '71828',
+          '70078',
+          '65534',
+          '59592',
+          '53783',
+          '49922',
+          '46912',
+          '43497',
+          '39771',
+        ],
+        ['指标', '2021年', '2020年', '2019年', '2018年', '2017年', '2016年', '2015年', '2014年', '2013年', '2012年'],
+        [
+          '国民总收入(亿元)',
+          '1133239.8',
+          '1005451.3',
+          '983751.2',
+          '915243.5',
+          '830945.7',
+          '742694.1',
+          '685571.2',
+          '644380.2',
+          '588141.2',
+          '537329.0',
+        ],
+        [
+          '国内生产总值(亿元)',
+          '1143669.7',
+          '1013567.0',
+          '986515.2',
+          '919281.1',
+          '832035.9',
+          '746395.1',
+          '688858.2',
+          '643563.1',
+          '592963.2',
+          '538580.0',
+        ],
+        [
+          '第一产业增加值(亿元)',
+          '83085.5',
+          '78030.9',
+          '70473.6',
+          '64745.2',
+          '62099.5',
+          '60139.2',
+          '57774.6',
+          '55626.3',
+          '53028.1',
+          '49084.6',
+        ],
+        [
+          '第二产业增加值(亿元)',
+          '450904.5',
+          '383562.4',
+          '380670.6',
+          '364835.2',
+          '331580.5',
+          '295427.8',
+          '281338.9',
+          '277282.8',
+          '261951.6',
+          '244639.1',
+        ],
+        [
+          '第三产业增加值(亿元)',
+          '609679.7',
+          '551973.7',
+          '535371.0',
+          '489700.8',
+          '438355.9',
+          '390828.1',
+          '349744.7',
+          '310654.0',
+          '277983.5',
+          '244856.2',
+        ],
+        [
+          '人均国内生产总值(元)',
+          '80976',
+          '71828',
+          '70078',
+          '65534',
+          '59592',
+          '53783',
+          '49922',
+          '46912',
+          '43497',
+          '39771',
+        ],
+        ['指标', '2021年', '2020年', '2019年', '2018年', '2017年', '2016年', '2015年', '2014年', '2013年', '2012年'],
+        [
+          '国民总收入(亿元)',
+          '1133239.8',
+          '1005451.3',
+          '983751.2',
+          '915243.5',
+          '830945.7',
+          '742694.1',
+          '685571.2',
+          '644380.2',
+          '588141.2',
+          '537329.0',
+        ],
+        [
+          '国内生产总值(亿元)',
+          '1143669.7',
+          '1013567.0',
+          '986515.2',
+          '919281.1',
+          '832035.9',
+          '746395.1',
+          '688858.2',
+          '643563.1',
+          '592963.2',
+          '538580.0',
+        ],
+        [
+          '第一产业增加值(亿元)',
+          '83085.5',
+          '78030.9',
+          '70473.6',
+          '64745.2',
+          '62099.5',
+          '60139.2',
+          '57774.6',
+          '55626.3',
+          '53028.1',
+          '49084.6',
+        ],
+        [
+          '第二产业增加值(亿元)',
+          '450904.5',
+          '383562.4',
+          '380670.6',
+          '364835.2',
+          '331580.5',
+          '295427.8',
+          '281338.9',
+          '277282.8',
+          '261951.6',
+          '244639.1',
+        ],
+        [
+          '第三产业增加值(亿元)',
+          '609679.7',
+          '551973.7',
+          '535371.0',
+          '489700.8',
+          '438355.9',
+          '390828.1',
+          '349744.7',
+          '310654.0',
+          '277983.5',
+          '244856.2',
+        ],
+        [
+          '人均国内生产总值(元)',
+          '80976',
+          '71828',
+          '70078',
+          '65534',
+          '59592',
+          '53783',
+          '49922',
+          '46912',
+          '43497',
+          '39771',
+        ],
+      ]; // excel表数据
+
+      let excelStyle = [
+        {
+          key: 'cols',
+          value: [
+            {
+              wch: 30,
+              hidden: false,
+            },
+            {
+              wch: 50,
+              hidden: false,
+            },
+          ],
+        },
+        {
+          key: 'A[1-20]',
+          value: {},
+        },
+        {
+          key: '[A-K][1-20]',
+          value: {},
+        },
+        {
+          key: '[A-K]3',
+          value: {
+            font: {
+              name: '黑体',
+              color: { rgb: '4b0082' },
+              sz: '12',
+            },
+            alignment: {
+              horizontal: 'left',
+              vertical: 'center',
+              wrapText: true,
+            },
+            border: {
+              top: { style: 'thin', color: { rgb: 'ff0000' } },
+              right: { style: 'thin', color: { rgb: 'ff0000' } },
+              bottom: { style: 'thin', color: { rgb: 'ff0000' } },
+              left: { style: 'thin' },
+            },
+          },
+        },
+        {
+          key: 'C16',
+          value: {
+            font: {
+              name: '黑体',
+              color: { rgb: '4b0082' },
+              sz: '12',
+            },
+            alignment: {
+              horizontal: 'left',
+              vertical: 'center',
+              wrapText: true,
+            },
+            border: {
+              top: { style: 'thin', color: { rgb: 'ff0000' } },
+              right: { style: 'thin', color: { rgb: 'ff0000' } },
+              bottom: { style: 'thin', color: { rgb: 'ff0000' } },
+              left: { style: 'thin' },
+            },
+          },
+        },
+      ];
+
+      // exportExcle('aaa', 'shsdd', excelData, excelStyle);
+
+      const exprotTable = (componentName, fileName, excelStyle = null) => {
+        const tableData = bi.utils.getComponentData(componentName).data.tableData;
+        const columns = bi.utils.getComponentData(componentName).data.columns;
+
+        const excelData = [];
+        excelData.push(columns.map(item => item.label));
+
+        bi.utils.getComponentData(componentName).data.tableData.map(item => {
+          const row = [];
+          columns
+            .map(item => item.prop)
+            .forEach(key => {
+              row.push(item[key]);
+            });
+          excelData.push(row);
+        });
+        // todo: 转换表格的样式
+        exportExcle(fileName, excelData);
+      };
+
+      setTimeout(() => {
+        // exprotTable('DuBtSYqvEsHVwJn', '导出表格');
+      }, 3000);
+
+      let code0 = `
 export default function addAxisData(extraData) {
 
     //   "$this_add(this.curStyle.attrList[3].value, \"@dataIndex\", \"无\")"
@@ -639,23 +875,23 @@ export default function addAxisData(extraData) {
 
 }`;
 
-    // function anonymous(param) {
-    //   const component = param.component;
-    //   const event = param.event;
-    //   const element = param.element;
-    //   console.log('组件onClick事件', component, event, element);
+      // function anonymous(param) {
+      //   const component = param.component;
+      //   const event = param.event;
+      //   const element = param.element;
+      //   console.log('组件onClick事件', component, event, element);
 
-    //   bi.utils
-    //     .request(
-    //       'http://www.emacrosys.cn:8031/H5/prod/requestVueData',
-    //       `{"id":0,"action":"GB/GB_getContractList","user":{"id":"0000","siteid":"1001","userno":"0000","sitename":"苏州冠礼","cardid":"WFM600000","factoryList":"0@Unassign,1002@上海冠礼,1003@苏州二部,1001@苏州冠礼","authorization":"CPA","userid":"10000001","settings":"生管系统,工单管理,专案号维护,100555,Full Control,/GBCustomize/mPMGContract","timestamp":1690266594115},"data":{"startDate":"","endDate":"2023-07-25","contractNo":"","customer":""}}`
-    //     )
-    //     .then(({ data }) => {
-    //       bi.utils.setComponentData('表格111', data);
-    //     });
-    // }
+      //   bi.utils
+      //     .request(
+      //       'http://www.emacrosys.cn:8031/H5/prod/requestVueData',
+      //       `{"id":0,"action":"GB/GB_getContractList","user":{"id":"0000","siteid":"1001","userno":"0000","sitename":"苏州冠礼","cardid":"WFM600000","factoryList":"0@Unassign,1002@上海冠礼,1003@苏州二部,1001@苏州冠礼","authorization":"CPA","userid":"10000001","settings":"生管系统,工单管理,专案号维护,100555,Full Control,/GBCustomize/mPMGContract","timestamp":1690266594115},"data":{"startDate":"","endDate":"2023-07-25","contractNo":"","customer":""}}`
+      //     )
+      //     .then(({ data }) => {
+      //       bi.utils.setComponentData('表格111', data);
+      //     });
+      // }
 
-    let code1 = `(self, caller) => {
+      let code1 = `(self, caller) => {
       console.log("BBB生命周期组件onBeforeCreate-self", self);
       console.log("BBB生命周期组件onBeforeCreate-caller", caller);
 
@@ -683,14 +919,14 @@ export default function addAxisData(extraData) {
       // })
     }`;
 
-    let code2 = `(self, caller) => {
+      let code2 = `(self, caller) => {
       console.log("AAA生命周期组件onBeforeCreate-self", self);
       console.log("AAAA生命周期组件onBeforeCreate-caller", caller);
 
 
     }`;
 
-    let codee = `function anonymous(param
+      let codee = `function anonymous(param
 ) {
 
 
@@ -708,154 +944,65 @@ export default function addAxisData(extraData) {
           bi.utils.setComponentData('表格', data);
         });
 }`;
-    let f03 = stringToFunction(codee);
+      let f03 = stringToFunction(codee);
 
-    let code3 = `"function (params) {\n      console.log(\"onBeforeCreate函数编译\", params);\n    }"`;
+      let code3 = `"function (params) {\n      console.log(\"onBeforeCreate函数编译\", params);\n    }"`;
 
-    let f0 = stringToFunction(code2);
-    f0('测试函数1');
-    let f1 = stringToFunction(code2);
-    f1('测试函数2');
-    let f2 = stringToFunction(code1);
-    f2('测试函数3');
-    let f3 = stringToFunction(code3);
-    f3('测试函数没有函数体4');
+      let f0 = stringToFunction(code2);
+      f0('测试函数1');
+      let f1 = stringToFunction(code2);
+      f1('测试函数2');
+      let f2 = stringToFunction(code1);
+      f2('测试函数3');
+      let f3 = stringToFunction(code3);
+      f3('测试函数没有函数体4');
 
-    window.bi = new Object();
-    window.bi.Vue = Vue;
-    window.bi.axios = axios;
-    window.bi.moment = moment;
-    window.bi.BigNumber = BigNumber;
-    window.bi.JSONfn = JSONfn;
-    window.bi.App = this;
-    window.bi.store = store;
-    window.bi.$watch = this.$watch;
-    window.bi.schedule = schedule;
-    window.bi.ElementUI = ElementUI;
-    window.bi.xlsx = xlsx;
-    window.bi.$ = $;
 
-    const userId = 'admin';
-    axios.post(`/BI-API/DataSource/FindDatabaseByUserId?userId=${userId}`, { timeout: 6000 }).then(({ data }) => {
-      if (data.state === 200 && data.data.length > 0) {
-        localStorage.setItem('UserDatabaseList', JSON.stringify(data.data));
-      } else {
-        localStorage.setItem('UserDatabaseList', '[]');
-      }
-    });
 
-    // 在js中这样调用
 
-    if (false) {
-      const ui = bi.ElementUI;
-      ui.Message({
-        message: 'aaa',
-        type: 'error',
-        duration: 300,
-      });
+      // 在js中这样调用
 
-      ui.Message.success('操作成功');
-      ui.Message.warning({
-        message: '警告',
-        duration: 3000,
-        showClose: true,
-      });
-
-      // 使用挂载的 ElementUI 调用 Button 组件
-      const button = new ui.Button();
-      button.text = 'Click me';
-      button.onClick(() => {
-        console.log('Button clicked');
-      });
-    }
-
-    axios
-      .get('/BI-API/Component/GetGlobalModuleScript', { timeout: 6000 })
-      .then(({ data }) => {
-        if (data.state !== 200) {
-          console.error('获取全局挂载脚本异常', error);
-          return;
-        }
-
-        data.data.forEach(item => {
-          if (item.type === 'ts') {
-            const iife = CompileTypescriptToIIFE(item.code);
-            const instance = new iife();
-            let name = iife.name;
-            if (instance.Name) name = instance.Name;
-            if (instance.MountTarget === undefined || instance.MountTarget === null) {
-              console.warn('GetGlobalModuleScript|MountTarget未赋值,挂载默认目标window', item);
-              instance.MountTarget = window;
-            }
-            if (name === undefined || name === null)
-              console.warn('GetGlobalModuleScript|Name未赋值,设置为文件名', item);
-
-            if (instance.MountTarget[name] === undefined) instance.MountTarget[name] = new Object();
-            for (const key in instance) {
-              // if (instance.hasOwnProperty(key) && Object.prototype.toString.call(instance[key]) == '[object Function]')
-              instance.MountTarget[name][key] = instance[key];
-            }
-            return;
-          }
-
-          CompileToModule.bind(this)(item.code).then(module => {
-            if (Object.prototype.toString.call(module) === '[object Module]' && module.default === undefined) {
-            } else if (Object.prototype.toString.call(module.default) === '[object Function]') {
-              const instance = new module.default();
-
-              let name = instance.Name;
-              if (instance.MountTarget === undefined || instance.MountTarget === null) {
-                console.warn('GetGlobalModuleScript|MountTarget未赋值,挂载默认目标window', item);
-                instance.MountTarget = window;
-              }
-              if (name === undefined || name === null) {
-                console.warn('GetGlobalModuleScript|Name未赋值,设置为文件名', item);
-                name = item.name;
-              }
-              instance.MountTarget[name] = { ...instance.MountTarget[name], ...instance };
-            } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
-              let name = module.Name;
-              if (module.MountTarget === undefined || module.MountTarget === null) {
-                console.warn('GetGlobalModuleScript|MountTarget未赋值,挂载默认目标window', item);
-                module.MountTarget = window;
-              }
-              if (name === undefined || name === null) {
-                console.warn('GetGlobalModuleScript|Name未赋值,设置为文件名', item);
-                name = item.name;
-              }
-              module.MountTarget[name] = { ...module.MountTarget[name], ...module.default };
-            }
-
-            bi.utils.getValueByAttributePath = getValueByAttributePath;
-            bi.utils.setJsonAttribute = setJsonAttribute;
-            bi.utils.SetValueAndAttributePathFromKey = SetValueAndAttributePathFromKey;
-            bi.utils.eventBus = eventBus;
-            bi.utils.printByTemplate = printByTemplate;
-            bi.utils.compileVueTemplate = compileVueTemplate; 
-          });
+      if (false) {
+        const ui = bi.ElementUI;
+        ui.Message({
+          message: 'aaa',
+          type: 'error',
+          duration: 300,
         });
-      })
-      .catch(error => {
-        console.error(`挂载全局脚本异常: `, error);
-      })
-      .finally(() => {});
-  },
-  mounted() {
-  },
-  methods: {},
-};
+
+        ui.Message.success('操作成功');
+        ui.Message.warning({
+          message: '警告',
+          duration: 3000,
+          showClose: true,
+        });
+
+        // 使用挂载的 ElementUI 调用 Button 组件
+        const button = new ui.Button();
+        button.text = 'Click me';
+        button.onClick(() => {
+          console.log('Button clicked');
+        });
+      }
+
+
+    },
+    mounted() {
+    },
+    methods: {},
+  };
 </script>
 
 <style lang="less">
-#app {
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  margin: 0;
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+  #app {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: center;
+    color: #2c3e50;
+  }
 </style>

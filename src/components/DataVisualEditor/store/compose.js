@@ -96,8 +96,7 @@ export default {
           name: getRandStr(),
           show: true,
           isAlign: false,
-          isModal: false,
-          isModalVisible: false
+          isModal: false
         },
         styleUnit: {
           top: "px",
@@ -134,9 +133,9 @@ export default {
             bind: "data"
           },
           {
-            key: "isModalVisible",
+            key: "isDrag",
             type: "checkbox",
-            label: '悬浮框显示',
+            label: '可拖拽',
             bind: "data"
           },
           {
@@ -177,7 +176,6 @@ export default {
         ]
       }
       createGroupStyle(groupComponent)
-      console.log('组合', groupComponent);
       store.commit('addComponent', {
         component: groupComponent,
       })

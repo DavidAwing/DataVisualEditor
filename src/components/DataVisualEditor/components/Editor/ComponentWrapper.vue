@@ -1,5 +1,5 @@
 <template>
-  <div @click="handleClick">
+  <div @click="handleClick" class="shape" :style="getComponentStyle()">
     <component
       :is="config.component"
       ref="component"
@@ -18,11 +18,13 @@ import runAnimation from "../../utils/runAnimation";
 import { mixins } from "../../utils/events";
 import { mapState } from "vuex";
 
+ 
+
 export default {
   mixins: [mixins],
   data() {
     return {
-     
+
     };
   },
   props: {
@@ -52,11 +54,12 @@ export default {
 
     handleClick() {
 
+      console.log('点击事件');
+
       // todo 事件处理
       // const events = this.config.events;
       // Object.keys(events).forEach((event) => {
       //   try {
-      //     // console.log("把偶哦了", this[event], event);
       //     this[event](events[event]);
       //   } catch (error) {
       //     console.warn("handleClick", error);

@@ -36,56 +36,18 @@ const dialogContainer = document.createElement('div');
 document.body.appendChild(dialogContainer);
 
 
-Vue.component('top-el-dialog', {
-  extends: Dialog,
-  props: {
-    isModalDialog: Boolean,
-    test: String,
-    toBody: {
-      type: Boolean,
-      default: true
-    }
-  },
-  mounted() {
-
-    if (this.toBody === false) {
-      console.log('this.toBody', this.toBody);
-    } else {
-      document.body.appendChild(this.$el);
-    }
+require('./components/DataVisualEditor/utils/vue-component.js')
 
 
-    // this.$nextTick(() => {
-    //   console.log('测试dialog', this.isModalDialog, $('.v-modal'));
-    //   $('.v-modal').css('visibility', 'hidden')
-    //   $('.el-dialog__header').css('visibility', 'hidden')
-    //   $('.el-dialog__body').css('visibility', 'hidden')
-    //   $('.el-dialog').css('visibility', 'hidden')
-    //   $('.el-dialog__body>div').css('visibility', 'visible')
-    //   console.log('测试dialog end');
-    // })
 
-    setTimeout(() => {
 
-    }, 300);
 
-  },
-  watch: {
-    isModalDialog: {
-      handler: function (val) {
-
-      },
-      deep: true,
-      immediate: true
-    },
-  },
-});
 
 
 
 
 Vue.config.warnHandler = (msg: string, vm: Vue, trace: string) => {
-  console.log("拦截vue全局警告", msg, vm, trace);
+  console.log("vue全局警告", msg, vm, trace);
 
 }
 

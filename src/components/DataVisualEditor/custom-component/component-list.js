@@ -207,12 +207,6 @@ const list = [
         bind: "data"
       },
       {
-        key: "isModalVisible",
-        type: "checkbox",
-        label: '悬浮框显示',
-        bind: "data"
-      },
-      {
         key: "left",
         type: "number",
         label: 'x 坐标',

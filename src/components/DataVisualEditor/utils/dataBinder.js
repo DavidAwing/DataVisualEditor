@@ -82,10 +82,28 @@ export class TaskManager {
   static _addWatch(name, task) {
     const $watch = window.bi.$watch
     const getComponentData = window.bi.utils.getComponentData
-    function watchPlaceholder(p, placeholders) {
-      const str = p.substring(2, p.length - 2)
-      const component = getComponentData(str)
 
+    function invoke() {
+      // 是否立即调用? 默认尽量调用
+      const v = task.config['@watch_invoke'];
+      if (v) {
+        const isNotInvoke = /false/gi.test(v) || /0/g.test(v)
+        !isNotInvoke && TaskManager.invoke(name)
+      } else {
+        TaskManager.invoke(name)
+      }
+    }
+
+    function watchPlaceholder(p, placeholders) {
+
+      const symbol = p.substring(2, p.length - 2).trim()
+
+      const component = getComponentData(symbol)
+
+      if (!component) {
+        console.warn(`watchPlaceholder|找不到组件${symbol},无法监听组件数据`);
+        return
+      }
       if (component.component === "v-select") {
         placeholders[p] = component.data.selectedValue
       } else if (component.component === 'v-input') {
@@ -96,21 +114,10 @@ export class TaskManager {
 
       }
 
-      function invoke() {
-        // 是否立即调用? 默认尽量调用
-        const v = task.config['@watch_invoke'];
-        if (v) {
-          const isNotInvoke = /false/gi.test(v) || /0/g.test(v)
-          !isNotInvoke && TaskManager.invoke(name)
-        } else {
-          TaskManager.invoke(name)
-        }
-      }
-
       let timeoutId = null
       const interval = 300
       $watch(() => {
-        if (str.includes('.')) {
+        if (symbol.includes('.')) {
 
         } else {
           if (component.component === "v-select") {
@@ -145,7 +152,16 @@ export class TaskManager {
         }
         // 监听数据的改变
         placeholders.forEach(p => {
-          watchPlaceholder(p, TaskManager._dataBinder[name].placeholders)
+
+          const placeholders = TaskManager._dataBinder[name].placeholders
+          if (/{{\s*arg_/i.test(p)) {
+            const symbol = p.substring(2, p.length - 2).trim().substring('arg_'.length)
+            const regex = new RegExp(`(?=${symbol}\\s*\\=)\\w*[^&]*`, "gi");
+            const match = document.location.href.match(regex)
+            match ? placeholders[p] = match[0].split('=')[1].trim() : console.warn(`watchPlaceholder|找不到查询参数${symbol}`);
+          } else {
+            watchPlaceholder(p, placeholders)
+          }
         })
       }
     }
@@ -154,8 +170,14 @@ export class TaskManager {
 
   static _updateTask(name, task, dataBinder) {
 
-    if (!name || !task || !dataBinder)
+    if (!name)
       return
+
+    if (!task)
+      task = TaskManager._taskMap[name].task
+    if (!dataBinder)
+      dataBinder = TaskManager._dataBinder[name]
+
     // 更新数据
     let newSql = dataBinder.sql
     if (task.dataSourceType === 'database') {
@@ -174,14 +196,14 @@ export class TaskManager {
   }
 
   static invoke(name) {
-    const task = TaskManager._taskMap[name].task
-    const dataBinder = TaskManager._dataBinder[name]
-    TaskManager._updateTask(name, task, dataBinder)
 
-    console.log('任务调用-1', task);
-    console.log('任务调用-2', dataBinder);
+    if (window.BI_DEBUG) {
+      console.log('BI_DEBUG|TaskManager|invoke|task', TaskManager._taskMap[name].task);
+      console.log('BI_DEBUG|TaskManager|invoke|dataBinder', TaskManager._dataBinder[name]);
+    }
 
-    task.call()
+    TaskManager._updateTask(name)
+    TaskManager._taskMap[name].task.call()
   }
 
 

@@ -53,7 +53,7 @@ Vue.component('component-dialog', {
       }
     }
 
-    this.$set(this.element.data, 'isModal', this.element.data.isModal)
+    // this.$set(this.element.data, 'isModal', this.element.data.isModal)
 
     this.$watch(() => this.element.data.show, (val) => {
       setDialog()

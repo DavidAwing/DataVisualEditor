@@ -10,7 +10,15 @@ export default class ComponentBase extends Vue {
 
   public onEvent(name: string, data = {}) {
     const func = this.element.events[name];
-    if (!func) return;
+    if (!func) {
+      console.warn(`onEvent|组件${this.element.data.name}未定义${name}事件`);
+      return;
+    }
+
+    if (typeof func != 'function') {
+      console.warn(`onEvent|组件${this.element.data.name}的${name}事件不是function`);
+      return;
+    }
     func({
       component: this,
       data: { ...data },

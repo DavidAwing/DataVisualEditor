@@ -55,6 +55,7 @@
     created() {
 
       window.bi = new Object();
+      window.bi.version = 'z0.2.1'
       window.bi.Vue = Vue;
       window.bi.axios = axios;
       window.bi.moment = moment;
@@ -68,13 +69,15 @@
       window.bi.xlsx = xlsx;
       window.bi.$ = $;
       window.bi.$route = this.$route
+      bi.eventBus = eventBus;
 
+ 
       bi.utils = {}
 
       bi.utils.getValueByAttributePath = getValueByAttributePath;
       bi.utils.setJsonAttribute = setJsonAttribute;
       bi.utils.SetValueAndAttributePathFromKey = SetValueAndAttributePathFromKey;
-      bi.utils.eventBus = eventBus;
+
       bi.utils.printByTemplate = printByTemplate;
       bi.utils.compileVueTemplate = compileVueTemplate;
       bi.utils.deepMerge = function (target, source) {

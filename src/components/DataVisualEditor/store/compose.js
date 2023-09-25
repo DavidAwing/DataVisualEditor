@@ -6,7 +6,7 @@ import { $, getRandStr } from '../utils/utils'
 import { commonStyle, commonAttr } from '../custom-component/component-list'
 import createGroupStyle from '../utils/createGroupStyle'
 import { getElementRect } from '../utils/domUtils'
-
+import Vue from 'vue'
 
 export default {
   state: {
@@ -175,6 +175,9 @@ export default {
           },
         ]
       }
+
+      Vue.set(groupComponent.data, 'isModal', false)
+
       createGroupStyle(groupComponent)
       store.commit('addComponent', {
         component: groupComponent,

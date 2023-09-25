@@ -6,7 +6,7 @@
     <!--页面组件列表展示-->
 
     <template v-for="(item, index) in canvasComponentData">
-      <component-dialog :key="item.id" v-if="item.data.isModal" title="编辑表头" :visible.sync="item.data.show"
+      <component-dialog :key="item.id" v-if="item.data.isModal" title="" :visible.sync="item.data.show"
         width="35%" :element="item" v-el-drag-dialog center>
         <Shape :default-style="item.style" :style="getShapeStyle(item.style, item.styleUnit)"
           :active="item.id === (curComponent || {}).id || activeComponentList.includes(item.id)" :element="item"
@@ -97,7 +97,8 @@ export default {
   },
   watch: {
     canvasComponentData: {
-      handler: function (val, old) { },
+      handler: function (val, old) {
+      },
       deep: false,
     },
     canvasName: {

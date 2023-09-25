@@ -208,7 +208,11 @@ import {
 import Shape from '../../components/DataVisualEditor/components/Editor/Shape';
 
 import generateID, { resetID } from '../../components/DataVisualEditor/utils/generateID';
+import {saveCanvas} from '../../components/DataVisualEditor/components/MenuHandler';
+
 const JSONfn = require('jsonfn').JSONfn;
+
+
 
 export default {
   name: 'LabelViewer',
@@ -502,7 +506,6 @@ export default {
               }
 
               Vue.set(item, "componentName", value)
-              // item.componentName = value
             }
 
           } else if (count > 1 && (item.componentName !== undefined && item.componentName !== null && item.componentName.trim() !== "")) {
@@ -522,6 +525,9 @@ export default {
         .then(({ data }) => {
           if (data.state === 200) toast('保存成功', 'success');
         });
+
+        saveCanvas(this.canvasName, this.canvasComponentData, this.canvasData)
+
     },
     getComponentStyle(component) {
       if (JSON.stringify(component) === '{}') return '';

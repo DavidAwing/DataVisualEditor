@@ -130,16 +130,16 @@ export default {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  padding: 10px;
+  padding: 10px 8px;
 
   .list {
-    width: 45%;
+    width: 47%;
     border: 1px solid #ddd;
     cursor: grab;
     margin-bottom: 10px;
     text-align: center;
     color: #333;
-    padding: 2px 5px;
+    padding: 2px 3px;
     display: flex;
     align-items: center;
     justify-content: center;

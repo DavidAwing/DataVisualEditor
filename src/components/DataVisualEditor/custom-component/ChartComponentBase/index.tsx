@@ -156,6 +156,7 @@ export default class ChartsComponentBase extends ComponentBase {
   public mounted() {
 
     const data = this.element.data
+
     this.chartDom = document.getElementById(data.chartId) as HTMLElement;
     this.chart = echarts.init(this.chartDom);
     this.chart.setOption(this.option)
@@ -221,15 +222,7 @@ export default class ChartsComponentBase extends ComponentBase {
 
     })
 
-    this.$watch('option', (val: any, old) => {
-
-
-
-
-    }, { deep: true });
-
     this.$watch('element', (val: any, old) => {
-
       if (val.style.width !== this.oldStyle.width || val.style.height !== this.oldStyle.height) {
         setTimeout(() => {
           this.$nextTick(() => {
@@ -238,23 +231,6 @@ export default class ChartsComponentBase extends ComponentBase {
           })
         }, 300);
       }
-
-
-      // setJsonAttribute(
-      //   option,
-      //   "series[0].backgroundStyle.color",
-      //   "rgba(255, 0, 0, 1)"
-      // );
-      // setJsonAttribute(option, "xAxis.type", "time");
-      // setJsonAttribute(option, "yAxis", { type: "value", name: "yAxis222" });
-      // setJsonAttribute(option, "xAxis.data[0]", "Monday222");
-      // setJsonAttribute(option, "series[0].data[0]", 1560);
-      // setJsonAttribute(
-      //   option,
-      //   "series[0].data",
-      //   [12345, 200, 150, 80, 70, 110, 130]
-      // );
-
     }, { deep: true });
 
     this.$watch('styleList', (newValue: any, oldValue) => {
@@ -325,10 +301,12 @@ export default class ChartsComponentBase extends ComponentBase {
     });
 
     this.$watch('activeSerie', (val: any, old) => {
-      // this.element.data.activeSerieType = "vc-" + val.type
       Vue.set(this.element.data, "activeSerieType", "vc-" + val.type)
       this.chart.setOption(this.option, true)
     }, { deep: true, immediate: true });
+
+
+
 
   }
 

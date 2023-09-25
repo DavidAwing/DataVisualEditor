@@ -153,8 +153,7 @@ const list = [
       writingMode: "horizontal",
       show: true,
       isAlign: false,
-      isModal: false,
-      isModalVisible: false
+      isModal: false
     },
     attrExcludes: [],
     style: {
@@ -199,12 +198,6 @@ const list = [
         type: "checkbox",
         label: '对齐',
         bind: 'data'
-      },
-      {
-        key: "isModal",
-        type: "checkbox",
-        label: '悬浮框模式',
-        bind: "data"
       },
       {
         key: "left",
@@ -397,7 +390,8 @@ const list = [
       verticalAlign: "",
       writingMode: "horizontal",
       show: true,
-      isAlign: true
+      isAlign: true,
+      isModal: false
     },
     attrExcludes: [],
     style: {
@@ -611,7 +605,8 @@ const list = [
     data: {
       text: "点击",
       show: true,
-      isAlign: false
+      isAlign: false,
+      isModal: false
     },
     eventOptions: [
       {
@@ -752,6 +747,7 @@ const list = [
       placeholder: "请输入文字",
       show: true,
       isAlign: false,
+      isModal: false,
       type: "text"
     },
     style: {
@@ -872,6 +868,7 @@ const list = [
       placeholder: "请选择",
       clearable: false,
       multiple: false,
+      isModal: false,
       options: []
     },
     eventOptions: [
@@ -998,6 +995,7 @@ const list = [
       text: "",
       show: true,
       isAlign: false,
+      isModal: false,
       date: "",
       placeholder: "选择日期",
       format: "yyyy 年 MM 月 dd 日",
@@ -1103,6 +1101,7 @@ const list = [
       imageUrl: "",
       fit: "scale-down",
       show: true,
+      isModal: false,
       isAlign: false
     },
     attrExcludes: [],
@@ -1306,6 +1305,7 @@ const list = [
       name: "",
       type: "dv-border-box-1",
       show: true,
+      isModal: false,
       isAlign: true
     },
     icon: 'juxing',
@@ -1500,6 +1500,7 @@ const list = [
       color: "rgba(0, 0, 0, 1)",
       lineStyle: "solid", // dotted solid double dashed
       show: true,
+      isModal: false,
       isAlign: true
     },
     eventOptions: [
@@ -1578,6 +1579,7 @@ const list = [
     icon: 'wenben',
     data: {
       name: "",
+      isModal: false,
       columns: [
         {
           "prop": "date",
@@ -1997,6 +1999,7 @@ const list = [
       autoplay: false,
       loop: true,
       muted: false,
+      isModal: false,
       show: true,
       isAlign: false
     },
@@ -2122,6 +2125,7 @@ const list = [
       name: "",
       chartId: "",
       show: true,
+      isModal: false,
       isAlign: false,
       option:
       {
@@ -2339,6 +2343,7 @@ const list = [
       verticalAlignment: "",
       iframeWidth: "100%",
       iframeHeight: "100%",
+      isModal: false,
       show: true,
       isAlign: false
     },
@@ -2423,8 +2428,10 @@ const list = [
       dark: '#000',
       light: '#ffffff00',
       quality: 0.3,
+      isModal: false,
       errorCorrectionLevel: 'H',
-      show: true
+      show: true,
+      isAlign: false
     },
     eventOptions: [
     ],
@@ -2556,7 +2563,9 @@ const list = [
     propValue: '[barcode]',
     uniqueId: "",
     data: {
-
+      show: true,
+      isAlign: false,
+      isModal: false,
     },
     style: {
       width: 300,
@@ -2788,6 +2797,7 @@ const list = [
     label: '可变',
     icon: 'wenben',
     data: {
+      isModal: false,
       text: "请输入文本...",
       verticalAlign: "",
       writingMode: "horizontal",
@@ -3056,6 +3066,115 @@ const list = [
     },
     styleList: [
     ]
+  },
+  // 循环组件
+  {
+    uniqueId: '',
+    component: 'v-loop-rendering',
+    label: '组件循环',
+    icon: 'wenben',
+    data: {
+      text: "请输入文本...",
+      verticalAlign: "",
+      writingMode: "horizontal",
+      show: true,
+      isAlign: false,
+      isModal: false
+    },
+    attrExcludes: [],
+    style: {
+      width: 211,
+      height: 22,
+      fontSize: 14,
+      fontStyle: 2500,
+      fontWeight: 2500,
+      borderRadius: 0,
+      lineHeight: '',
+      letterSpacing: 0,
+      left: 0,
+      textAlign: '',
+      color: 'rgba(0, 0, 0, 1)',
+      backgroundColor: 'rgba(0,0,0,0)',
+      fontFamily: '宋体'
+    },
+    styleUnit: {
+      top: "px",
+      left: "px",
+      width: 'px',
+      height: 'px',
+      fontSize: 'px',
+      borderRadius: 'px',
+      letterSpacing: 'px'
+    },
+    attrList: [
+      {
+        key: "name",
+        type: "text",
+        label: '名称',
+        bind: "data"
+      },
+      {
+        key: "show",
+        type: "checkbox",
+        label: '显示',
+        bind: "data"
+      },
+      {
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
+      },
+      {
+        key: "left",
+        type: "number",
+        label: 'x 坐标',
+        bind: "style"
+      },
+      {
+        key: "top",
+        type: "number",
+        label: 'y 坐标',
+        bind: "style"
+      },
+      {
+        key: "width",
+        type: "number",
+        label: '宽',
+        bind: "style"
+      },
+      {
+        key: "height",
+        type: "number",
+        label: '高',
+        bind: "style"
+      },
+      {
+        key: "rotate",
+        type: "number",
+        label: '旋转',
+        bind: "style"
+      },
+    ],
+    eventOptions: [
+      {
+        label: "click",
+        value: "onClick"
+      },
+      {
+        label: "hover",
+        value: "onHover"
+      },
+      {
+        label: "mouseover",
+        value: "onMouseover"
+      }
+    ],
+    events: {
+    },
+    styleList: //todo: 从后台读取组件支持的样式列表
+      [ 
+      ]
   },
 ]
 

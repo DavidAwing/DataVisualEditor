@@ -521,109 +521,28 @@
 
       save() {
 
-        {
-          const componentNameList = [];
-          for (const component of this.canvasComponentData) {
-            if (!component.data || !component.data.name || !component.data.name.trim()) continue;
+        const componentNameList = [];
+        for (const component of this.canvasComponentData) {
+          if (!component.data || !component.data.name || !component.data.name.trim()) continue;
 
-            // todo 去除组件中存在的服务端数据
-            if (component.component === '') {
+          // todo 去除组件中存在的服务端数据
+          if (component.component === '') {
 
-            }
-            const componentName = component.data.name.trim();
-            if (componentNameList.indexOf(componentName) !== -1) {
-              toast('组件名称重复: ' + componentName);
-              return;
-            }
-            componentNameList.push(componentName);
           }
-          saveCanvas(this.currentCanvasName, this.canvasComponentData, this.canvasData)
-          return
+          const componentName = component.data.name.trim();
+          if (componentNameList.indexOf(componentName) !== -1) {
+            toast('组件名称重复: ' + componentName);
+            return;
+          }
+          componentNameList.push(componentName);
         }
-
-
-        {
-          if (this.currentCanvasName == null || this.currentCanvasName.trim() === '') {
-            toast('请设置画布名称...');
-            return false;
+        saveCanvas(this.currentCanvasName, this.canvasComponentData, this.canvasData).then(res => {
+          if (res === true) {
+            toast('保存成功', 'success');
           }
+        })
+        return true
 
-          const componentNameList = [];
-          for (const component of this.canvasComponentData) {
-            if (!component['data'] || !component['data']['name'] || component['data']['name'].trim() === '') continue;
-
-            // todo 去除组件的服务端数据
-            if (component.component === '') {
-            }
-
-            const componentName = component['data']['name'].trim();
-            if (componentNameList.indexOf(componentName) !== -1) {
-              toast('组件名称重复: ' + componentName);
-              return;
-            }
-            componentNameList.push(componentName);
-          }
-
-          this.canvasData.datetime = bi.utils.format(new Date(), 'YYYY/MM/DD HH:mm:ss');
-          const currentCanvasName = this.currentCanvasName;
-          DB.getItem(`bi-user-canvas-data-source-${currentCanvasName}`).then(userCanvasDataSource => {
-            if (userCanvasDataSource !== undefined) {
-              this.canvasData.dataSource.parameters = userCanvasDataSource;
-              DB.removeItem(`bi-user-canvas-data-source-${currentCanvasName}`);
-            }
-
-            const canvasComponentData = JSONfn.stringify(this.canvasComponentData);
-            const canvasData = JSONfn.stringify(this.canvasData);
-
-            const systemVersion = 't0.01';
-            const checkCode = md5(canvasComponentData + '@|||@' + canvasData + '@|||@' + systemVersion);
-
-            const canvasEditorData = {
-              type: 'Canvas-Data',
-              name: currentCanvasName,
-              canvasComponentData: canvasComponentData,
-              canvasData: canvasData,
-              systemVersion: systemVersion,
-              modifyTime: new Date().toString(),
-              checkCode: checkCode,
-            };
-
-            DB.setItem(currentCanvasName, canvasEditorData);
-            axios
-              .post(`/BI-API/Component/SaveCanvasTemplate?name=${currentCanvasName}`, canvasEditorData, {
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-              })
-              .then(response => {
-                if (response.status == 200) {
-                  toast('模板保存成功', 'success');
-                  return;
-                }
-              })
-              .catch(error => {
-                const errorResponse = JSON.parse(JSON.stringify(error));
-                console.warn('保存数据异常', errorResponse);
-              });
-
-            // 保存图片
-            toImage(document.getElementById('editor')).then(image => {
-              axios.post(
-                `/BI-API/Component/SaveCanvasTemplateImage?name=${currentCanvasName}`,
-                image.substring('data:image/png;base64,'.length),
-                {
-                  headers: {
-                    'Content-Type': 'text/plain',
-                  },
-                }
-              );
-            });
-
-            eventBus.$emit('saveEvent', currentCanvasName, canvasEditorData);
-          });
-
-          return true;
-        }
       },
 
       clearCanvas() {

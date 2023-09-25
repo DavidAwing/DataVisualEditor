@@ -5,6 +5,7 @@
 </template>
 
 <script>
+
   import {
     stringToFunction,
     CompileSourcecode,
@@ -30,7 +31,9 @@
   import * as ElementUI from 'element-ui';
   import * as xlsx from 'xlsx-js-style';
   import eventBus from './components/DataVisualEditor/utils/eventBus';
+  import MySharedWorker from './components/DataVisualEditor/utils/shared-worker.worker.js'
   // import * as ts from './compiler/typescript@5.0.4.js';
+
 
   export default {
     name: 'App',
@@ -71,7 +74,54 @@
       window.bi.$route = this.$route
       bi.eventBus = eventBus;
 
- 
+      window.bi.sharedWorker = {
+        worker: null,
+        start: (SharedWorkerConstructor) => {
+          if (!SharedWorkerConstructor) {
+            throw new Error('当前浏览器不支持SharedWorker')
+          }
+          const worker = new SharedWorkerConstructor()
+          worker.port.start()
+          worker.port.onmessage = (e) => {
+            const onmessage = window.bi.sharedWorker.onmessage
+            if (!onmessage) {
+              console.warn(`sharedWorker消息处理函数未定义,消息事件: ${e}`);
+              return
+            } else {
+              onmessage(e)
+            }
+          }
+
+          window.bi.sharedWorker.worker = worker
+          return worker
+        },
+        postMessage: (msg) => {
+          if (window.bi.worker) {
+            throw Error('SharedWorker未定义')
+          }
+          window.bi.sharedWorker.worker.port.postMessage(msg)
+        },
+        onmessage: (event) => {
+
+          console.log('SharedWorker消息: ', event);
+
+          const msgObj = JSON.parse(event.data)
+          switch (msgObj.action) {
+            case 'refresh': {
+              let url = location.hash.match(/\/\w+(?=\?{0,1})/)
+              url = url && url[0]
+              if (url && msgObj.urls && msgObj.urls.includes(url)) {
+                location.reload()
+              }
+              break
+            }
+          }
+        }
+      }
+      window.bi.sharedWorker.start(MySharedWorker)
+
+
+
       bi.utils = {}
 
       bi.utils.getValueByAttributePath = getValueByAttributePath;

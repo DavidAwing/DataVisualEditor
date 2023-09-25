@@ -59,11 +59,11 @@ const routes: Array<RouteConfig> = [
     name: 'DatasourceEditor',
     component: () => import('@/views/DatasourceEditor/index.vue')
   },
-  {
-    path: '/AddDatasource',
-    name: 'AddDatasource',
-    component: () => import('@/views/AddDatasource/index.vue')
-  },
+  // {
+  //   path: '/AddDatasource',
+  //   name: 'AddDatasource',
+  //   component: () => import('@/views/AddDatasource/index.vue')
+  // },
   {
     path: '/WorkFlowEditor',
     name: 'WorkFlowEditor',

@@ -107,6 +107,8 @@ module.exports = defineConfig({
   chainWebpack: config => {
     config.resolve.alias.set("@", path.join(__dirname, "src"))
 
+
+
     // 配置 HtmlWebpackPlugin
     config.plugin('html').tap(args => {
       args[0].template = './public/index.html'; // 可选：指定 HTML 模板文件路径
@@ -123,6 +125,18 @@ module.exports = defineConfig({
       }
       return args;
     });
+
+    config.module
+      .rule('worker')
+      .test(/\.worker\.js$/)
+      .use('worker-loader')
+      .loader('worker-loader')
+      .tap(options => ({ worker: 'SharedWorker' }))
+      .end();
+    config.module.rule('js').exclude.add(/\.worker\.js$/)
+
+    //   // 解决：“window is undefined”报错，这个是因为worker线程中不存在window对象，因此不能直接使用，要用this代替
+    //   config.output.globalObject('this')
 
   },
   devServer: {

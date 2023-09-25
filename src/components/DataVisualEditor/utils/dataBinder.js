@@ -173,10 +173,20 @@ export class TaskManager {
     if (!name)
       return
 
-    if (!task)
+    if (!task) {
       task = TaskManager._taskMap[name].task
-    if (!dataBinder)
+      if (!task) {
+        console.warn(`_updateTask|未找到task: ${name}`);
+        return
+      }
+    }
+    if (!dataBinder) {
       dataBinder = TaskManager._dataBinder[name]
+      if (!dataBinder) {
+        console.warn(`_updateTask|未找到dataBinder: ${name}`);
+        return
+      }
+    }
 
     // 更新数据
     let newSql = dataBinder.sql

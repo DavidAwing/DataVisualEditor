@@ -6,7 +6,6 @@ const path = require('path')
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 var HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin');
-
 function resolve(dir) {
   return path.join(__dirname, dir)
 }

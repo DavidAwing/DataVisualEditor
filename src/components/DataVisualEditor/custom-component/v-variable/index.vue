@@ -1,7 +1,10 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <div class="container">
-    <top-el-dialog
+
+    <my-component></my-component>
+
+    <!-- <top-el-dialog
       :title="element.data.title"
       :visible.sync="element.data.show"
       width="35%"
@@ -16,7 +19,7 @@
       <div>1</div>
       <div>2</div>
       <div>3</div>
-    </draggable>
+    </draggable> -->
   </div>
 </template>
 

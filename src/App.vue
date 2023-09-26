@@ -12,29 +12,29 @@
     CompileToModule,
     CompileTypescriptToIIFE,
   } from './components/DataVisualEditor/utils/compiler.ts';
-
   import {
     getValueByAttributePath,
     setJsonAttribute,
     SetValueAndAttributePathFromKey,
   } from './components/DataVisualEditor/utils/chartUtils';
-
   import { printByTemplate, compileVueTemplate } from './components/DataVisualEditor/utils/print';
-
   import Vue from 'vue';
   import axios from 'axios';
   import moment from 'moment';
   import BigNumber from 'bignumber.js';
-  const JSONfn = require('jsonfn').JSONfn;
   import store from '@/store';
-  const schedule = require('node-schedule');
   import * as ElementUI from 'element-ui';
   import * as xlsx from 'xlsx-js-style';
   import eventBus from './components/DataVisualEditor/utils/eventBus';
   import MySharedWorker from './components/DataVisualEditor/utils/shared-worker.worker.js'
+
+  // const parse = require('@vue/compiler-sfc');
+  const VueTemplateCompiler = require('vue-template-compiler');
+
+
   // import * as ts from './compiler/typescript@5.0.4.js';
-
-
+  const JSONfn = require('jsonfn').JSONfn;
+  const schedule = require('node-schedule');
   export default {
     name: 'App',
     data() {
@@ -70,7 +70,7 @@
         console.log('在线编译less', output.css);
       });
 
-
+      // console.log('编译vue模板', parse);
 
 
 
@@ -90,6 +90,7 @@
       window.bi.ElementUI = ElementUI;
       window.bi.xlsx = xlsx;
       window.bi.$ = $;
+      window.bi.VueTemplateCompiler = VueTemplateCompiler;
       window.bi.$route = this.$route
       bi.eventBus = eventBus;
 
@@ -280,6 +281,31 @@
         }
 
       }
+
+
+
+
+
+/* 编译vue模板 @转换成v-on:  */
+      const template = `<div v-on:click='test'>{{ message }}</div>`
+      var compiled = Vue.compile(template);
+      Vue.component('my-component', {
+        render: compiled.render,
+        staticRenderFns: compiled.staticRenderFns,
+        data() {
+          return {
+            message: 'Hello world!'
+          }
+        },
+        methods: {
+          test() {
+            console.log('点击事件', compiled);
+          }
+        }
+      })
+
+
+
 
       axios
         .get('/BI-API/Component/GetGlobalModuleScript', { timeout: 6000 })

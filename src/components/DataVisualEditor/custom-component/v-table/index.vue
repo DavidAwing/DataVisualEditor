@@ -16,10 +16,10 @@
     <el-pagination background layout="prev, pager, next" :total="10" v-if="false"> </el-pagination>
 
     <top-el-dialog title="编辑表头" :visible.sync="element.data.editColumnsDialog" width="35%" v-el-drag-dialog center>
-      <el-form :inline="true" label-width="80px">
-        <el-form-item label="列名" class="full-width">
+      <el-form :inline="true" label-width="auto">
+        <el-form-item label="列名" class="full-width" :style="{ width: '100%' }">
           <el-select v-model="selected" clearable filterable placeholder="" autocomplete="off" @blur="addColumn"
-            @clear="removeColumn">
+            @clear="removeColumn" class="full-width" :style="{ width: '100%' }">
             <el-option v-for="(item, index) in element.data.columns" :key="index" :label="item.label"
               :value="item.prop">
             </el-option>
@@ -37,14 +37,12 @@
           <el-input v-model="column.width" type="number" :step="1" :min="0" autocomplete="off"></el-input>
         </el-form-item>
 
-        <el-form-item label="对齐" class="full-width">
-          <div>
-            <el-select v-model="column.align" placeholder="" autocomplete="off">
+        <el-form-item label="对齐" class="full-width" :style="{ width: '100%' }">
+            <el-select v-model="column.align" placeholder="" autocomplete="off" class="full-width" :style="{ width: '100%' }">
               <el-option label="left" value="left"> </el-option>
               <el-option label="center" value="center"> </el-option>
               <el-option label="right" value="right"> </el-option>
             </el-select>
-          </div>
         </el-form-item>
       </el-form>
 
@@ -54,7 +52,7 @@
       </span>
     </top-el-dialog>
 
-    <top-el-dialog title="编辑样式" :visible.sync="element.data.editStyleDialog" width="40%" v-el-drag-dialog center>
+    <top-el-dialog title="编辑样式" :visible.sync="element.data.editStyleDialog" width="35%" v-el-drag-dialog center>
       <div class="block">
         <el-carousel trigger="click" height="350px" :autoplay="false" @change="index => (styleindex = index)">
           <el-carousel-item v-for="(item, index) in styleList" :key="index">

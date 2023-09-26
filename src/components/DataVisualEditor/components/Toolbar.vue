@@ -578,7 +578,6 @@
             DB.setItem('CurrentCanvasName', this.currentCanvasName)
           }
 
-          // todo 通知后台删除
           axios.get(`/BI-API/Component/DeleteCanvasTemplate?name=${currentCanvasName}`)
 
         }).catch(async () => {

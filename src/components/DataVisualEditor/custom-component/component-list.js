@@ -988,7 +988,7 @@ const list = [
   // 日期选择器
   {
     component: 'v-date-picker',
-    label: '日期',
+    label: '日期时间',
     propValue: '',
     icon: '',
     data: {
@@ -998,8 +998,9 @@ const list = [
       isModal: false,
       date: "",
       placeholder: "选择日期",
-      format: "yyyy 年 MM 月 dd 日",
-      align: "left"
+      format: "yyyy年 MM月 dd日",
+      align: "left",
+      type: "date"
     },
     eventOptions: [
     ],
@@ -1068,6 +1069,26 @@ const list = [
         type: "number",
         label: '旋转',
         bind: "style"
+      },
+      {
+        key: "type",
+        type: "select",
+        label: '模式',
+        bind: 'data',
+        options: [
+          {
+            label: '日期',
+            value: 'date'
+          },
+          {
+            label: '日期时间',
+            value: 'datetime',
+          },
+          {
+            label: '时间',
+            value: 'time',
+          }
+        ]
       },
       {
         key: "date",
@@ -3173,7 +3194,7 @@ const list = [
     events: {
     },
     styleList: //todo: 从后台读取组件支持的样式列表
-      [ 
+      [
       ]
   },
 ]

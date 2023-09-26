@@ -48,6 +48,24 @@ function RandomIndex(min, max, i) {
   return index;
 }
 
+//字符串转base64
+export function strToBase64(str) {
+  // 对字符串进行编码
+  let encode = encodeURI(str);
+  // 对编码的字符串转化base64
+  let base64 = btoa(encode);
+  return base64;
+}
+
+// base64转字符串
+export function Base64ToStr(base64) {
+  // 对base64转编码
+  let decode = atob(base64);
+  // 编码转字符串
+  let str = decodeURI(decode);
+  return str;
+}
+
 
 /**
  * 随机生成字符串
@@ -197,23 +215,7 @@ export function warn(params) {
 
 }
 
-//字符串转base64
-export function strToBase64(str) {
-  // 对字符串进行编码
-  let encode = encodeURI(str);
-  // 对编码的字符串转化base64
-  let base64 = btoa(encode);
-  return base64;
-}
 
-// base64转字符串
-export function Base64ToStr(base64) {
-  // 对base64转编码
-  let decode = atob(base64);
-  // 编码转字符串
-  let str = decodeURI(decode);
-  return str;
-}
 
 
 export function isArrayInclude(arr, val) {

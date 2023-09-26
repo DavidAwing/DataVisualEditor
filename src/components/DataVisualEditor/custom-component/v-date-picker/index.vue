@@ -35,19 +35,18 @@
     created() {
 
       this.$watch(() => this.element.data.type, (val) => {
+        const data = this.element.data
         if (val === 'date') {
-          this.element.data.format = 'yyyy年 MM月 dd日'
-          this.element.data.placeholder = '选择日期'
-          this.element.data.date = null
+          data.format = 'yyyy年 MM月 dd日'
+          data.placeholder = '选择日期'
         } else if (val === 'datetime') {
-          this.element.data.format = 'yyyy年 MM月 dd日 HH时mm分ss秒'
-          this.element.data.placeholder = '选择日期和时间'
-          this.element.data.date = null
+          data.format = 'yyyy年 MM月 dd日 HH时mm分ss秒'
+          data.placeholder = '选择日期和时间'
         } else if (val === 'time') {
-          this.element.data.format = 'HH时mm分ss秒'
-          this.element.data.placeholder = '选择时间'
-          this.element.data.date = null
+          data.format = 'HH时mm分ss秒'
+          data.placeholder = '选择时间'
         }
+        data.date = null
       })
 
     },

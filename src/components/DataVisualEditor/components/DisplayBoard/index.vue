@@ -44,22 +44,6 @@
   // );
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   export default {
     directives: {
       elDragDialog,
@@ -236,11 +220,8 @@
       },
 
       handleComponentDialogBeforeClose(done, event, component) {
-        done(false)
-
-        setTimeout(() => {
-          done(true)
-        }, 1000);
+        bi.debug(`handleComponentDialogBeforeClose|关闭对话框`)
+        done(true)
       }
     },
   };

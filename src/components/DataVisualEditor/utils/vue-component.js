@@ -120,17 +120,15 @@ Vue.component('component-dialog', {
   methods: {
     showing() {
 
-      console.log('设置对话框');
-
       $(this.$el).find('.el-dialog').css('position', 'absolute');
       const component = this.element.component === 'Group' ? $(this.$el).find('.group.component') : $(this.$el).find('.el-dialog>.el-dialog__body>div>.component')
       component.css('width', '100%');
       component.css('height', '100%');
 
-      this.element.dialogData = { align: 'top|center' }
-      if (!this.element.dialogData)
-        return
-      let { align, left, top } = this.element.dialogData
+
+      const align = this.element.data.dialogAlign
+      let left = 0
+      let top = 0
       if (!left)
         left = '0px'
       if (!top)
@@ -146,7 +144,6 @@ Vue.component('component-dialog', {
         left += 'px'
       if (isNumeric(top))
         top += 'px'
-
 
       const clientWidth = document.body.clientWidth
       const clientHeight = document.body.clientHeight

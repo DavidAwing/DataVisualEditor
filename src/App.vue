@@ -57,6 +57,25 @@
     },
     created() {
 
+
+      const lessCode = `
+        @primary-color: #007bff;
+        body {
+          background-color: @primary-color;
+        }
+      `;
+      less.render(lessCode).then(output => {
+        window.test = output
+        console.log('在线编译less', output);
+        console.log('在线编译less', output.css);
+      });
+
+
+
+
+
+
+
       window.bi = new Object();
       window.bi.version = 'z0.2.1'
       window.bi.Vue = Vue;
@@ -73,6 +92,12 @@
       window.bi.$ = $;
       window.bi.$route = this.$route
       bi.eventBus = eventBus;
+
+      window.bi.debug = (msg) => {
+        if (window.BI_DEBUG) {
+          console.log(msg);
+        }
+      }
 
       window.bi.sharedWorker = {
         worker: null,

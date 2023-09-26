@@ -107,8 +107,6 @@ module.exports = defineConfig({
   chainWebpack: config => {
     config.resolve.alias.set("@", path.join(__dirname, "src"))
 
-
-
     // 配置 HtmlWebpackPlugin
     config.plugin('html').tap(args => {
       args[0].template = './public/index.html'; // 可选：指定 HTML 模板文件路径
@@ -120,6 +118,7 @@ module.exports = defineConfig({
           "./compiler/typescript@5.0.4.js",
           "./compiler/babel@7.15.0.js",
           "./compiler/systemjs@6.11.0.js",
+          "./compiler/less@4.js",
         ],
         css: []
       }

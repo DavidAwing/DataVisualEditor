@@ -96,7 +96,8 @@ export default {
           name: getRandStr(),
           show: true,
           isAlign: false,
-          isModal: false
+          isModal: false,
+          dialogAlign: 'top|center'
         },
         styleUnit: {
           top: "px",
@@ -173,6 +174,34 @@ export default {
             bind: "style",
             options: {}
           },
+          {
+            key: "dialogAlign",
+            type: "select",
+            label: '位置',
+            bind: 'data',
+            options: [
+              {
+                label: '居中',
+                value: 'center',
+              },
+              {
+                label: '上对齐,左右居中',
+                value: 'top|center'
+              },
+              {
+                label: '左对齐,上下居中',
+                value: 'left|center'
+              },
+              {
+                label: '左上对齐',
+                value: 'left|top'
+              },
+              {
+                label: '无',
+                value: 'none',
+              }
+            ]
+          }
         ]
       }
 

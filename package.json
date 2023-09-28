@@ -69,6 +69,7 @@
     "js-beautify": "^1.14.9",
     "js-cookie": "^3.0.1",
     "jsbarcode": "^3.11.5",
+    "json-rules-engine": "^6.4.2",
     "jsonfn": "^0.31.0",
     "jspdf": "^2.5.1",
     "lodash-es": "^4.17.21",

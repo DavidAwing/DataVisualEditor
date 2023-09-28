@@ -572,10 +572,12 @@ export function getCanvasStyle(canvasData) {
 
   let width = ""
   let height = ""
-
-  if (canvasData.unit === "%") {
-    width = changeStyleWithScale(canvasData.width) / 100 * screen.width + "px"
-    height = changeStyleWithScale(canvasData.height) / 100 * screen.height + "px"
+  if (canvasData.unit === "%" && !location.hash.includes('/editor')) {
+    width = canvasData.width + "vw"
+    height = canvasData.height + "vh"
+  } else if (canvasData.unit === "%") {
+    width = changeStyleWithScale(canvasData.width) / 100 * (screen.width) + "px"
+    height = changeStyleWithScale(canvasData.height) / 100 * (screen.height) + "px"
   } else {
     width = changeStyleWithScale(canvasData.width) + canvasData.unit
     height = changeStyleWithScale(canvasData.height) + canvasData.unit

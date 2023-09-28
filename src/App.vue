@@ -35,6 +35,8 @@
   // import * as ts from './compiler/typescript@5.0.4.js';
   const JSONfn = require('jsonfn').JSONfn;
   const schedule = require('node-schedule');
+  const { Engine } = require('json-rules-engine')
+
   export default {
     name: 'App',
     data() {
@@ -185,7 +187,6 @@
 
         return _(target, source)
       }
-      bi.utils.test = "abc123";
       bi.utils.getComponentData = (name) => {
         return bi.store.state.canvasComponentData.find(item => item.data.name === name)
       }
@@ -208,7 +209,6 @@
             return (dom, attr) => getComputedStyle(dom, false)[attr]
           }
         })()
-
 
         const prevLeft = getStyle(dragDom, 'left')
         const prevTop = getStyle(dragDom, 'top')
@@ -286,27 +286,6 @@
 
 
 
-/* 编译vue模板 @转换成v-on:  */
-      const template = `<div v-on:click='test'>{{ message }}</div>`
-      var compiled = Vue.compile(template);
-      Vue.component('my-component', {
-        render: compiled.render,
-        staticRenderFns: compiled.staticRenderFns,
-        data() {
-          return {
-            message: 'Hello world!'
-          }
-        },
-        methods: {
-          test() {
-            console.log('点击事件', compiled);
-          }
-        }
-      })
-
-
-
-
       axios
         .get('/BI-API/Component/GetGlobalModuleScript', { timeout: 6000 })
         .then(({ data }) => {
@@ -371,7 +350,6 @@
         .catch(error => {
           console.error(`挂载全局脚本异常: `, error);
         })
-        .finally(() => { });
 
 
 

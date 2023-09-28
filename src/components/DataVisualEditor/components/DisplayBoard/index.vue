@@ -1,6 +1,5 @@
 <template>
-  <div class="canvas-container">
-    <div class="canvas" :style="canvasStyle">
+  <div class="canvas-container" :style="canvasStyle">
 
       <template v-for="(item, index) in canvasComponentData">
         <component-dialog v-if="item.data.isModal" :key="item.id" :visible.sync="item.data.show" width="35%"
@@ -12,7 +11,6 @@
         <ComponentWrapper v-else :key="index" :config="item" />
       </template>
 
-    </div>
   </div>
 </template>
 

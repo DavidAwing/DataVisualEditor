@@ -25,118 +25,171 @@
 
 <script lang="js">
 
-/*
+  /*
 
-*/
+  */
 
 
-import Vue from "vue";
-import { mapState } from "vuex";
-import axios from "axios";
-import { keycodes } from "../../utils/shortcutKey";
-import ComponentBase from "../ComponentBase";
-import { getRandStr } from "../../utils/utils";
-import VResize from 'v-resize'
-import eventBus from '../../utils/eventBus'
-import elDragDialog from "../../directive/el-drag-dialog";
-import draggable from 'vuedraggable';
-import tableFit from "../../directive/tableFit";
-import {
-  stringToFunction,
-  CompileSourcecode,
-  CompileToModule,
-  CompileTypescriptToIIFE,
-} from '../../utils/compiler.ts';
+  import Vue from "vue";
+  import { mapState } from "vuex";
+  import axios from "axios";
+  import { keycodes } from "../../utils/shortcutKey";
+  import ComponentBase from "../ComponentBase";
+  import { getRandStr } from "../../utils/utils";
+  import VResize from 'v-resize'
+  import eventBus from '../../utils/eventBus'
+  import elDragDialog from "../../directive/el-drag-dialog";
+  import draggable from 'vuedraggable';
+  import tableFit from "../../directive/tableFit";
+  import {
+    stringToFunction,
+    CompileSourcecode,
+    CompileToModule,
+    CompileTypescriptToIIFE,
+  } from '../../utils/compiler.ts';
 
-import {
-  styleData,
-  addSelectorToStyle,
-  isStyleExist,
-  addStyleToHead,
-  setStyleValues,
-  getCssKeys,
-  getStyleSelectorStrById,
-  updateStyle,
-  convertToCss,
-  removeStyleById,
-  parseCssExpressions,
-  addStyleListToHead,
-  generateStyleId,
-  removeAllStyleNotOfCanvasName,
-} from '../../utils/style';
-import BaseMixins from '../BaseMixins';
+  import {
+    styleData,
+    addSelectorToStyle,
+    isStyleExist,
+    addStyleToHead,
+    setStyleValues,
+    getCssKeys,
+    getStyleSelectorStrById,
+    updateStyle,
+    convertToCss,
+    removeStyleById,
+    parseCssExpressions,
+    addStyleListToHead,
+    generateStyleId,
+    removeAllStyleNotOfCanvasName,
+  } from '../../utils/style';
+  import BaseMixins from '../BaseMixins';
 
-export default {
-  extends: ComponentBase,
-  mixins: [BaseMixins],
-  components: {
-    draggable,
-  },
-  directives: {
-    resize: VResize,
-    elDragDialog
-  },
-  props: {
-
-  },
-  mixins: [],
-  data() {
-    return {
-
-    };
-  },
-  computed: {
-    list() {
-      return []
+  export default {
+    extends: ComponentBase,
+    mixins: [BaseMixins],
+    components: {
+      draggable,
     },
-    GetComponentList(){
+    directives: {
+      resize: VResize,
+      elDragDialog
+    },
+    props: {
 
+    },
+    mixins: [],
+    data() {
       return {
-        'height': '100%',
-        'display': 'flex',
-        'flex-direction': this.element.data.componentListFlexDirection,
-        'flex-wrap': this.element.data.componentListFlexWrap
+
+      };
+    },
+    computed: {
+      list() {
+        return []
+      },
+      GetComponentList() {
+
+        return {
+          'height': '100%',
+          'display': 'flex',
+          'flex-direction': this.element.data.componentListFlexDirection,
+          'flex-wrap': this.element.data.componentListFlexWrap
+        }
       }
+    },
+    watch: {
+      column: {
+        handler: function (val) {
+        },
+        deep: true,
+      },
+
+      element: {
+        handler: function (val, old) {
+        },
+        deep: true,
+      },
+
+    },
+    beforeCreate() {
+
+    },
+    created() {
+
+      eventBus.$on("onDrop", (name) => {
+        console.log("添加组件");
+      });
+
+
+      setTimeout(() => {
+
+        /* 编译vue模板 @转换成v-on:  */
+        const template = `<div v-on:click='test'>{{ message }}</div>`
+        var compiled = Vue.compile(template);
+        this.$options.components['my-component'] = {
+          render: compiled.render,
+          staticRenderFns: compiled.staticRenderFns,
+          data() {
+            return {
+              message: 'Hello world!'
+            }
+          },
+          props: {
+            ppp: {
+              type: String,
+              default: "测试默认数据"
+            }
+          },
+          mounted() {
+            console.log('测试模板数据111', this.ppp);
+
+            setTimeout(() => {
+              this.message = 'sdfsdf'
+            }, 300);
+          },
+          methods: {
+            test() {
+              console.log('测试模板数据11133333', compiled);
+            }
+          },
+          watch: {
+            message: (val) => {
+              console.log('测试模板数据1观察 ', val);
+            }
+            // message: {
+            //   handler: function (val) {
+            //     console.log('测试模板数据1观察 ', val);
+            //   },
+            //   deep: true,
+            // },
+          }
+        }
+
+        this.$forceUpdate()
+
+        console.log('动态注册');
+
+      }, 3000);
+
+
+
+    },
+    mounted() {
+
+      console.log("遮罩层...");
+
+    },
+    updated() {
+
+    },
+    methods: {
+
     }
-  },
-  watch: {
-    column: {
-      handler: function (val) {
-      },
-      deep: true,
-    },
-
-    element: {
-      handler: function (val, old) {
-      },
-      deep: true,
-    },
-
-  },
-  beforeCreate() {
-
-  },
-  created() {
-
-    eventBus.$on("onDrop", (name)=> {
-      console.log("添加组件");
-    });
-
-  },
-  mounted() {
-
-    console.log("遮罩层...");
-
-  },
-  updated() {
-
-  },
-  methods: {
-
-  }
-};
+  };
 </script>
 
 <style lang="less" scoped>
-@import 'index.less';
+  @import 'index.less';
 </style>

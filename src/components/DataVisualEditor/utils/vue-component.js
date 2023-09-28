@@ -1,4 +1,4 @@
-
+/* global $ */
 import Vue from 'vue'
 import { Dialog } from 'element-ui';
 

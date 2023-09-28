@@ -8,7 +8,7 @@
           @mousedown.native="onDialogWrapperMousedown($event, item)" @mouseup.native="onDialogWrapperMouseup($event,item)">
           <ComponentWrapper :key="index" :config="item" />
         </component-dialog>
-        <ComponentWrapper v-else :key="index" :config="item" />
+        <ComponentWrapper  v-else :key="index" :config="item" />
       </template>
 
   </div>

@@ -1,5 +1,5 @@
 <template>
-  <div @click="handleClick" class="shape" :style="getComponentStyle()">
+  <div @click="handleClick" class="shape">
     <component
       :is="config.component"
       ref="component"
@@ -49,7 +49,6 @@ export default {
   },
   methods: {
     getComponentStyle() {
-      console.log('sadfdsaf', getStyle(this.config.style, this.config.styleUnit,  this.canvasData.scale / 100));
       return getStyle(this.config.style, this.config.styleUnit,  this.canvasData.scale / 100);
     },
 

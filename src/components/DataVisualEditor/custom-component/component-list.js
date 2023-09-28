@@ -1603,22 +1603,22 @@ const list = [
       isModal: false,
       columns: [
         {
-          "prop": "date",
-          "label": "日期",
-          "width": 10,
-          "align": "center"
+          prop: "date",
+          label: "日期",
+          width: 10,
+          align: "center"
         },
         {
-          "prop": "name",
-          "label": "姓名",
-          "width": 10,
-          "align": "center"
+          prop: "name",
+          label: "姓名",
+          width: 10,
+          align: "center"
         },
         {
-          "prop": "province",
-          "label": "省份",
-          "width": 10,
-          "align": "center"
+          prop: "province",
+          label: "省份",
+          width: 10,
+          align: "center"
         },
         {
           "prop": "city",
@@ -2815,11 +2815,9 @@ const list = [
   {
     uniqueId: '',
     component: 'v-variable',
-    label: '可变',
+    label: '可变组件',
     icon: 'wenben',
     data: {
-      isModal: false,
-      text: "请输入文本...",
       verticalAlign: "",
       writingMode: "horizontal",
       show: true,
@@ -2828,6 +2826,8 @@ const list = [
       isDrainable: true,
       componentListFlexDirection: "row",
       componentListFlexWrap: "wrap",
+      isModal: false,
+      componentName: ""
     },
     attrExcludes: [],
     style: {
@@ -2874,6 +2874,12 @@ const list = [
         bind: 'data'
       },
       {
+        key: "isModal",
+        type: "checkbox",
+        label: '悬浮框模式',
+        bind: "data"
+      },
+      {
         key: "isDrainable",
         type: "checkbox",
         label: '可拖拽',
@@ -2910,164 +2916,11 @@ const list = [
         bind: "style"
       },
       {
-        key: "componentListFlexDirection",
-        type: "select",
-        label: '方向',
-        bind: 'data',
-        options: [
-          {
-            label: '一排',
-            value: 'row'
-          },
-          {
-            label: '一排反向',
-            value: 'row-reverse'
-          },
-          {
-            label: '一列',
-            value: 'column'
-          },
-          {
-            label: '一列反向',
-            value: 'column-reverse'
-          }
-        ]
-      },
-      {
-        key: "componentListFlexWrap",
-        type: "select",
-        label: '换行',
-        bind: 'data',
-        options: [
-          {
-            label: '单行',
-            value: 'nowrap'
-          },
-          {
-            label: '换行',
-            value: 'wrap'
-          },
-          {
-            label: '反向换行',
-            value: 'wrap-reverse'
-          }
-        ]
-      },
-
-      {
-        key: "backgroundColor",
-        type: "color-picker",
-        label: '背景色',
-        bind: 'style',
-        options: {
-          showAlpha: false
-        }
-      },
-      {
-        key: "borderRadius",
-        type: "number",
-        label: '边框半径',
-        bind: 'style'
-      },
-      {
-        key: "fontSize",
-        type: "number",
-        label: '字体大小',
-        bind: 'style'
-      },
-      {
-        key: "fontWeight",
-        type: "number",
-        label: '字体粗细',
-        bind: 'style'
-      },
-      {
-        key: "lineHeight",
-        type: "number",
-        label: '行高',
-        bind: 'style'
-      },
-      {
-        key: "letterSpacing",
-        type: "number",
-        label: '字间距',
-        bind: 'style'
-      },
-      {
-        key: "writingMode",
-        type: "select",
-        label: '文字排列',
-        bind: 'data',
-        options: [
-          {
-            label: '水平',
-            value: 'horizontal'
-          },
-          {
-            label: '垂直',
-            value: 'vertical'
-          }
-        ]
-      },
-      {
-        key: "textAlign",
-        type: "select",
-        label: '左右对齐',
-        bind: 'style',
-        options: [
-          {
-            label: '左对齐',
-            value: 'left'
-          },
-          {
-            label: '居中',
-            value: 'center',
-          },
-          {
-            label: '右对齐',
-            value: 'right',
-          }
-        ]
-      },
-      {
-        key: "verticalAlign",
-        type: "select",
-        label: '垂直对齐',
-        bind: 'data',
-        options: [
-          {
-            label: '上对齐',
-            value: 'top'
-          },
-          {
-            label: '居中',
-            value: 'middle',
-          },
-          {
-            label: '下对齐',
-            value: 'bottom',
-          }
-        ]
-      },
-      {
-        key: "opacity",
-        type: "number",
-        label: '透明度',
-        bind: 'style'
-      },
-      {
-        key: "fontFamily",
-        type: "select",
-        label: '字体',
-        options: fontFamilyOpts,
-        bind: 'style'
-      },
-      {
-        key: "text",
-        type: "textarea",
-        label: '文本',
+        key: "componentName",
+        type: "text",
+        label: '组件名称',
         bind: "data"
-      }
+      },
     ],
     eventOptions: [
       {

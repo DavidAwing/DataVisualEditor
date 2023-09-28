@@ -18,7 +18,7 @@ import runAnimation from "../../utils/runAnimation";
 import { mixins } from "../../utils/events";
 import { mapState } from "vuex";
 
- 
+
 
 export default {
   mixins: [mixins],
@@ -49,6 +49,7 @@ export default {
   },
   methods: {
     getComponentStyle() {
+      console.log('sadfdsaf', getStyle(this.config.style, this.config.styleUnit,  this.canvasData.scale / 100));
       return getStyle(this.config.style, this.config.styleUnit,  this.canvasData.scale / 100);
     },
 

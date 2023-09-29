@@ -175,6 +175,15 @@ export default {
             options: {}
           },
           {
+            key: "backgroundColor",
+            type: "color-picker",
+            label: '背景色',
+            bind: 'style',
+            options: {
+              showAlpha: true
+            }
+          },
+          {
             key: "dialogAlign",
             type: "select",
             label: '位置',

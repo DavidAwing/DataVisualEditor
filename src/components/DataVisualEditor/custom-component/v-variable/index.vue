@@ -1,8 +1,9 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <div class="v-variable" >
-    <v-variable-component ref="variable-component" />
+  <div style="width: 100%;height: 100%;">
+    <v-variable-component  class="v-variable" ref="variable-component" />
   </div>
+
 </template>
 
 <script lang="js">
@@ -98,6 +99,7 @@
     },
     beforeCreate() {
 
+
     },
     created() {
 
@@ -105,23 +107,24 @@
         console.log("添加组件");
       });
 
-
       if (!location.hash.includes('/editor') && this.element.data.componentName) {
         this.element.style.backgroundColor = 'transparent'
       }
 
-
       this.$watch(() => this.element.data.componentName, async (val) => {
 
+        console.log('可变组件');
         if (!val) {
+          this.$options.components['v-variable-component'] = null
+          this.$forceUpdate()
           return
         }
-
-
 
         const { data } = await axios.get(`/BI-API/Component/GetVueComponent?name=${val}`)
         if (!data) {
           console.warn(`可变组件${val}未找到`);
+          this.$options.components['v-variable-component'] = null
+          this.$forceUpdate()
           return
         }
 
@@ -142,9 +145,7 @@
         this.$forceUpdate()
 
         this.$nextTick(() => {
-          if (this.element.data.isDrainable) {
-            bi.utils.makeDraggable(this.$refs['variable-component'].$el)
-          }
+
         })
 
         // const component = {

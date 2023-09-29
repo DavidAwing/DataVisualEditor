@@ -1,3 +1,5 @@
+
+
 import Vue, { PropType, VNode, CreateElement } from "vue";
 import { Component, Prop, Emit, Watch } from 'vue-property-decorator'
 import { getRandStr } from "../../utils/utils";
@@ -55,6 +57,8 @@ export default class ComponentBase extends Vue {
 
   public mounted() {
     this.onEvent('onMounted')
+
+
 
 
     // <top-el-dialog

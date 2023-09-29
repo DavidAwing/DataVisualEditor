@@ -2823,7 +2823,7 @@ const list = [
       show: true,
       isAlign: false,
       title: "",
-      isDrainable: true,
+      isDrag: true,
       componentListFlexDirection: "row",
       componentListFlexWrap: "wrap",
       isModal: false,
@@ -2880,7 +2880,7 @@ const list = [
         bind: "data"
       },
       {
-        key: "isDrainable",
+        key: "isDrag",
         type: "checkbox",
         label: '可拖拽',
         bind: 'data'

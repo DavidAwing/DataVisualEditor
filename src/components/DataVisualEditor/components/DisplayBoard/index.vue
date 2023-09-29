@@ -1,14 +1,14 @@
 <template>
   <div class="canvas-container" :style="canvasStyle">
 
-      <template v-for="(item, index) in canvasComponentData">
+      <template v-for="(item, index) in canvasComponentData" >
         <component-dialog v-if="item.data.isModal" :key="item.id" :visible.sync="item.data.show" width="35%"
           :element="item" v-el-drag-dialog center
           :before-close="done=>handleComponentDialogBeforeClose(done,$event, item)"
-          @mousedown.native="onDialogWrapperMousedown($event, item)" @mouseup.native="onDialogWrapperMouseup($event,item)">
-          <ComponentWrapper :key="index" :config="item" />
+          @mouseup.native="onDialogWrapperMouseup($event,item)">
+          <ComponentWrapper :key="index" :element="item" />
         </component-dialog>
-        <ComponentWrapper  v-else :key="index" :config="item" />
+        <ComponentWrapper  v-else :key="index" :element="item" />
       </template>
 
   </div>
@@ -95,7 +95,11 @@
       if (this.id !== undefined) {
       }
     },
-    mounted() { },
+    mounted() {
+
+      console.log('tests', this.$refs);
+
+     },
     updated() { },
     watch: {
       show(val) {

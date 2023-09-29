@@ -191,11 +191,11 @@
         return bi.store.state.canvasComponentData.find(item => item.data.name === name)
       }
 
-      bi.utils.makeDraggable = function makeDraggable(e) {
+      bi.utils.makeDraggable = function makeDraggable(e, callback) {
 
         if (e instanceof HTMLElement) {
           e.onmousedown = event =>
-            makeDraggable(event)
+            makeDraggable(event, callback)
           return
         }
 
@@ -206,7 +206,19 @@
           if (window.document.currentStyle) {
             return (dom, attr) => dom.currentStyle[attr]
           } else {
-            return (dom, attr) => getComputedStyle(dom, false)[attr]
+            return (dom, attr) => {
+              let val = null
+              if (['bottom','height', 'left', 'right', 'top', 'width'].includes(attr)) {
+                val = dom.getBoundingClientRect()[attr] + 'px'
+              } else {
+                val = getComputedStyle(dom, false)[attr]
+              }
+
+              if (val === 'auto') {
+                throw Error('获取元素样式无效')
+              }
+              return val
+            }
           }
         })()
 
@@ -254,8 +266,13 @@
           styT = +styT.replace(/\px/g, '')
         }
 
-        document.onmousemove = function (e) {
+        document.onmousemove = callback ? function (e) {
+          // 通过事件委托，计算移动的距离
+          let left = e.clientX - disX
+          let top = e.clientY - disY
 
+          callback(left + styL, top + styT)
+        } : function (e) {
           // 通过事件委托，计算移动的距离
           let left = e.clientX - disX
           let top = e.clientY - disY
@@ -274,11 +291,13 @@
           dragDom.style.cssText += `;left:${left + styL}px;top:${top + styT}px;`
         }
 
-
         document.onmouseup = function () {
           document.onmousemove = null
+          dragDom.onmousedown = null
+          dragDom.onmousemove = null
           document.onmouseup = null
         }
+
 
       }
 

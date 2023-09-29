@@ -126,7 +126,7 @@ Vue.component('component-dialog', {
       component.css('height', '100%');
 
 
-      const align = this.element.data.dialogAlign
+      const align = this.element.data.dialogAlign || 'center'
       let left = 0
       let top = 0
       if (!left)
@@ -171,6 +171,8 @@ Vue.component('component-dialog', {
         shape.css('transform', `translateX(${0}px) translateY(${0}px) rotate(${rotate}deg)`)
       }
 
+      console.log('足迹的', shape.css('transform'));
+
       if (location.href.includes('/editor')) {
 
       } else if (location.href.includes('/viewer')) {
@@ -184,9 +186,6 @@ Vue.component('component-dialog', {
 
         this.$nextTick(() => {
 
-          if (val) {
-
-          }
         });
       },
       deep: true,

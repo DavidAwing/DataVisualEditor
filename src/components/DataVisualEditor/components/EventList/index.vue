@@ -3,8 +3,8 @@
     <div class="div-events">
       <el-button @click="isShowEvent = true">添加事件</el-button>
       <div>
-        <el-tag v-for="event in Object.keys(curComponent.events)" :key="event" closable @close="removeEvent(event)">
-          {{ event }}
+        <el-tag v-for="event in Object.keys(curComponent.events)" :key="event" closable @close="removeEvent(event)" @click="showEventDialog($event)" class="event-tag">
+          <span>{{ event }}</span>
         </el-tag>
       </div>
     </div>
@@ -32,7 +32,7 @@
           </el-select>
         </div>
 
-        <div style="margin-top: 8px; margin-left: 8px; margin-right: 8px; flex: 1; overflow-y: scroll">
+        <div style="margin-top: 8px; margin-left: 8px; margin-right: 8px; flex: 1; overflow-y: hidden">
           <!-- <button @click="changeDb">修改数据库</button> -->
           <js-editor ref="jsEditor" />
           <!-- <json-editor ref="jsonEditor" v-model="jsonValue" /> -->
@@ -138,14 +138,15 @@ export default {
         if (!event) {
           return JSONfn.stringify(`function ${this.selectedEvent}(param) {
 
-    const component = param.component
-    const event = param.event
-    const element = param.element
+    const component = param.component;
+    const event = param.event;
+    const element = param.element;
     console.log("组件${this.selectedEvent}事件", component, event, element);
 
 }`);
         }
-        return JSONfn.stringify(event);
+
+        return JSONfn.stringify(event).replace(/^("*)function\s+anonymous\(/, `"function ${this.selectedEvent}(`);
       },
       set(newValue) {
         this.curComponent.events[this.selectedEvent] = newValue;
@@ -158,7 +159,6 @@ export default {
       this.$refs.jsEditor.updateDoc(this.selectedEventCode);
     },
     isShowEvent() {
-      console.log('组件显示', this.isShowEvent);
       if (this.isShowEvent) {
         this.selectedEvent = null;
       }
@@ -193,6 +193,13 @@ export default {
         toast('脚本编译发生错误: ' + error.message + '\n' + error.stack);
       }
     },
+
+    showEventDialog(event) {
+      this.isShowEvent = true;
+      this.$nextTick().then(() => {
+        this.selectedEvent = event.target.textContent
+      })
+    }
   },
 };
 </script>

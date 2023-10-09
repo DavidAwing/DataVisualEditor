@@ -38,7 +38,7 @@
 
       <div>
         <div>执行计划</div>
-        <el-input v-model="canvasDataSource.cron" type="text"></el-input>
+        <el-input v-model="canvasDataSource.cron" type="text" @keyup.enter.native="convertCron"></el-input>
       </div>
 
       <div class="canvas-data-source-list">
@@ -314,6 +314,29 @@
       setTimeout(() => { }, 1000);
     },
     methods: {
+      convertCron() {
+
+        const cron = this.canvasDataSource.cron
+        const s = parseInt(cron.match(/\d{1,2}/)[0])
+        if ([/间隔\d{1,2}秒/,/每隔\d{1,2}秒/,/每\d{1,2}秒/].some(a => a.test(cron))) {
+        // 每隔5秒   间隔5秒  每5秒
+          if (s <= 0 || s >= 60) {
+            toast('间隔秒数必须大于0, 并且小于60')
+            return
+          }
+          this.canvasDataSource.cron =  `*/${s} * * * * ?`
+        } else if ([/间隔\d{1,2}分(钟{0,1})/,/每隔\d{1,2}分(钟{0,1})/,/每\d{1,2}分(钟{0,1})/].some(a => a.test(cron))) {
+        // 每隔5分钟   间隔5分钟  每5分钟
+          if (s <= 0 || s >= 60) {
+            toast('间隔分钟数必须大于0, 并且小于60')
+            return
+          }
+          this.canvasDataSource.cron = `0 */${s} * * * ?`
+        }
+        // 每天3点
+
+        // 每3小时  每3时
+      },
       addDatabase(type, event) {
         if (type === 'show') {
           this.addDatabaseDialogTitle = '添加数据库';
@@ -488,7 +511,7 @@
             if (/@[a-zA-Z]+/.test(item.script)) return 'ts';
           } else if (item.dataSourceType === 'database') {
             if (item.sql === undefined || item.sql === null || item.sql === '') {
-              toast('需要填写sql');
+              toast( `${item.name}❎需要填写sql`);
               throw Error('需要填写sql');
             }
 

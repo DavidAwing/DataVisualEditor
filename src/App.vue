@@ -151,6 +151,7 @@
 
 
       bi.utils = {}
+      window.u = bi.utils
 
       bi.utils.getValueByAttributePath = getValueByAttributePath;
       bi.utils.setJsonAttribute = setJsonAttribute;
@@ -158,6 +159,16 @@
 
       bi.utils.printByTemplate = printByTemplate;
       bi.utils.compileVueTemplate = compileVueTemplate;
+
+      bi.utils.setComponentShow = (name, isShow) => {
+
+        const data = bi.utils.getComponentData(name).data
+        if (isShow === undefined) {
+          data.show = !data.show
+        } else {
+          data.show = isShow
+        }
+      }
       bi.utils.deepMerge = function (target, source) {
 
         function _(target, source) {

@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <div class="container">
-    <el-table :data="element.data.tableData" height="250" :border="false" style="width: 100%" ref="table"
+  <div class="container" style="width: 100% !important;" >
+    <el-table :data="element.data.tableData" height="250" :border="false" style="width: 100% !important;" ref="table"
       class="vc-table" row-class-name="vc-table-row"
       @row-click="(row, column, event) => onEvent('onRowClick', { row, column, event })"
       @row-dblclick="(row, column, event) => onEvent('onRowDblClick', { row, column, event })"

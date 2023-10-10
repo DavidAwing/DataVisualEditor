@@ -26,6 +26,7 @@
     height: 0px;
     border-collapse: collapse;
     border: 0px solid transparent;
+    table-layout: auto !important;  // 这里会影响右边框不显示
 }
 
 // 去掉表头/表格体单元格的边框
@@ -52,6 +53,13 @@
         height: 0 !important;
     }
 }
+
+/deep/ .vc-table  table{ 
+}
+
+/deep/ .vc-table .el-table__body-wrapper,/deep/ .el-table .el-table__header-wrapper .el-table__header {
+     
+  }
 
 // 偶数列
 // /deep/ .vc-table tbody tr td:nth-child(even) div {

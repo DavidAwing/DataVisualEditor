@@ -1,5 +1,7 @@
+import axios from 'axios'
 import { getRandStr } from '../utils/utils'
 import Vue from 'vue'
+const JSONfn = require('jsonfn').JSONfn;
 
 // 公共样式
 export const commonStyle = {
@@ -1998,12 +2000,6 @@ const list = [
     ],
     styleList: //todo: 已应用的样式列表, 从后台读取组件支持的样式列表
       [
-        // {
-        //   elementId: "",
-        //   selector: "",
-        //   styleName: "",
-        //   css: ""
-        // }
       ]
   },
   // 视频
@@ -3083,4 +3079,66 @@ export function getComponentSharedData(component, attributeName) {
 
 
 
+
+async function getUserStyle() {
+
+  // todo 从后台获取样式
+  list.forEach(c => {
+
+    const key = c.component
+
+    axios.get(`/BI-API/File/Get?name=UserCustomizedComponentTemplate/${key}.js`).then(async response => {
+
+      if (response.status !== 200) {
+        console.warn('UserCustomizedComponentTemplate', key);
+        return
+      }
+
+      const newComponent = (await window.bi.utils.CompileToModule(response.data)).default
+      if (newComponent.setComponentTemplate && newComponent.setComponentTemplate(c)) {
+        return
+      }
+
+      Object.keys(newComponent).forEach(key => {
+        if (['setComponentTemplate'].includes(key)) {
+          return
+        }
+        if (Array.isArray(newComponent[key])) {
+
+          const data = []
+          if (c[key])
+            data.push(...c[key])
+          data.push(...newComponent[key])
+          Vue.set(c, key, data)
+        } else if (typeof newComponent[key] === 'object') {
+
+          const data = {}
+          if (c[key])
+            window.bi.utils.deepMerge(data, c[key])
+          window.bi.utils.deepMerge(data, newComponent[key])
+          Vue.set(c, key, data)
+        }
+      })
+
+    }).catch(error => {
+      console.warn('保存数据异常', error);
+    });
+  })
+
+}
+
+
+
+
+
+getUserStyle()
+
+
 export default list
+
+
+
+
+
+
+

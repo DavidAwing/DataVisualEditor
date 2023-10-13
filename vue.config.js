@@ -126,11 +126,27 @@ module.exports = defineConfig({
 
     config.module
       .rule('worker')
+      .test(/\.sharedworker\.js$/)
+      .use('worker-loader')
+      .loader('worker-loader')
+      .tap(options => {
+        return ({
+          worker: 'SharedWorker'
+        })
+      })
+      .end()
+      .rule('worker')
       .test(/\.worker\.js$/)
       .use('worker-loader')
       .loader('worker-loader')
-      .tap(options => ({ worker: 'SharedWorker' }))
+      .tap(options => {
+        return ({
+          worker: 'Worker'
+        })
+      })
       .end();
+
+
     config.module.rule('js').exclude.add(/\.worker\.js$/)
 
     //   // 解决：“window is undefined”报错，这个是因为worker线程中不存在window对象，因此不能直接使用，要用this代替

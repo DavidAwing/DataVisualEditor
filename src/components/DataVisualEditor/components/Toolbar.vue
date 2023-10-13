@@ -16,10 +16,13 @@
       <!-- 填写接口或者json数据测试 -->
       <el-button @click="" @click="showCanvasConfigDialogVisible">配置</el-button>
 
-      <el-select v-model="canvasData.deviceType" style="width: 70px; min-width: 70px" class="canvas-config">
+      <!-- <el-select v-model="canvasData.deviceType" style="width: 70px; min-width: 70px" class="canvas-config">
         <el-option key="pc" label="pc" value="pc"> </el-option>
         <el-option key="mobile" label="mobile" value="mobile"></el-option>
-      </el-select>
+      </el-select> -->
+
+      <el-button :class="'device-' + canvasData.deviceType" type="primary--" icon="el-icon-search" :circle="false"
+        @click="()=>{canvasData.deviceType === 'mobile' ? canvasData.deviceType = 'pc': canvasData.deviceType = 'mobile'}"></el-button>
 
       <!-- <el-button @click="redo" style="margin-left: 10px">其他</el-button> -->
       <el-button @click="preview" v-if="false">预览</el-button>
@@ -30,15 +33,16 @@
       <el-button style="margin-left: 10px" @click="preview" v-if="false">预览</el-button>
       <el-button @click="save" style="margin-left: 10px">保存</el-button>
       <el-button @click="clearCanvas" v-if="false">删除</el-button>
-      <el-button  v-if="areaData.components.length"
-       :disabled="!areaData.components.length" @click="compose">组合</el-button>
+      <el-button v-if="areaData.components.length" :disabled="!areaData.components.length"
+        @click="compose">组合</el-button>
       <el-button v-if="!(!curComponent || curComponent.isLock || curComponent.component != 'Group')"
-       :disabled="!curComponent || curComponent.isLock || curComponent.component != 'Group'"
-        @click="decompose">
+        :disabled="!curComponent || curComponent.isLock || curComponent.component != 'Group'" @click="decompose">
         拆分
       </el-button>
-      <el-button v-if="!(!curComponent || curComponent.isLock)" :disabled="!curComponent || curComponent.isLock" @click="lock">锁定</el-button>
-      <el-button v-if="!(!curComponent || !curComponent.isLock)" :disabled="!curComponent || !curComponent.isLock" @click="unlock">解锁</el-button>
+      <el-button v-if="!(!curComponent || curComponent.isLock)" :disabled="!curComponent || curComponent.isLock"
+        @click="lock">锁定</el-button>
+      <el-button v-if="!(!curComponent || !curComponent.isLock)" :disabled="!curComponent || !curComponent.isLock"
+        @click="unlock">解锁</el-button>
 
       <div class="canvas-config">
         <span>画布大小</span>
@@ -694,5 +698,25 @@
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
+  }
+
+  /deep/ .device-pc {
+    background: url('@/assets/pc.png') center center no-repeat;
+    background-size: 18px;
+
+    &>i {
+      visibility: hidden;
+    }
+
+  }
+
+  /deep/ .device-mobile {
+    background: url('@/assets/mobile.png') center center no-repeat;
+    background-size: 18px;
+
+    &>i {
+      visibility: hidden;
+    }
+
   }
 </style>

@@ -4,7 +4,7 @@
   </div>
 </template>
 
-<script>
+<script lang="js">
 
   import {
     stringToFunction,
@@ -27,7 +27,15 @@
   import * as ElementUI from 'element-ui';
   import * as xlsx from 'xlsx-js-style';
   import eventBus from './components/DataVisualEditor/utils/eventBus';
-  import MySharedWorker from './components/DataVisualEditor/utils/shared-worker.worker.js'
+  import MySharedWorker from './components/DataVisualEditor/utils/shared-worker.sharedworker.js'
+  import { loadModule } from './components/DataVisualEditor/utils/webpackUtils';
+
+  import * as tesseract from 'tesseract.js'
+  import * as tf from '@tensorflow/tfjs';
+  // import * as ml5 from 'ml5';
+  import * as Vue3 from '@/vue@3.3.4.esm-browser.js'
+
+  // import { fetchFile, toBlobURL } from '@ffmpeg/util';
 
   // const parse = require('@vue/compiler-sfc');
   const VueTemplateCompiler = require('vue-template-compiler');
@@ -37,6 +45,11 @@
   const JSONfn = require('jsonfn').JSONfn;
   const schedule = require('node-schedule');
   const { Engine } = require('json-rules-engine')
+
+  const FFmpeg = require('@ffmpeg/ffmpeg');
+  const FFmpegUtil = require('@ffmpeg/util');
+
+
 
   export default {
     name: 'App',
@@ -59,6 +72,8 @@
 
     },
     created() {
+
+      // console.log('loadModule', loadModule('@ffmpeg/ffmpeg'));
 
 
       const lessCode = `
@@ -96,6 +111,12 @@
       window.bi.VueTemplateCompiler = VueTemplateCompiler;
       window.bi.$route = this.$route
       bi.eventBus = eventBus;
+      bi.FFmpeg = FFmpeg
+      bi.FFmpegUtil = FFmpegUtil
+      bi.cv = window.cv
+      bi.tf = tf
+      bi.tesseract = tesseract
+      bi.Vue3 = Vue3
 
       window.bi.debug = (msg) => {
         if (window.BI_DEBUG) {
@@ -222,7 +243,7 @@
           } else {
             return (dom, attr) => {
               let val = null
-              if (['bottom','height', 'left', 'right', 'top', 'width'].includes(attr)) {
+              if (['bottom', 'height', 'left', 'right', 'top', 'width'].includes(attr)) {
                 val = dom.getBoundingClientRect()[attr] + 'px'
               } else {
                 val = getComputedStyle(dom, false)[attr]

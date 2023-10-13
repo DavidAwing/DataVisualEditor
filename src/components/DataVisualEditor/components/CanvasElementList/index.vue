@@ -87,6 +87,8 @@
         // 1. 监听copy,一旦失去焦点就删除
         // 2. 需要重新从子组件绑定样式
 
+        return
+
         const i = bi.store.state.canvasComponentData.findIndex(c => c.data.name === (item.data.name + "_$copy$"))
         if (i !== -1) {
           bi.store.state.canvasComponentData.splice(i, 1)

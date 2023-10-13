@@ -18,6 +18,7 @@
     SetValueAndAttributePathFromKey,
   } from './components/DataVisualEditor/utils/chartUtils';
   import { printByTemplate, compileVueTemplate } from './components/DataVisualEditor/utils/print';
+  import { deepCopy } from './components/DataVisualEditor/utils/utils';
   import Vue from 'vue';
   import axios from 'axios';
   import moment from 'moment';
@@ -169,6 +170,8 @@
           data.show = isShow
         }
       }
+
+      bi.utils.deepCopy = deepCopy
       bi.utils.deepMerge = function (target, source) {
 
         function _(target, source) {

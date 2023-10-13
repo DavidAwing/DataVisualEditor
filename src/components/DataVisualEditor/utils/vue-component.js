@@ -60,7 +60,14 @@ Vue.component('component-dialog', {
     }, { immediate: false, deep: false })
 
     this.$watch(() => this.element.data.isModal, (val) => {
+
       setDialog()
+
+      // if (!val && location.hash.includes('/editor')) {
+      //   document.getElementById('editor').appendChild(this.$el);
+      // }
+
+
     }, { immediate: true, deep: false })
 
 
@@ -73,22 +80,6 @@ Vue.component('component-dialog', {
     } else {
       document.body.appendChild(this.$el);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     this.$el.addEventListener("mousedown", function (event) {
       // alert("Mouse button pressed!");

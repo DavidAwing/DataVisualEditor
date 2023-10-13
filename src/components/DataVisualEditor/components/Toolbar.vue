@@ -30,13 +30,15 @@
       <el-button style="margin-left: 10px" @click="preview" v-if="false">预览</el-button>
       <el-button @click="save" style="margin-left: 10px">保存</el-button>
       <el-button @click="clearCanvas" v-if="false">删除</el-button>
-      <el-button :disabled="!areaData.components.length" @click="compose">组合</el-button>
-      <el-button :disabled="!curComponent || curComponent.isLock || curComponent.component != 'Group'"
+      <el-button  v-if="areaData.components.length"
+       :disabled="!areaData.components.length" @click="compose">组合</el-button>
+      <el-button v-if="!(!curComponent || curComponent.isLock || curComponent.component != 'Group')"
+       :disabled="!curComponent || curComponent.isLock || curComponent.component != 'Group'"
         @click="decompose">
         拆分
       </el-button>
-      <el-button :disabled="!curComponent || curComponent.isLock" @click="lock">锁定</el-button>
-      <el-button :disabled="!curComponent || !curComponent.isLock" @click="unlock">解锁</el-button>
+      <el-button v-if="!(!curComponent || curComponent.isLock)" :disabled="!curComponent || curComponent.isLock" @click="lock">锁定</el-button>
+      <el-button v-if="!(!curComponent || !curComponent.isLock)" :disabled="!curComponent || !curComponent.isLock" @click="unlock">解锁</el-button>
 
       <div class="canvas-config">
         <span>画布大小</span>

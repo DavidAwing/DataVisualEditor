@@ -21,7 +21,8 @@ export default class ComponentBase extends Vue {
       console.warn(`onEvent|组件${this.element.data.name}的${name}事件不是function`);
       return;
     }
-    func({
+
+    func.bind(this)({
       component: this,
       data: { ...data },
       element: this.element

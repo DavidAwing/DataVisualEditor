@@ -1,13 +1,18 @@
 import Vue from 'vue'
 import axios from 'axios'
 
-export function deepCopy(target) {
+export function deepCopy(target, map = new Map()) {
+
+  if (map.get(target)) {
+    return map.get(target);
+  }
 
   if (typeof target == 'object') {
     const result = Array.isArray(target) ? [] : {}
+    map.set(target, target);
     for (const key in target) {
       if (typeof target[key] == 'object') {
-        result[key] = deepCopy(target[key])
+        result[key] = deepCopy(target[key], map)
       } else {
         result[key] = target[key]
       }
@@ -230,6 +235,6 @@ export function isArrayInclude(arr, val) {
 
 // 去除空格,换行
 export function removeWhitespace(str) {
-  return str.replace(/\t|\n|\v|\r|\f/g,'').replace(/\s+/g,'')
+  return str.replace(/\t|\n|\v|\r|\f/g, '').replace(/\s+/g, '')
 }
 

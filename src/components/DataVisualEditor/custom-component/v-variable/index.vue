@@ -114,6 +114,32 @@
     },
     created() {
 
+
+      this.$watch(() => this.element.data.isModal, (val) => {
+
+        if (!location.hash.includes('/editor')) return
+
+        if (val === false) {
+          this.$set(this.element.data, 'show', true)
+        }
+      }, { immediate: true, deep: false })
+
+
+      this.$watch(() => this.element.data.show, (val) => {
+
+        if (location.hash.includes('/editor')) {
+
+          if (this.element.data.isModal === false && this.element.data.show === true) {
+            this.$nextTick(() => {
+              document.getElementById('editor').appendChild($(this.$el).parent()[0])
+            })
+          }
+
+        }
+
+
+      }, { immediate: true, deep: false })
+
       eventBus.$on("onDrop", (name) => {
         console.log("添加组件");
       });

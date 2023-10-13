@@ -1,3 +1,4 @@
+import Vue from "vue";
 
 
 export default {
@@ -13,7 +14,10 @@ export default {
     }
   },
   created: function () {
-    console.log('BaseMixins created');
+    console.log('BaseMixins created', this.element);
+
+    Vue.set(this.element, '_', this)
+    Object.defineProperty(this.element, "_", { enumerable: false })
 
     if (!this.element.eventOptions)
       this.element.eventOptions = []

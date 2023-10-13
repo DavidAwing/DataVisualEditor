@@ -90,6 +90,8 @@ export default {
             width: groupWidth,
             height: groupHeight
           },
+          backgroundColor: 'rgba(0,0,0,0)',
+          borderRadius: 0,
         },
         propValue: components,
         data: {
@@ -104,6 +106,7 @@ export default {
           left: "px",
           width: 'px',
           height: 'px',
+          borderRadius: 'px',
         },
         attrList: [
           {
@@ -182,6 +185,12 @@ export default {
             options: {
               showAlpha: true
             }
+          },
+          {
+            key: "borderRadius",
+            type: "number",
+            label: '边框半径',
+            bind: 'style'
           },
           {
             key: "dialogAlign",

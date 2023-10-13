@@ -1320,7 +1320,7 @@ const list = [
         // }
       ]
   },
-  // 矩形
+  // 边框
   {
     component: 'v-rect-shape',
     label: '边框',
@@ -1355,6 +1355,7 @@ const list = [
       left: "px",
       width: 'px',
       height: 'px',
+      borderRadius: 'px'
     },
     attrList: [
       {
@@ -1410,6 +1411,15 @@ const list = [
         }
       },
       {
+        key: "height",
+        type: "number",
+        label: '高',
+        bind: "style",
+        events: {
+          onInput: function (self, value) { }
+        }
+      },
+      {
         key: "rotate",
         type: "number",
         label: '旋转',
@@ -1424,6 +1434,10 @@ const list = [
         label: '边框类型',
         bind: 'data',
         options: [
+          {
+            label: '无',
+            value: 'dv-border-box-0',
+          },
           {
             label: '边框1',
             value: 'dv-border-box-1',
@@ -2823,7 +2837,8 @@ const list = [
       componentListFlexDirection: "row",
       componentListFlexWrap: "wrap",
       isModal: false,
-      componentName: ""
+      componentName: "",
+      dialogAlign: 'top|center'
     },
     attrExcludes: [],
     style: {
@@ -2910,6 +2925,34 @@ const list = [
         type: "number",
         label: '旋转',
         bind: "style"
+      },
+      {
+        key: "dialogAlign",
+        type: "select",
+        label: '位置',
+        bind: 'data',
+        options: [
+          {
+            label: '居中',
+            value: 'center',
+          },
+          {
+            label: '上对齐,左右居中',
+            value: 'top|center'
+          },
+          {
+            label: '左对齐,上下居中',
+            value: 'left|center'
+          },
+          {
+            label: '左上对齐',
+            value: 'left|top'
+          },
+          {
+            label: '无',
+            value: 'none',
+          }
+        ]
       },
       {
         key: "componentName",
@@ -3080,9 +3123,8 @@ export function getComponentSharedData(component, attributeName) {
 
 
 
-async function getUserStyle() {
+async function getUserCustomizedComponentTemplate() {
 
-  // todo 从后台获取样式
   list.forEach(c => {
 
     const key = c.component
@@ -3130,8 +3172,7 @@ async function getUserStyle() {
 
 
 
-
-getUserStyle()
+getUserCustomizedComponentTemplate()
 
 
 export default list

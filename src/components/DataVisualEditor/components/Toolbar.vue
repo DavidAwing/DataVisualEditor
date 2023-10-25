@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="toolbar">
-      <div class="canvas-config" style="margin-right: 10px; margin-left: 0">
+      <div class="canvas-config" style="margin-left: 0">
         <span>名称</span>
 
         <!--   @blur="inputCanvaName($event)" -->
@@ -14,7 +14,12 @@
       <el-button @click="importTemplate">导入</el-button> -->
       <!-- <el-button @click="redo">预览</el-button> -->
       <!-- 填写接口或者json数据测试 -->
-      <el-button @click="" @click="showCanvasConfigDialogVisible">配置</el-button>
+
+      <el-button class="ai-dialog-button" icon="el-icon-search" :circle="false"
+        @click="showChatDialogVisible"></el-button>
+
+      <el-button class="show-canvas-config-dialog" icon="el-icon-search" :circle="false"
+        @click="showCanvasConfigDialogVisible"></el-button>
 
       <!-- <el-select v-model="canvasData.deviceType" style="width: 70px; min-width: 70px" class="canvas-config">
         <el-option key="pc" label="pc" value="pc"> </el-option>
@@ -26,26 +31,23 @@
 
       <!-- <el-button @click="redo" style="margin-left: 10px">其他</el-button> -->
       <el-button @click="preview" v-if="false">预览</el-button>
-      <el-button @click="undo">撤消</el-button>
-      <el-button @click="redo">重做</el-button>
+      <el-button @click="undo" v-if="false">撤消</el-button>
+      <el-button @click="redo" v-if="false">重做</el-button>
       <label for="input" class="insert" v-if="false">插入图片</label>
       <input id="input" type="file" hidden @change="handleFileChange" />
       <el-button style="margin-left: 10px" @click="preview" v-if="false">预览</el-button>
-      <el-button @click="save" style="margin-left: 10px">保存</el-button>
+      <el-button @click="save" style="margin-left: 10px" v-if="false">保存</el-button>
       <el-button @click="clearCanvas" v-if="false">删除</el-button>
-      <el-button v-if="areaData.components.length" :disabled="!areaData.components.length"
-        @click="compose">组合</el-button>
-      <el-button v-if="!(!curComponent || curComponent.isLock || curComponent.component != 'Group')"
-        :disabled="!curComponent || curComponent.isLock || curComponent.component != 'Group'" @click="decompose">
+      <el-button v-if="false" @click="compose">组合</el-button>
+      <el-button v-if="false" :disabled="!curComponent || curComponent.isLock || curComponent.component != 'Group'"
+        @click="decompose">
         拆分
       </el-button>
-      <el-button v-if="!(!curComponent || curComponent.isLock)" :disabled="!curComponent || curComponent.isLock"
-        @click="lock">锁定</el-button>
-      <el-button v-if="!(!curComponent || !curComponent.isLock)" :disabled="!curComponent || !curComponent.isLock"
-        @click="unlock">解锁</el-button>
+      <el-button v-if="false" @click="lock">锁定</el-button>
+      <el-button v-if="false" @click="unlock">解锁</el-button>
 
       <div class="canvas-config">
-        <span>画布大小</span>
+        <span>尺寸</span>
         <input style="padding: 6px" v-model="canvasData.width" />
         <span>*</span>
         <input style="padding: 6px" v-model="canvasData.height" />
@@ -53,16 +55,16 @@
       <el-select v-model="canvasData.unit" style="width: 70px; min-width: 70px" class="canvas-config">
         <el-option key="px" label="px" value="px"></el-option>
         <el-option key="%" label="%" value="%"></el-option>
-        <!-- <el-option key="mm" label="mm" value="mm"></el-option> -->
+        <el-option key="mm" label="mm" value="mm"></el-option>
       </el-select>
       <div class="canvas-config">
-        <span>画布比例</span>
+        <span>缩放</span>
         <input style="padding: 6px" v-model="scale" @input="handleScaleChange" />
         %
       </div>
     </div>
 
-    <el-dialog title="业务配置" :visible.sync="canvasConfigDialogVisible">
+    <el-dialog title="业务配置" :visible.sync="canvasConfigDialogVisible" v-el-drag-dialog>
       <el-form>
         <!-- <el-form-item label="数据来源">
 
@@ -96,22 +98,45 @@
           <el-input autocomplete="off"></el-input>
         </el-form-item> -->
       </el-form>
+
       <div slot="footer" class="dialog-footer">
-        <div>
+        <!-- <div>
           <a :href="'/bi/#/DatasourceEditor?name=' + currentCanvasName" target="_blank" class="">
             <el-button type="text"></el-button>
           </a>
           <a :href="'/bi/#/AddDatasource'" target="_blank" style="margin-left: 16px">
             <el-button type="text"></el-button>
           </a>
+        </div> -->
+
+        <div style="width: 300%;" v-if="false">
+          <el-input v-model="helpMsg" placeholder="这里显示最后编辑日期时间,和编辑者" autocomplete="off" type="text"></el-input>
         </div>
 
-        <div>
-          <el-button @click="canvasConfigDialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="canvasConfigDialogVisible = false">确 定</el-button>
+        <div style="position: relative; display: flexbox; flex-flow: row nowrap; width: 100%;">
+          <el-button @click="canvasConfigDialogVisible = false" style="margin-left: 26px;width: fit-content;">取
+            消</el-button>
+          <el-button type="primary" @click="canvasConfigDialogVisible = false" style="width: fit-content;">确
+            定</el-button>
         </div>
       </div>
     </el-dialog>
+
+
+
+    <top-el-dialog title="AI助手" :visible.sync="chatDialogVisible" width="23%" :custom-class="'ai-chat-dialog'"
+      :modal="false" :close-on-click-modal="false" v-el-drag-dialog center>
+
+      <div style="background-color: white;">
+        <AIChat :onSendMsg="onSendMsg" style="height: 500px;" />
+      </div>
+
+      <span slot="footer" class="dialog-footer" v-if="false">
+        11111111111111111
+      </span>
+    </top-el-dialog>
+
+
   </div>
 </template>
 
@@ -130,16 +155,16 @@
   import { toImage } from '../utils/domUtils';
   const LZ = require('lz-string');
   const JSONfn = require('jsonfn').JSONfn;
-  import TestCanvas from './TestCanvas';
+  // import TestCanvas from './TestCanvas';
   import axios from 'axios';
   import md5 from 'blueimp-md5';
   import { requestCanvasData } from '../utils/dataBinder';
   import { saveCanvas } from './MenuHandler';
   import { MessageBox } from 'element-ui';
-
+  import AIChat from "@/components/DataVisualEditor/components/AIChat";
 
   export default {
-    components: { Preview, ComponentListViewer },
+    components: { Preview, ComponentListViewer, AIChat },
     data() {
       return {
         isShowPreview: false,
@@ -155,14 +180,40 @@
         currentCanvasName: '', // 当前的画布名称
         canvasList: [],
         canvasConfigDialogVisible: false,
+        helpMsg: "",
+        chatDialogVisible: false
       };
     },
     computed: {
-      ...mapState(['canvasComponentData', 'canvasData', 'areaData', 'curComponent', 'curComponentIndex', 'canvasName']),
+      ...mapState(['canvasComponentData', 'canvasData', 'areaData', 'curComponent', 'curComponentIndex', 'canvasName', 'activeComponentList']),
+      saveMenuShow() {
+
+      },
+      composeMenuShow() {
+        return this.areaData.components.length > 1
+      },
+      lockMenuShow() {
+        return !(!this.curComponent || this.curComponent.isLock)
+      },
+      unlockMenuShow() {
+        return !(!this.curComponent || !this.curComponent.isLock)
+      },
+      decomposeMenuShow() {
+        if (this.activeComponentList.length > 1) {
+          for (let i = 0; i < this.activeComponentList.length; i++) {
+            const c = this.canvasComponentData.find(c => c.id === this.activeComponentList[i])
+            if (c && c.component === 'Group') {
+              return false
+            }
+          }
+        }
+        return !(!this.curComponent || this.curComponent.isLock || this.curComponent.component != 'Group')
+      }
     },
     watch: {
       currentCanvasName: {
         handler: function (val, old) {
+
           removeAllStyleNotOfCanvasName(this.currentCanvasName);
 
           // 清除画布中已选中的组件
@@ -275,6 +326,29 @@
       eventBus.$on('preview', this.preview);
       eventBus.$on('save', this.save);
       eventBus.$on('clearCanvas', this.clearCanvas);
+
+      this.$watch(() => this.composeMenuShow, (val) => {
+        this.$store.commit('setTopMenuShow', ['compose', val])
+      })
+      this.$watch(() => this.lockMenuShow, (val) => {
+        this.$store.commit('setTopMenuShow', ['lock', val])
+      })
+      this.$watch(() => this.unlockMenuShow, (val) => {
+        this.$store.commit('setTopMenuShow', ['unlock', val])
+      })
+      this.$watch(() => this.decomposeMenuShow, (val) => {
+        this.$store.commit('setTopMenuShow', ['decompose', val])
+      })
+
+
+
+      eventBus.$on('TopMenu.save', this.save)
+      eventBus.$on('TopMenu.undo', this.undo)
+      eventBus.$on('TopMenu.redo', this.redo)
+      eventBus.$on('TopMenu.compose', this.compose)
+      eventBus.$on('TopMenu.decompose', this.decompose)
+      eventBus.$on('TopMenu.lock', this.lock)
+      eventBus.$on('TopMenu.unlock', this.unlock)
     },
     mounted() {
       const that = this;
@@ -297,6 +371,92 @@
       });
     },
     methods: {
+
+      async onSendMsg({ type, content }) {
+
+        /**
+
+        用户输入时
+        测试文本:
+
+        // 场景1
+        1. 把/将组件0移到顶部,宽度占满,高度30%
+        2. 高/宽(度)-1/+1
+        3. 顶部-1/+1
+        4. 文字16
+        5. 文字+1/-1
+        6. 文字从上到下渐变, 上面红色, 下面蓝色
+        7. 上面(颜色)改成#bb5599/ 下面改成绿色
+
+        // 场景2
+        1. 高亮显示当前组件/ 高亮组件
+        2. 设置为组件1/切换到组件1
+
+
+        // 场景3
+        1. 添加一个动画
+
+        // 场景4
+        1. 请求这个接口的数据
+
+
+        点击aaa时导出组件bbb的数据
+        点击aaa时导出bbb的数据
+        点击aaa时导出bbb的到表格
+
+
+         * */
+
+        console.log('处理用户消息', type, content);
+
+        if (type === 'file') {
+          return { type: 'text', content: content[0].name }
+        }
+
+        let msg = null
+        const { data } = await axios.post(`/BI-API/AI/GetWordClass`, { content, hmm: true }, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        msg = data
+
+        if (typeof msg === 'object') {
+
+          if (msg.content && msg.type) {
+            return msg
+          } else if (msg.content) {
+            return { type: 'text', content: msg.content }
+          } else {
+            return { type: 'text', content: JSONfn.stringify(msg) }
+          }
+
+        } else if (typeof msg === 'string') {
+          return msg
+        }
+
+
+        return data
+      },
+
+      showChatDialogVisible() {
+
+        this.chatDialogVisible = true
+
+        setTimeout(() => {
+          $('.el-dialog__wrapper').css('visibility', 'hidden')
+          $('.el-dialog__wrapper>div').css('visibility', 'visible')
+          const empty = function (e) {
+            window.getSelection().empty()
+            // $('.el-dialog__header').off("mouseup", onmouseup);
+          }
+          $('.el-dialog__header').mousedown(empty);
+          $('.el-dialog__header').mouseup(empty);
+        }, 100);
+
+      },
+
       showCanvasConfigDialogVisible() {
         this.canvasConfigDialogVisible = true;
         const canvasData = this.canvasData;
@@ -695,9 +855,11 @@
   }
 
   .dialog-footer {
+    width: 100%;
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
+    margin-top: 8px;
   }
 
   /deep/ .device-pc {
@@ -718,5 +880,35 @@
       visibility: hidden;
     }
 
+  }
+
+  /deep/ .show-canvas-config-dialog {
+    margin-left: 10px;
+    background: url('@/assets/数据管理.png') center center no-repeat;
+    background-size: 21px;
+
+    &>i {
+      visibility: hidden;
+    }
+  }
+
+  /deep/ .ai-dialog-button {
+    margin-left: 10px;
+    background: url('@/assets/人机对话.png') center center no-repeat;
+    background-size: 21px;
+
+    &>i {
+      visibility: hidden;
+    }
+  }
+
+  .hr-edge-weak {
+    border: 0;
+    padding-top: 1px;
+    background: linear-gradient(to right, transparent, #d0d0d5, transparent);
+  }
+
+  /deep/ .el-dialog__title {
+    user-select: none;
   }
 </style>

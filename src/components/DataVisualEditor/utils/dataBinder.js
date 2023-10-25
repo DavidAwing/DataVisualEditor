@@ -10,7 +10,6 @@ import eventBus from '../utils/eventBus';
 const JSONfn = require("jsonfn").JSONfn;
 const schedule = require("node-schedule");
 
-
 const a = `
 #你好啊
 bbb,ccc

@@ -49,6 +49,11 @@
         default: () => { },
       },
     },
+    methods: {
+      test(){
+        console.log('tuossfsdf');
+      }
+    },
   }
 </script>
 

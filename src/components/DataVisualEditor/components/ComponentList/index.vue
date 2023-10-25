@@ -3,7 +3,8 @@
     <el-collapse v-model="activeCollapses" class="collapse">
       <el-collapse-item title="内置组件" name="0">
         <template slot="title">
-          <i v-if="false" class="header-icon el-icon-data-analysis" style="margin-left: 6px;"></i><span style="margin-left: 3px;">内置组件</span>
+          <i v-if="false" class="header-icon el-icon-data-analysis" style="margin-left: 6px;"></i><span
+            style="margin-left: 3px;">内置组件</span>
         </template>
         <div class="component-list" @dragstart="handleDragStart">
           <div v-for="(item, index) in componentList" :key="index" class="list" draggable :data-index="index">
@@ -20,7 +21,8 @@
       </el-collapse-item>
       <el-collapse-item title="组件市场" name="1">
         <template slot="title">
-          <i v-if="false" class="header-icon el-icon-present" style="margin-left: 6px;"></i><span style="margin-left: 3px;">组件市场</span>
+          <i v-if="false" class="header-icon el-icon-present" style="margin-left: 6px;"></i><span
+            style="margin-left: 3px;">组件市场</span>
         </template>
         <div>
           <el-button type="primary" plain @click="addComponentMarket">添加到组件市场</el-button>
@@ -42,7 +44,8 @@
       </el-collapse-item>
       <el-collapse-item title="业务插件" name="2">
         <template slot="title">
-          <i v-if="false" class="header-icon el-icon-document" style="margin-left: 6px;"></i><span style="margin-left: 3px;">业务插件</span>
+          <i v-if="false" class="header-icon el-icon-document" style="margin-left: 6px;"></i><span
+            style="margin-left: 3px;">业务插件</span>
         </template>
         <div>
           <el-button type="primary" plain @click="null">编辑业务组件</el-button>

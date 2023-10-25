@@ -14,7 +14,7 @@
         </el-tabs>
       </section>
       <!-- 中间画布 -->
-      <section class="center">
+      <section class="center" >
         <div class="content" @drop="handleDrop" @dragover="handleDragOver" @mousedown="handleMouseDown"
           @mousemove="handleMouseMove" @mouseup="deselectCurComponent">
           <Editor v-show="canvasData.deviceType === 'pc'" />
@@ -24,6 +24,17 @@
         <div class="canvas-iocn-container" v-show="showCanvasIocn">
           <img class="canvas-iocn" src="../../assets/maximize.png" @click="maximize"></img>
           <img class="canvas-iocn" src="../../assets/publish.png" @click="openPublishingPage"></img>
+        </div>
+
+        <div style="position: relative; margin-top: 8px;width: 80%;left: 10%;display: flex;justify-content: center;">
+          <div style="display: flex;flex-flow: row nowrap; justify-content: center;align-items: center;
+          background-color:  rgba(0, 0, 0, 0.3);  width: fit-content; padding: 0px 22px;border-radius: 5px;">
+            <div  v-for="item in topIntelligentMenu.children"  :class="'top-intelligent-menu-item ' +  (item.className)" v-show="item.show"
+            @click="handleTopMenu(item.name)">
+              <img draggable="false"    :width="(item.width || topIntelligentMenu.width) * 0.7"
+              height="auto" :src="item.img" alt="" srcset="">
+            </div>
+          </div>
         </div>
       </section>
       <!-- 右侧属性列表 -->
@@ -54,6 +65,10 @@
         </el-tabs>
       </section>
     </main>
+
+    <img draggable="false" style="position: absolute;left: 0;right: 0;" id="EmbeddedComponentModeDiv" width="30"
+    height="auto" src="http://127.0.0.1/files/drag.png" alt="" srcset="">
+
   </div>
 </template>
 
@@ -129,6 +144,8 @@
       "editorHint",
       "canvasName",
       "activeComponentList",
+      "topIntelligentMenu",
+      "setTopMenuShow"
     ]),
     watch: {
       canvasData: {
@@ -171,8 +188,15 @@
 
       var demo1_w = window.getComputedStyle(ele).getPropertyValue("width");
       var demo1_h = window.getComputedStyle(ele).getPropertyValue("height");
+
+      $('#EmbeddedComponentModeDiv').css('display', 'none')
     },
     methods: {
+
+      handleTopMenu(name) {
+        eventBus.$emit('TopMenu.' + name)
+      },
+
       loadMobileUrl() {
         if (this.$refs.MobilePreview === undefined) {
           setTimeout(() => {
@@ -308,6 +332,7 @@
       },
 
       handleMouseMove(event) {
+
         const content = document.getElementsByClassName("content")[0];
         const contentRect = content.getClientRects()[0];
         if (event.offsetY < 60 && event.offsetX > contentRect.width - 100) {
@@ -433,4 +458,6 @@
       color: #333;
     }
   }
+
+  @import "index.less";
 </style>

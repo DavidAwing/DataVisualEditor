@@ -64,7 +64,6 @@ import eventBus from '../../components/DataVisualEditor/utils/eventBus';
 const JSONfn = require('jsonfn').JSONfn;
 
 
-
 export default {
   data() {
     return {

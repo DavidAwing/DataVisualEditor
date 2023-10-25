@@ -6,7 +6,7 @@ import store from './store'
 // import store from './components/LabelDesigner/store'
 
 import { VuePlugin } from 'vuera'
-
+import axios from 'axios';
 
 import ElementUI, { Dialog } from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
@@ -41,7 +41,6 @@ require('./components/DataVisualEditor/utils/vue-component.js')
 
 Vue.config.warnHandler = (msg: string, vm: Vue, trace: string) => {
   console.log("vue全局警告", msg, vm, trace);
-
 }
 
 

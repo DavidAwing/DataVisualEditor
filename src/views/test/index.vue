@@ -1,6 +1,11 @@
 <template>
   <div class="container" id="test222">
+
+
+    <Chat />
+
     <MobilePreview />
+
 
     <button @click="testpz()">测试拍照</button>
 
@@ -21,6 +26,7 @@
 <script>
 import  QueryBuilder from "jQuery-QueryBuilder";
 import MobilePreview from "@/components/DataVisualEditor/components/MobilePreview";
+import Chat from "@/components/DataVisualEditor/components/Chat";
 import CssEditor from "@/components/DataVisualEditor/components/CssEditor";
 import { getRandStr } from "@/components/DataVisualEditor/utils/utils";
 import {
@@ -72,7 +78,7 @@ const fontFamilyOpts = [
 ];
 
 export default {
-  components: { CssEditor, MobilePreview },
+  components: { CssEditor, MobilePreview, Chat },
   name: "test",
   data() {
     return {

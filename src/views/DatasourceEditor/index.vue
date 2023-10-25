@@ -18,7 +18,7 @@
       <div>
         <div>数据源类型</div>
         <el-select v-model="canvasDataSource.dataSourceType" placeholder="">
-          <el-option v-for="item in ['database', 'post', 'get', 'script', 'mock']" :key="item"
+          <el-option v-for="item in ['database', 'http', 'script', 'mock']" :key="item"
             :label="getDataSourceTypeLabel(item)" :value="item">
           </el-option>
         </el-select>
@@ -31,7 +31,8 @@
       <div v-if="canvasDataSource.dataSourceType === 'database'">
         <div>数据库</div>
         <el-select id="database-select" v-model="canvasDataSource.dataSource" placeholder="" value-key="id"
-          @keyup.enter.native="addDatabase('show', $event)" @clear="addDatabase('showRemove')" clearable filterable>
+          @keyup.enter.native="isDBExist($event) ? addDatabase('showRemove') : addDatabase('show', $event)"
+          @clear="addDatabase('showRemove')" clearable filterable>
           <el-option v-for="item in databaseList" :key="item.id" :label="item.name" :value="item"> </el-option>
         </el-select>
       </div>
@@ -141,7 +142,7 @@
           <el-form-item label="数据库端口" style="text-align: left; width: 90%">
             <el-input v-model="temp.dbPort"></el-input>
           </el-form-item>
-          <el-form-item label="数据库用户名" style="text-align: left; width: 90%">
+          <el-form-item label="数据库账号" style="text-align: left; width: 90%">
             <el-input v-model="temp.dbUserId"></el-input>
           </el-form-item>
           <el-form-item label="数据库密码" style="text-align: left; width: 90%">
@@ -157,7 +158,8 @@
       </div>
       <div slot="footer">
         <el-button @click="addDatabaseDialogVisible = false">取 消</el-button>
-        <el-button type="primary" v-if="addDatabaseDialogTitle === '删除或更新数据库?'" @click="">更 新</el-button>
+        <el-button type="primary" v-if="addDatabaseDialogTitle === '删除或更新数据库?'" @click="addDatabase('update')">更
+          新</el-button>
         <el-button type="primary"
           @click="addDatabaseDialogTitle === '添加数据库' ? addDatabase('add') : addDatabase('remove')">{{
           addDatabaseDialogTitle === '添加数据库' ? '确 定' : '删 除' }}</el-button>
@@ -255,7 +257,7 @@
           if (name.includes(item.data.name)) return item;
         }
         return {};
-      },
+      }
     },
     beforeCreate() {
 
@@ -314,19 +316,24 @@
       setTimeout(() => { }, 1000);
     },
     methods: {
+      isDBExist(event) {
+        const name = event.target.value.trim();
+        const db = this.databaseList.find(item => item.name === name)
+        return db !== undefined
+      },
       convertCron() {
 
         const cron = this.canvasDataSource.cron
         const s = parseInt(cron.match(/\d{1,2}/)[0])
-        if ([/间隔\d{1,2}秒/,/每隔\d{1,2}秒/,/每\d{1,2}秒/].some(a => a.test(cron))) {
-        // 每隔5秒   间隔5秒  每5秒
+        if ([/间隔\d{1,2}秒/, /每隔\d{1,2}秒/, /每\d{1,2}秒/, /\d{1,2}秒/].some(a => a.test(cron))) {
+          // 每隔5秒   间隔5秒  每5秒
           if (s <= 0 || s >= 60) {
             toast('间隔秒数必须大于0, 并且小于60')
             return
           }
-          this.canvasDataSource.cron =  `*/${s} * * * * ?`
-        } else if ([/间隔\d{1,2}分(钟{0,1})/,/每隔\d{1,2}分(钟{0,1})/,/每\d{1,2}分(钟{0,1})/].some(a => a.test(cron))) {
-        // 每隔5分钟   间隔5分钟  每5分钟
+          this.canvasDataSource.cron = `*/${s} * * * * ?`
+        } else if ([/间隔\d{1,2}分(钟{0,1})/, /每隔\d{1,2}分(钟{0,1})/, /每\d{1,2}分(钟{0,1})/, /\d{1,2}分(钟{0,1})/].some(a => a.test(cron))) {
+          // 每隔5分钟   间隔5分钟  每5分钟
           if (s <= 0 || s >= 60) {
             toast('间隔分钟数必须大于0, 并且小于60')
             return
@@ -338,18 +345,75 @@
         // 每3小时  每3时
       },
       addDatabase(type, event) {
+
         if (type === 'show') {
           this.addDatabaseDialogTitle = '添加数据库';
-          if (event.target.value === undefined || event.target.value === null || event.target.value.trim() === '') return;
+          // if (event.target.value === undefined || event.target.value === null || event.target.value.trim() === '') return;
           const name = event.target.value.trim();
-
-          this.temp = { name: name, userId: 'admin' };
+          const db = this.databaseList.find(item => item.name === name)
+          if (db) {
+            this.temp = db
+          } else {
+            this.temp = {}
+          }
+          Vue.set(this.temp, 'name', name)
+          Vue.set(this.temp, 'userId', 'admin')
           this.addDatabaseDialogVisible = true;
         } else if (type === 'add') {
           this.addDatabaseDialogTitle = '添加数据库';
+
+          if (!this.temp.name.trim()) {
+            return
+          }
+          if (!this.temp.dbType || !this.temp.dbType.trim()) {
+            toast('请设置数据库类型')
+            return
+          }
+
+          if (!this.temp.dbName || !this.temp.dbName.trim()) {
+            toast('请设置数据库名称')
+            return
+          }
+
+          if (!this.temp.dbIp || !this.temp.dbIp.trim()) {
+            toast('请设置数据库IP')
+            return
+          }
+
+          if (!this.temp.dbPort || !this.temp.dbPort.trim()) {
+            toast('请设置数据库端口')
+            return
+          }
+
+          if (!this.temp.dbUserId || !this.temp.dbUserId.trim()) {
+            toast('请设置数据库账号')
+            return
+          }
+
+          if (!this.temp.dbPassword || !this.temp.dbPassword.trim()) {
+            toast('请设置数据库密码')
+            return
+          }
+
+          if (!this.temp.dbCharset || !this.temp.dbCharset.trim()) {
+            Vue.set(this.temp, 'dbCharset', "utf-8")
+          }
+          if (!this.temp.remark) {
+            Vue.set(this.temp, 'remark', "")
+          }
+
           axios.post('/BI-API/DataSource/AddDatabase', this.temp).then(({ data }) => {
             this.temp.id = data.data;
-            this.databaseList.push(this.temp);
+            const db = this.databaseList.find(item => item.id === data.data)
+
+            if (db === undefined) {
+              this.databaseList.push(this.temp);
+            } else {
+              const i = this.databaseList.findIndex(item => item.id === data.data)
+              Vue.set(this.databaseList, i, this.temp)
+            }
+
+            Vue.set(this.canvasDataSource, 'dataSource',  this.temp.name)
           });
           this.addDatabaseDialogVisible = false;
         } else if (type === 'showRemove') {
@@ -369,6 +433,14 @@
               }
             }
           });
+        } else if (type === 'update') {
+          axios.post('/BI-API/DataSource/AddDatabase', this.temp).then(({ data }) => {
+            this.temp.id = data.data;
+            const db = this.databaseList.find(item => item.id === data.data)
+            toast('更新成功', 'success');
+            Vue.set(this.canvasDataSource, 'dataSource',  this.temp.name)
+          });
+          this.addDatabaseDialogVisible = false;
         }
       },
       getDataSourceClassName(item) {
@@ -489,16 +561,12 @@
       getDataSourceTypeLabel(type) {
         if (type === 'database') {
           return '数据库';
-        } else if (type === 'get') {
-          return 'GET';
-        } else if (type === 'post') {
-          return 'POST';
         } else if (type === 'http') {
           return 'HTTP';
         } else if (type === 'script') {
-          return 'js或ts脚本';
+          return 'js/ts';
         } else if (type === 'mock') {
-          return '模拟数据';
+          return '测试';
         }
 
         return type;
@@ -511,7 +579,7 @@
             if (/@[a-zA-Z]+/.test(item.script)) return 'ts';
           } else if (item.dataSourceType === 'database') {
             if (item.sql === undefined || item.sql === null || item.sql === '') {
-              toast( `${item.name}❎需要填写sql`);
+              toast(`${item.name}❎需要填写sql`);
               throw Error('需要填写sql');
             }
 

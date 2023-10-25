@@ -19,7 +19,7 @@ export function saveCanvas(canvasName, canvasComponentData, canvasData) {
       return reject(Error('画布名称不能为空字符串'))
     }
 
-    canvasData.datetime = window.bi.utils.format(new Date(), 'YYYY/MM/DD HH:mm:ss');
+    canvasData.datetime = window.bi.utils.format('YYYY/MM/DD HH:mm:ss', new Date());
     DB.getItem(`bi-user-canvas-data-source-${canvasName}`).then(userCanvasDataSource => {
       if (userCanvasDataSource) {
         canvasData.dataSource.parameters = userCanvasDataSource;

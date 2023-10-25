@@ -9,6 +9,10 @@ Vue.component('top-el-dialog', {
     toBody: {
       type: Boolean,
       default: true
+    },
+    showModal: {
+      type: Boolean,
+      default: true
     }
   },
   mounted() {
@@ -17,6 +21,7 @@ Vue.component('top-el-dialog', {
     } else {
       document.body.appendChild(this.$el);
     }
+
   },
   watch: {
     toBody: {

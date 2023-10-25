@@ -32,3 +32,11 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+
+
+
+// babylonjs scenejs  和typescript版本不兼容,后续需要继续升级babylonjs scenejs
+"vite": "^4.4.7", 
+@vitejs/plugin-vue 
+"vue-tsc": "1.8.6"

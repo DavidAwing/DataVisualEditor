@@ -1,18 +1,27 @@
 <template>
   <div>
-    <div v-for="(item, index) in canvasComponentData" :key="index"
-      :class="'canvas-element ' + (curComponent === item ? 'selected' : 'unselected')" @click="selectElement(item)">
+    <div v-for="(item, index) in canvasComponentData" :key="index" class='canvas-element '>
 
-      <div style="margin-left: 8px;" v-if="item.component !== 'Group' && !item.data.name.endsWith('_$copy$')">
+      <!-- 普通组件
+      :class="'canvas-element ' + (curComponent === item ? 'selected' : 'unselected')" -->
+      <div style="padding: 8px 8px;text-align: left;width: 100%;"
+        v-if="item.component !== 'Group' && !item.data.name.endsWith('_$copy$')" @click="selectElement('c', item)"
+        :class="'component-element ' + (selectComponentName === item.data.name ? 'selected' : 'unselected')">
         {{ item.data.name }}
       </div>
 
-      <div class="group-element" style="margin-left: 8px;" v-else-if="!item.data.name.endsWith('_$copy$')">
-        <div> {{ item.data.name }}</div>
-        <div>
-          <div v-for="(child,index) in item.propValue" @click="handleChildComponentClick(child, $event)">
-            {{child.data.name}}</div>
+      <!-- 群组 -->
+      <div class="group-element" v-else-if="!item.data.name.endsWith('_$copy$')">
+
+        <div @click="selectElement('g', item)" style="width: 100%;text-align: left;padding: 8px 8px;"
+          :class="selectComponentName === item.data.name ? 'selected' : 'unselected'"> {{ item.data.name }}
         </div>
+
+        <div style="width: 100%;text-align: left;padding: 3px 32px;" v-for="(child,index) in item.propValue"
+          :class="selectComponentName === child.data.name ? 'selected' : 'unselected'"
+          @click="selectElement('gc', child, item, $event)">
+          {{ child.data.name}}</div>
+
       </div>
 
       <!-- <div class="group-element" style="margin-left: 8px;" v-else>
@@ -39,7 +48,8 @@
       return {
         activeCollapses: ['0', '1'],
         activeGroupNames: [],
-        componentCopyList: []
+        componentCopyList: [],
+        selectComponentName: ''
       };
     },
     computed: {
@@ -61,22 +71,46 @@
       // }
     },
     created() {
+      this.$watch(() => this.curComponent, (val) => {
+
+        if (val === null) {
+          this.selectComponentName = ''
+        } else {
+          this.selectComponentName = val.data.name
+        }
+
+      })
     },
     mounted() {
     },
     methods: {
-      selectElement(item) {
-        if (this.curComponent === item) {
-          this.$store.commit('setCurComponent', {
-            component: null,
-            index: null,
-          });
+      selectElement(type, item) {
+
+
+        if (this.selectComponentName === item.data.name) {
+          this.selectComponentName = ''
         } else {
-          this.$store.commit('setCurComponent', {
-            component: item,
-            index: item.id,
-          });
+          this.selectComponentName = item.data.name;
         }
+
+
+        if (type === 'c' || type === 'g') {
+
+          if (this.curComponent === item) {
+            this.$store.commit('setCurComponent', {
+              component: null,
+              index: null,
+            });
+          } else {
+            this.$store.commit('setCurComponent', {
+              component: item,
+              index: item.id,
+            });
+          }
+
+        }
+
+
       },
       handleGroupChange() {
 
@@ -87,7 +121,7 @@
         // 1. 监听copy,一旦失去焦点就删除
         // 2. 需要重新从子组件绑定样式
 
-        return
+        // return
 
         const i = bi.store.state.canvasComponentData.findIndex(c => c.data.name === (item.data.name + "_$copy$"))
         if (i !== -1) {

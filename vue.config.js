@@ -6,6 +6,16 @@ const path = require('path')
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 var HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin');
+
+
+const TerserPlugin = require('terser-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+// //压缩js文件
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+//css压缩
+const OptimizeCss = require('optimize-css-assets-webpack-plugin');
+
+
 function resolve(dir) {
   return path.join(__dirname, dir)
 }
@@ -46,6 +56,13 @@ module.exports = defineConfig({
         fs: false
       }
     },
+    ignoreWarnings: [
+      {
+        module: /@\/vue3\/repl/
+      },
+      // /warning from compiler/,
+      (warning) => true,
+    ],
     plugins: [
       // new HtmlWebpackPlugin(
       //   {
@@ -70,7 +87,7 @@ module.exports = defineConfig({
     ],
     // devtool: "source-map",
     mode: "development",
-    devtool: "cheap-source-map",
+    devtool: IS_PROD ? 'nosources-source-map' : 'eval-cheap-module-source-map',//"cheap-source-map",
     externals: {
       './cptable': 'var cptable'
     },
@@ -87,12 +104,39 @@ module.exports = defineConfig({
       },
     },
     optimization: {
+      minimize: false,
+      moduleIds: "named",
       runtimeChunk: IS_PROD,
       splitChunks: {
         chunks: 'all',
-        minSize: 20000, // Minimum chunk size (in bytes)
-        maxSize: 1024 * 1024 * 2, // Maximum chunk size (in bytes)
+        minSize: 1024 * 12, // Minimum chunk size (in bytes)
+        maxSize: 1024 * 1024 * 1, // Maximum chunk size (in bytes)
       },
+      minimizer: [
+        //压缩CSS代码
+        new OptimizeCss(),
+        new UglifyJSPlugin({
+          cache: true,
+          parallel: true,
+          sourceMap: false
+        }),
+        new TerserPlugin({
+          parallel: true,
+          terserOptions: {
+            // https://github.com/webpack-contrib/terser-webpack-plugin#terseroptions
+          },
+        }),
+
+        // //压缩js代码
+        // new UglifyJsPlugin({
+        //   //启用文件缓存
+        //   cache: true,
+        //   //使用多线程并行运行提高构建速度
+        //   parallel: true,
+        //   //使用 SourceMaps 将错误信息的位置映射到模块
+        //   sourceMap: true
+        // })
+      ]
     },
     module: {
       rules: [
@@ -126,25 +170,21 @@ module.exports = defineConfig({
 
     config.module
       .rule('worker')
-      .test(/\.sharedworker\.js$/)
-      .use('worker-loader')
-      .loader('worker-loader')
-      .tap(options => {
-        return ({
-          worker: 'SharedWorker'
-        })
-      })
-      .end()
-      .rule('worker')
       .test(/\.worker\.js$/)
       .use('worker-loader')
       .loader('worker-loader')
-      .tap(options => {
-        return ({
-          worker: 'Worker'
-        })
-      })
-      .end();
+      .tap(options => ({ worker: 'SharedWorker' }))
+      .end()
+    // .rule('worker')
+    // .test(/\.worker\.js$/)
+    // .use('worker-loader')
+    // .loader('worker-loader')
+    // .tap(options => {
+    //   return ({
+    //     worker: 'Worker'
+    //   })
+    // })
+    // .end();
 
 
     config.module.rule('js').exclude.add(/\.worker\.js$/)

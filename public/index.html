@@ -150,10 +150,15 @@
     var Module = {
       // https://emscripten.org/docs/api_reference/module.html#Module.onRuntimeInitialized
       onRuntimeInitialized() {
-        if (bi) {
-          bi.ml5 = ml5  
+       
+        if (window.bi) {
+          window.bi.ml5 = ml5  
         } else {
           console.warn('bi未定义');
+          setTimeout(() => {
+            Module.onRuntimeInitialized()
+          }, 2000);
+          return
         }
         
         setTimeout(() => {

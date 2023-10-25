@@ -13,13 +13,13 @@ import React, { useRef } from "react";
 import ReactDom from "react-dom";
 
 import ReactComponent from "./ReactComponent";
-import Test from "./DeviceEmulator";
+import DeviceEmulator from "./DeviceEmulator";
 
 export default {
   extends: undefined,
   components: {
     "react-component": ReactComponent,
-    "device-emulator": Test,
+    "device-emulator": DeviceEmulator,
   },
   directives: {},
   props: {

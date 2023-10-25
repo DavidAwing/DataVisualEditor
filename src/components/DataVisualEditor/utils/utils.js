@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 
-export function deepCopy(target, map = new Map()) {
+export function deepCopy(target, map = new WeakMap()) {
 
   if (map.get(target)) {
     return map.get(target);

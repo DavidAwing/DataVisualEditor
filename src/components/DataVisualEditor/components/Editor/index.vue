@@ -1,6 +1,7 @@
 <template>
   <div id="editor" class="editor" :class="{ edit: isEdit }" :style="getCanvasStyle(canvasData)"
-    @contextmenu="handleContextMenu" @mousedown="handleMouseDown">
+    @contextmenu="handleContextMenu" @mousedown="handleMouseDown" @mousemove="handleMouseMove" @mouseup="handleMouseUp">
+
     <!-- 网格线 -->
     <Grid />
     <!--页面组件列表展示-->
@@ -34,6 +35,9 @@
     <MarkLine />
     <!-- 选中区域 -->
     <Area v-show="isShowArea" :start="start" :width="width" :height="height" />
+
+
+
   </div>
 </template>
 
@@ -57,6 +61,10 @@
   import Vue from 'vue';
   import elDragDialog from '../../directive/el-drag-dialog';
 
+  const dragIconUrl = new URL(require('@/assets/drag.png')) //
+  // const dragIcon = require('@/assets/drag.png')
+
+  console.log('dragIcon', dragIconUrl);
 
   export default {
     components: { Shape, ContextMenu, MarkLine, Area, Grid },
@@ -82,6 +90,8 @@
         height: 0,
         isShowArea: false,
         componentTopDialogVisible: true,
+        cursorX: 0,
+        cursorY: 0
       };
     },
     computed: {
@@ -93,6 +103,7 @@
         'canvasName',
         'activeComponentList',
         'curComponentIndex',
+        'setTopMenuShow'
       ]),
     },
     watch: {
@@ -216,6 +227,8 @@
       getCanvasStyle,
 
       handleMouseDown(e) {
+        // 画布鼠标按下
+
         // 如果没有选中组件 在画布上点击时需要调用 e.preventDefault() 防止触发 drop 事件
         if (
           !this.curComponent ||
@@ -239,6 +252,7 @@
         this.isShowArea = true;
 
         const move = moveEvent => {
+
           this.width = Math.abs(moveEvent.clientX - startX);
           this.height = Math.abs(moveEvent.clientY - startY);
           if (moveEvent.clientX < startX) {
@@ -265,6 +279,40 @@
 
         document.addEventListener('mousemove', move);
         document.addEventListener('mouseup', up);
+
+        ['save', 'undo', 'redo'].forEach(name => {
+          this.$store.commit('setTopMenuShow', [name, true])
+        })
+
+      },
+
+      handleMouseMove(e) {
+
+        // console.log('eee', e);
+
+        // 鼠标按着吗?
+        // if (e.ctrlKey && this.curComponent) {
+
+        //   this.cursorX = e.clientX //- 200
+        //   this.cursorY = e.clientY //- 75
+        //   $('#EmbeddedComponentModeDiv').css('left', this.cursorX)
+        //   $('#EmbeddedComponentModeDiv').css('top', this.cursorY)
+
+        //   this.$nextTick(() => {
+
+
+        //     $('#EmbeddedComponentModeDiv').css('display', 'inherit')
+        //   })
+
+        //   if (e.target instanceof SVGRectElement) {
+        //   }
+        // }
+
+
+      },
+
+      handleMouseUp(e) {
+
       },
 
       hideArea() {
@@ -272,15 +320,8 @@
         this.width = 0;
         this.height = 0;
 
-        this.$store.commit('setAreaData', {
-          style: {
-            left: 0,
-            top: 0,
-            width: 0,
-            height: 0,
-          },
-          components: [],
-        });
+        this.$store.commit('clearAreaData');
+        this.$store.commit('clearActiveComponent')
       },
 
       createGroup(areaData) {
@@ -426,9 +467,10 @@
     margin: 0;
     padding: 0;
     overflow: auto;
-
     /* left: 3px;
   top: 3px; */
+
+
 
     .lock {
       opacity: 0.5;

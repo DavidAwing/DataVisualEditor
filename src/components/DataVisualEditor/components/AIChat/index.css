@@ -1,0 +1,18 @@
+
+.ai-chat-dialog .el-dialog__header {
+    padding-top: 10px;
+    padding-bottom: 15px;
+}
+
+.ai-chat-dialog .el-dialog__headerbtn {
+    top: 5px;
+    right: 10px;
+}
+
+.ai-chat-dialog .el-dialog__body {
+    padding: 0px 0px !important;
+}
+
+/deep/ .ai-chat-dialog {
+    background-color: whitesmoke;
+  }

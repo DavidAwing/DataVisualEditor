@@ -30,6 +30,17 @@ export default {
       state.areaData = data
     },
 
+    clearAreaData(state) {
+      state.areaData = {
+        style: {
+          left: 0,
+          top: 0,
+          width: 0,
+          height: 0,
+        },
+        components: [],
+      }
+    },
 
     // todo 这里不同的尺寸之间要重新计算,但是又不能改变原有的尺寸
     compose({ canvasComponentData, areaData, editor }) {
@@ -123,13 +134,13 @@ export default {
             bind: "data",
             options: {}
           },
-          {
-            key: "isAlign",
-            type: "checkbox",
-            label: '对齐',
-            bind: 'data',
-            options: {}
-          },
+          // {
+          //   key: "isAlign",
+          //   type: "checkbox",
+          //   label: '对齐',
+          //   bind: 'data',
+          //   options: {}
+          // },
           {
             key: "isModal",
             type: "checkbox",
@@ -191,34 +202,6 @@ export default {
             type: "number",
             label: '边框半径',
             bind: 'style'
-          },
-          {
-            key: "dialogAlign",
-            type: "select",
-            label: '位置',
-            bind: 'data',
-            options: [
-              {
-                label: '居中',
-                value: 'center',
-              },
-              {
-                label: '上对齐,左右居中',
-                value: 'top|center'
-              },
-              {
-                label: '左对齐,上下居中',
-                value: 'left|center'
-              },
-              {
-                label: '左上对齐',
-                value: 'left|top'
-              },
-              {
-                label: '无',
-                value: 'none',
-              }
-            ]
           }
         ]
       }

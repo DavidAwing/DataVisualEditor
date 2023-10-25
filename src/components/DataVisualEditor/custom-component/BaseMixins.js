@@ -14,52 +14,12 @@ export default {
     }
   },
   created: function () {
-    console.log('BaseMixins created', this.element);
+    console.log('BaseMixins created', this.element.data.name);
 
-    Vue.set(this.element, '_', this)
-    Object.defineProperty(this.element, "_", { enumerable: false })
-
-    if (!this.element.eventOptions)
-      this.element.eventOptions = []
-
-    if (!this.element.eventOptions.find(m => m.label === "创建前")) {
-      this.element.eventOptions.unshift({
-        label: "销毁后",
-        value: "onDestroy"
-      })
-      this.element.eventOptions.unshift({
-        label: "销毁前",
-        value: "onBeforeDestroy"
-      })
-      this.element.eventOptions.unshift({
-        label: "更新后",
-        value: "onUpdated"
-      })
-      this.element.eventOptions.unshift({
-        label: "更新前",
-        value: "onBeforeUpdate"
-      })
-      this.element.eventOptions.unshift({
-        label: "挂载后",
-        value: "onMounted"
-      })
-      this.element.eventOptions.unshift({
-        label: "挂载前",
-        value: "onBeforeMount"
-      })
-      this.element.eventOptions.unshift({
-        label: "创建后",
-        value: "onCreated"
-      })
-      this.element.eventOptions.unshift({
-        label: "创建前",
-        value: "onBeforeCreate"
-      })
-    }
 
   },
   mounted: function () {
-    console.log('BaseMixins mounted');
+    console.log('BaseMixins mounted', this.element.data.name);
   },
   methods: {
 

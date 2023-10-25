@@ -24,9 +24,6 @@ import onStyleChange from "./onStyleChange";
 const JSONfn = require("jsonfn").JSONfn;
 const equal = require('fast-deep-equal')
 
-
-
-
 type jobFun = () => void
 
 class Job {
@@ -50,10 +47,7 @@ class Job {
       })
     }
   }
-
 }
-
-
 
 (window as any).getArrayLength = (arr: any[]) => {
   return arr.length

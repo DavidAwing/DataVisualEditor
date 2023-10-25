@@ -98,7 +98,59 @@ const data = {
     editorHint: "",
     currentPrintIndex: 0,
     canvasName: "",
-    activeComponentList: [] // 激活的组件列表
+    activeComponentList: [], // 激活的组件列表
+    topIntelligentMenu: {
+      width: 30,
+      widthScale: 1,
+      children: [
+        {
+          name: 'undo',
+          show: false,
+          className: '',
+          img: require('../assets/撤销.png')
+        },
+        {
+          name: 'redo',
+          show: false,
+          className: 'top-intelligent-menu-item-mirror',
+          img: require('../assets/重做.png')
+        },
+        {
+          name: 'save',
+          show: false,
+          className: '',
+          img: require('../assets/保存1.png')
+        },
+        {
+          name: 'compose',
+          show: false,
+          className: '',
+          width: 23,
+          img: require('../assets/组合.png')
+        },
+        {
+          name: 'decompose',
+          show: false,
+          className: '',
+          width: 22,
+          img: require('../assets/拆分.png')
+        },
+        {
+          name: 'lock',
+          show: false,
+          className: '',
+          width: 25,
+          img: require('../assets/锁定.png')
+        },
+        {
+          name: 'unlock',
+          show: false,
+          className: '',
+          width: 25,
+          img: require('../assets/解锁.png')
+        },
+      ]
+    }
   },
   mutations: {
     ...animation.mutations,
@@ -165,6 +217,26 @@ const data = {
       canvasComponentData.forEach((component) => {
         addStyleListToHead(component, state.canvasName);
       });
+    },
+
+    setTopMenuShow(state, val) {
+      let name, show;
+
+      if (Array.isArray(val)) {
+        name = val[0]
+        show = val[1]
+      } else if (typeof val === 'string') {
+        name = val
+      }
+
+      const menus = state.topIntelligentMenu.children
+      const m = menus.find(item => item.name === name)
+      if (m) {
+        if (show === undefined) {
+          show = !m.show
+        }
+        Vue.set(m, 'show', show)
+      }
     },
 
 

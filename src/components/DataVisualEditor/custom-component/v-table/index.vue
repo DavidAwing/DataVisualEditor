@@ -1,9 +1,9 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <div class="container" style="" >
-    <el-table :data="element.data.tableData" height="250" :border="false" style="" ref="table"
-      class="vc-table" row-class-name="vc-table-row"
-      @row-click="(row, column, event) => onEvent('onRowClick', { row, column, event })"
+  <div class="container" style="">
+    <el-table :data="element.data.tableData" height="250" :border="false" style="" ref="table" class="vc-table"
+      row-class-name="vc-table-row"
+      @row-click="(row, column, event) => {test(row); onEvent('onRowClick', { row, column, event })}"
       @row-dblclick="(row, column, event) => onEvent('onRowDblClick', { row, column, event })"
       @row-contextmenu="(row, column, event) => onEvent('onRowContextmenu', { row, column, event })">
       <template v-for="(column, index) in element.data.columns">
@@ -38,11 +38,12 @@
         </el-form-item>
 
         <el-form-item label="对齐" class="full-width" :style="{ width: '100%' }">
-            <el-select v-model="column.align" placeholder="" autocomplete="off" class="full-width" :style="{ width: '100%' }">
-              <el-option label="left" value="left"> </el-option>
-              <el-option label="center" value="center"> </el-option>
-              <el-option label="right" value="right"> </el-option>
-            </el-select>
+          <el-select v-model="column.align" placeholder="" autocomplete="off" class="full-width"
+            :style="{ width: '100%' }">
+            <el-option label="left" value="left"> </el-option>
+            <el-option label="center" value="center"> </el-option>
+            <el-option label="right" value="right"> </el-option>
+          </el-select>
         </el-form-item>
       </el-form>
 
@@ -273,6 +274,9 @@
       }
     },
     methods: {
+
+      test(row) {
+      },
 
       cellStyle() {
 

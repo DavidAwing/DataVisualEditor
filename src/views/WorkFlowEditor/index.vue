@@ -2,7 +2,7 @@
 
   <div class="logic-flow-view">
     <!-- 辅助工具栏 -->
-    <Control 
+    <Control
       class="control"
       v-if="lf"
       :lf="lf"
@@ -37,8 +37,6 @@ import Vue from 'vue';
 import { mapState } from 'vuex';
 import axios from 'axios';
 import { requestCanvasData } from '../../components/DataVisualEditor/utils/dataBinder';
-
-
 import LogicFlow from '@logicflow/core'
 import { Snapshot, BpmnElement, Menu,  MiniMap } from '@logicflow/extension'
 import '@logicflow/core/dist/style/index.css'
@@ -49,8 +47,6 @@ import DataDialog from './LFComponents/DataDialog'
 import { toTurboData, toLogicflowData } from './Util/AdpterForTurbo';
 import { BpmnNode } from './config'
 const demoData = require('./dataTurbo.json')
-
-
 
 import {
   getStyle,
@@ -70,7 +66,6 @@ import Shape from '../../components/DataVisualEditor/components/Editor/Shape';
 import generateID, { resetID } from '../../components/DataVisualEditor/utils/generateID';
 import eventBus from '../../components/DataVisualEditor/utils/eventBus';
 const JSONfn = require('jsonfn').JSONfn;
-
 
 export default {
   components: { NodePanel, Control, DataDialog, MiniMap },

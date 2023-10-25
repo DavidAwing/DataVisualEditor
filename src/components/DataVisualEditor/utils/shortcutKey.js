@@ -22,8 +22,79 @@ const dKey = 68 // 删除
 const deleteKey = 46 // 删除
 const eKey = 69 // 清空画布
 
+const tabKey = 9
+
 export const keycodes = [66, 67, 68, 69, 71, 76, 80, 83, 85, 86, 88, 89, 90]
 
+
+const globalShortcutKey = [sKey]
+
+
+const KeyboardManager = {
+  keys: [],
+
+  // down
+  add: (key) => {
+    if (KeyboardManager.keys.find(k => k.code === key.keyCode) === undefined) {
+      KeyboardManager.keys.push(key)
+
+      KeyboardManager.getEvents(key.keyCode).forEach(func => {
+        func()
+      });
+    }
+  },
+  // up
+  delete: (val) => {
+
+    if (typeof val === 'number') {
+
+      let index = KeyboardManager.keys.findIndex(key => key.code === val)
+      while (index !== -1) {
+        KeyboardManager.keys.splice(index, 1);
+        index = KeyboardManager.keys.findIndex(key => key.code === val)
+      }
+
+    }
+
+
+  },
+  isKeyDown: (key) => {
+
+  },
+  addEvent: (name, func) => {
+
+    if (KeyboardManager.events[name] === undefined) {
+      KeyboardManager.events[name] = []
+    }
+
+    KeyboardManager.events[name].push(func)
+  },
+  getEvents: (val) => {
+
+    let name = val
+    if (typeof val === 'number') {
+      switch (val) {
+        case 17:
+          name = 'ctrl'
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    return KeyboardManager.events[name] ?? []
+  },
+  clearEvents() {
+    KeyboardManager.events = {}
+  },
+  events: {
+  },
+
+
+}
+
+window.bi.KeyboardManager = KeyboardManager
 
 
 function copy() {
@@ -63,6 +134,7 @@ function decompose() {
 }
 
 function save() {
+  console.log('key保存');
   eventBus.$emit('save')
 }
 
@@ -126,17 +198,20 @@ export function isCtrlDown() {
 // 全局监听按键操作并执行相应命令
 export function listenGlobalKeyDown() {
   window.onkeydown = (e) => {
-    if (!store.state.isInEdiotr) return
-    const { curComponent } = store.state
+
     const { keyCode } = e
+
+    if (!store.state.isInEdiotr && !globalShortcutKey.includes(keyCode)) return
+    const { curComponent } = store.state
+
     if (keyCode === ctrlKey || keyCode === commandKey) {
       isCtrlOrCommandDown = true
     } else if (keyCode == deleteKey && curComponent) {
       store.commit('deleteComponent')
       store.commit('recordSnapshot')
-    } else if (e.keyCode === 9) {
+    } else if (e.keyCode === tabKey) {
       e.preventDefault()
-    } else if (isCtrlOrCommandDown) {
+    } else if (e.ctrlKey) {
       if (unlockMap[keyCode] && (!curComponent || !curComponent.isLock)) {
         e.preventDefault()
         unlockMap[keyCode]()
@@ -148,11 +223,16 @@ export function listenGlobalKeyDown() {
   }
 
   window.onkeyup = (e) => {
-    if (e.keyCode === ctrlKey || e.keyCode === commandKey) {
+    const { keyCode } = e
+
+    // KeyboardManager.delete(keyCode)
+
+    if (keyCode === ctrlKey || keyCode === commandKey) {
       isCtrlOrCommandDown = false
+      $('#EmbeddedComponentModeDiv').css('display', 'none')
     }
     // Tab切换激活的组件
-    if (e.keyCode === 9) {
+    if (keyCode === tabKey) {
       e.preventDefault()
       eventBus.$emit("SwitchNextComponent", e)
     }

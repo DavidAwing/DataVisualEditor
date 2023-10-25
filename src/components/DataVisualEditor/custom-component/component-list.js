@@ -3,6 +3,7 @@ import { getRandStr } from '../utils/utils'
 import Vue from 'vue'
 const JSONfn = require('jsonfn').JSONfn;
 
+
 // 公共样式
 export const commonStyle = {
   rotate: 0,
@@ -384,11 +385,11 @@ const list = [
   // 组件容器
   {
     uniqueId: '',
-    component: 'v-text',
+    component: 'v-container',
     label: '容器',
     icon: 'wenben',
     data: {
-      text: "文本222",
+      text: "请拖放组件到容器上",
       verticalAlign: "",
       writingMode: "horizontal",
       show: true,
@@ -397,8 +398,8 @@ const list = [
     },
     attrExcludes: [],
     style: {
-      width: 211,
-      height: 22,
+      width: 330,
+      height: 160,
       fontSize: 14,
       fontStyle: 2500,
       fontWeight: 2500,
@@ -408,7 +409,7 @@ const list = [
       left: 0,
       textAlign: '',
       color: 'rgba(0, 0, 0, 1)',
-      backgroundColor: 'rgba(0,0,0,0)',
+      backgroundColor: 'rgba(0,0,0,0.1)',
       fontFamily: '宋体'
     },
     styleUnit: {

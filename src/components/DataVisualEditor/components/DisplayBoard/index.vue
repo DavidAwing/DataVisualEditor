@@ -97,8 +97,6 @@
     },
     mounted() {
 
-      console.log('tests', this.$refs);
-
      },
     updated() { },
     watch: {

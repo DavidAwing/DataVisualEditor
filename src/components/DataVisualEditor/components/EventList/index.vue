@@ -86,7 +86,6 @@ import CodeViewer from './CodeViewer.vue';
 import SqlEditor from './SqlEditor';
 import JsEditor from './JsEditor';
 import JsonEditor from './JsonEditor';
-
 import { stringToFunction, CompileSourcecode, CompileToModule, CompileTypescriptToIIFE } from '../../utils/compiler.ts';
 
 const JSONfn = require('jsonfn').JSONfn;
@@ -136,17 +135,20 @@ export default {
         if (!this.selectedEvent) return '';
         const event = this.curComponent.events[this.selectedEvent];
         if (!event) {
-          return JSONfn.stringify(`function ${this.selectedEvent}(param) {
+//           return JSONfn.stringify(`function ${this.selectedEvent}(param) {
 
-    const component = param.component;
-    const event = param.event;
-    const element = param.element;
-    console.log("组件${this.selectedEvent}事件", component, event, element);
+//     const component = param.component;
+//     const event = param.event;
+//     const element = param.element;
+//     console.log("组件${this.selectedEvent}事件", component, event, element);
 
-}`);
+// }`);
+
+        return `const component = param.component;\nconst data = param.data;\nconst element = param.element;\nconsole.log("组件${this.selectedEvent}事件", component, data, element);`;
         }
 
-        return JSONfn.stringify(event).replace(/^("*)function\s+anonymous\(/, `"function ${this.selectedEvent}(`);
+        // return JSONfn.stringify(event).replace(/^("*)function\s+anonymous\(/, `"function ${this.selectedEvent}(`);
+        return event;
       },
       set(newValue) {
         this.curComponent.events[this.selectedEvent] = newValue;
@@ -185,12 +187,15 @@ export default {
         return;
       }
 
+      const code = this.$refs.jsEditor.getCode();
       try {
-        const code = this.$refs.jsEditor.getCode();
         const func = stringToFunction(code);
         this.curComponent.events[this.selectedEvent] = func;
       } catch (error) {
-        toast('脚本编译发生错误: ' + error.message + '\n' + error.stack);
+
+        this.curComponent.events[this.selectedEvent] = code;
+        bi.debug('脚本编译发生错误: ' + error.message + '\n' + error.stack);
+        // toast('脚本编译发生错误: ' + error.message + '\n' + error.stack);
       }
     },
 

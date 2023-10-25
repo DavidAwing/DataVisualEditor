@@ -8174,7 +8174,7 @@ const normalizeRef = ({
   }
   return ref != null ? isString(ref) || isRef(ref) || isFunction(ref) ? { i: currentRenderingInstance, r: ref, k: ref_key, f: !!ref_for } : ref : null;
 };
-function createBaseVNode(type, props = null, children = null, patchFlag = 0, dynamicProps = null, shapeFlag = type === Fragment ? 0 : 1, isBlockNode = false, needFullChildrenNormalization = false) {
+export function createBaseVNode(type, props = null, children = null, patchFlag = 0, dynamicProps = null, shapeFlag = type === Fragment ? 0 : 1, isBlockNode = false, needFullChildrenNormalization = false) {
   const vnode = {
     __v_isVNode: true,
     __v_skip: true,
@@ -15325,7 +15325,7 @@ function compile(template, options = {}) {
   initDev();
 }
 const compileCache = /* @__PURE__ */ Object.create(null);
-function compileToFunction(template, options) {
+export function compileToFunction(template, options) {
   if (!isString(template)) {
     if (template.nodeType) {
       template = template.innerHTML;

@@ -18,6 +18,7 @@ const components = [
   'v-video',
   'vc-chart',
   'vc-bar-MultipleYAxes',
+  'VContainer',
 ]
 
 components.forEach((key) => {

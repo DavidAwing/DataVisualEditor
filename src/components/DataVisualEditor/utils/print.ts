@@ -6,8 +6,6 @@ const equal = require('fast-deep-equal')
 
 
 
-
-
 // 打印模板
 // 1. 设计模板(html实时预览) => 2. 后台读取模板字符串(body(多个div)或body里面的第一个div) => 3. 替换插值元素为插值字符串 => 3. vue生成打印页面
 

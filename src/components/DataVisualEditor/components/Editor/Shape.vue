@@ -1,5 +1,7 @@
 <template>
-  <div class="shape" :class="{ active }" @click="selectCurComponent" @mousedown="handleMouseDownOnShape">
+  <div class="shape" :class="{ active }" @click="selectCurComponent" @mousedown="handleMouseDownOnShape"
+    @mouseup="handleMouseUpOnShape" @mousemove="handleMouseMoveOnShape" @mouseover="handleMouseOverOnShape"
+    @mouseout="handleMouseOutOnShape">
     <span v-show="isActive()" class="iconfont icon-xiangyouxuanzhuan" @mousedown="handleRotate"></span>
     <span v-show="element.isLock" class="iconfont icon-suo"></span>
     <div v-for="item in isActive() ? pointList : []" :key="item" class="shape-point" :style="getPointStyle(item)"
@@ -17,6 +19,8 @@
   import calculateComponentPositonAndSize from "../../utils/calculateComponentPositonAndSize";
   import { mod360 } from "../../utils/translate";
   import { isCtrlDown } from "../../utils/shortcutKey";
+
+  // todo draggable 左键+CTRL点击组件后变为可拖拽,抬起后禁止并且不要显示右键菜单,
 
   export default {
     props: {
@@ -93,12 +97,14 @@
       });
     },
     methods: {
+
       isActive() {
         return this.active && !this.element.isLock;
       },
 
       // 处理旋转
       handleRotate(e) {
+
         this.$store.commit("setClickComponentStatus", true);
         e.preventDefault();
         e.stopPropagation();
@@ -255,6 +261,10 @@
 
       handleMouseDownOnShape(e) {
 
+        ['save', 'undo', 'redo'].forEach(name => {
+          this.$store.commit('setTopMenuShow', [name, false])
+        })
+
         this.lastClickDate = new Date()
 
         this.$store.commit("setInEditorStatus", true);
@@ -311,7 +321,10 @@
           return;
         }
 
-        if (e.button === 0) this.$store.commit("clearActiveComponent");
+        if (e.button === 0) {
+          this.$store.commit("clearAreaData")
+          this.$store.commit("clearActiveComponent");
+        }
 
         this.$store.commit("setCurComponent", {
           component: this.element,
@@ -340,6 +353,10 @@
           // 防止误拖动
           const milliseconds = new Date().getTime() - this.lastClickDate.getTime();
           if (milliseconds < 200) {
+            return
+          }
+
+          if (moveEvent.ctrlKey) {
             return
           }
 
@@ -404,6 +421,20 @@
 
         document.addEventListener("mousemove", move);
         document.addEventListener("mouseup", up);
+      },
+
+      handleMouseUpOnShape(e) {
+
+      },
+
+      handleMouseMoveOnShape(e) {
+
+      },
+
+      handleMouseOverOnShape(e) {
+      },
+
+      handleMouseOutOnShape(e) {
       },
 
       selectCurComponent(e) {

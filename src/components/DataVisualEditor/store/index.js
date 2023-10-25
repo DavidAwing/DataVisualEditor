@@ -13,6 +13,11 @@ import {
   getValueByAttributePath, setJsonAttribute, SetValueAndAttributePathFromKey, typeEqual
 } from "../utils/chartUtils";
 import eventBus from "../utils/eventBus";
+import {
+  debounce
+} from "../utils/utils";
+
+
 
 Vue.use(Vuex)
 
@@ -237,6 +242,13 @@ const data = {
         }
         Vue.set(m, 'show', show)
       }
+
+      debounce(() => {
+        menus.forEach(m => {
+          Vue.set(m, 'show', false)
+        })
+      }, 8000)()
+
     },
 
 

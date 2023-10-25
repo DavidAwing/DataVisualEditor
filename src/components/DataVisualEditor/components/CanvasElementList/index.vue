@@ -86,6 +86,7 @@
     methods: {
       selectElement(type, item) {
 
+        console.log('点击了', type, item);
 
         if (this.selectComponentName === item.data.name) {
           this.selectComponentName = ''
@@ -93,29 +94,35 @@
           this.selectComponentName = item.data.name;
         }
 
-
-        if (type === 'c' || type === 'g') {
-
-          if (this.curComponent === item) {
-            this.$store.commit('setCurComponent', {
-              component: null,
-              index: null,
-            });
-          } else {
-            this.$store.commit('setCurComponent', {
-              component: item,
-              index: item.id,
-            });
-          }
-
+        if (this.curComponent === item) {
+          this.$store.commit('setCurComponent', {
+            component: null,
+            index: null,
+          });
+          return
         }
 
-
+        if (type === 'c' || type === 'g') {
+          this.$store.commit('setCurComponent', {
+            component: item,
+            index: item.id,
+          });
+        } else if (type === 'gc') {
+          this.$store.commit('setCurComponent', {
+            component: item,
+            index: item.id,
+          });
+        }
       },
       handleGroupChange() {
 
       },
       handleChildComponentClick(item) {
+
+
+
+
+
 
         // copy
         // 1. 监听copy,一旦失去焦点就删除
@@ -123,28 +130,28 @@
 
         // return
 
-        const i = bi.store.state.canvasComponentData.findIndex(c => c.data.name === (item.data.name + "_$copy$"))
-        if (i !== -1) {
-          bi.store.state.canvasComponentData.splice(i, 1)
-        }
+        // const i = bi.store.state.canvasComponentData.findIndex(c => c.data.name === (item.data.name + "_$copy$"))
+        // if (i !== -1) {
+        //   bi.store.state.canvasComponentData.splice(i, 1)
+        // }
 
-        const componentCopy = f.deepCopy(item);
+        // const componentCopy = f.deepCopy(item);
 
-        ['name', 'show', 'isAlign'].forEach(key => {
-          bi.Vue.delete(componentCopy.attrList, componentCopy.attrList.findIndex(attr => attr.key === key))
-        });
+        // ['name', 'show', 'isAlign'].forEach(key => {
+        //   bi.Vue.delete(componentCopy.attrList, componentCopy.attrList.findIndex(attr => attr.key === key))
+        // });
 
-        this.componentCopyList.push(componentCopy)
-        componentCopy.data.name += "_$copy$"
-        this.$store.commit('addComponent', {
-          component: componentCopy,
-        })
+        // this.componentCopyList.push(componentCopy)
+        // componentCopy.data.name += "_$copy$"
+        // this.$store.commit('addComponent', {
+        //   component: componentCopy,
+        // })
 
-        this.$nextTick(() => {
-          setTimeout(() => {
-            this.selectElement(componentCopy)
-          }, 100);
-        })
+        // this.$nextTick(() => {
+        //   setTimeout(() => {
+        //     this.selectElement(componentCopy)
+        //   }, 100);
+        // })
 
 
       }

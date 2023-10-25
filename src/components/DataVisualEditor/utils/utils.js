@@ -1,6 +1,62 @@
 import Vue from 'vue'
 import axios from 'axios'
 
+
+
+const funcMap = new Map()
+
+// 节流
+export function throttle(fn, delay = 500) {
+
+  const key = fn.toString()
+  let call = funcMap.get(key)
+  if (call != null) {
+    return call
+  }
+
+  let timer = null
+
+  call = function () {
+    if (timer) {
+      return
+    }
+    timer = setTimeout(() => {
+      fn.apply(this, arguments)
+      timer = null
+    })
+  }
+
+  funcMap.set(key, call)
+  return call
+}
+
+// 防抖
+export function debounce(fn, delay = 500) {
+
+  const key = fn.toString()
+  let call = funcMap.get(key)
+  if (call != null) {
+    return call
+  }
+
+  // timer 是在闭包中的
+  let timer = null
+
+  call = function () {
+    if (timer) {
+      clearTimeout(timer)
+    }
+    timer = setTimeout(() => {
+      fn.apply(this, arguments)
+      timer = null
+    }, delay)
+  }
+
+  funcMap.set(key, call)
+  return call
+}
+
+
 export function deepCopy(target, map = new WeakMap()) {
 
   if (map.get(target)) {

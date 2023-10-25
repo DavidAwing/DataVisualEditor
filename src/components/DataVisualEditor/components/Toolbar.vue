@@ -706,9 +706,10 @@
           if (res === true) {
             toast('保存成功', 'success');
           }
+        }).catch(error => {
+          console.warn('save', error);
         })
         return true
-
       },
 
       clearCanvas() {

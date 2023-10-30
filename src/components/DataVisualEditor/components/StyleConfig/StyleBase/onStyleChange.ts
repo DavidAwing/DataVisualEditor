@@ -43,6 +43,10 @@ export default async function onStyleChange(this: any, val: any, old: any) {
   if (JSONfn.stringify(curStyle) === "{}")
     return
 
+  if (curStyle.type === "chart") {
+    return
+  }
+
   // 解决修改数据死循环
   // this.functionTimeList.push(new Date())
   // const size = 2
@@ -60,7 +64,7 @@ export default async function onStyleChange(this: any, val: any, old: any) {
   // }
 
   const onWatch = val.lifecycle && val.lifecycle.onWatch
-  if (onWatch !== undefined && onWatch !== null && typeof onWatch === 'string' && onWatch.startsWith("SCRIPT*")) {
+  if (onWatch && typeof onWatch === 'string' && onWatch.startsWith("SCRIPT*")) {
 
     const arr = onWatch.trim().split("*")
     const scriptPath = arr[1].trim()
@@ -229,7 +233,7 @@ export default async function onStyleChange(this: any, val: any, old: any) {
     if (curStyle.type === "chart") {
 
       let optionValue = getValueByAttributePath(this.curComponent.data.option, attributePath)
-      if (optionValue === undefined || optionValue === null) {
+      if (optionValue != null) {
 
         // todo 找不到的数据从echart实例获取
 
@@ -247,6 +251,7 @@ export default async function onStyleChange(this: any, val: any, old: any) {
         optionValue = { ...cssData }
         let newOption = setJsonAttribute(this.curComponent.data.option, attributePath, optionValue)
         newOption = SetValueAndAttributePathFromKey(newOption, attributePath, optionValue)
+
         // 设置新的newOption
         eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
       } else {
@@ -275,12 +280,14 @@ export default async function onStyleChange(this: any, val: any, old: any) {
 
           let value = getValueByAttributePath(optionValue, variable)
 
-          if (value === undefined || value === null)
-            return
+          if (value == null) {
+            // 在此处需要注意不要覆盖了已存在的数据
+            /*eslint valid-typeof: "error"*/
+            if (['value'].includes(attr.variable) && optionValue != null && (typeof optionValue === attr.type)) {
+              attr.value = optionValue
+            }
 
-          // Vue.set(attr, "value", value)
-
-          if (attr.type === "color-picker" && typeof value === "object" && value.type === "linear") {
+          } else if (attr.type === "color-picker" && typeof value === "object" && value.type === "linear") {
             attr.options.gradientType = "linear"
             attr.options.value.x = value.x
             attr.options.value.x2 = value.x2
@@ -293,6 +300,7 @@ export default async function onStyleChange(this: any, val: any, old: any) {
             // let newOption = setJsonAttribute(this.curComponent.data.option, attributePath + "." + variable, value)
             // newOption = SetValueAndAttributePathFromKey(newOption, attributePath + "." + variable, value)
             // eventBus.$emit("SetOption", this.curComponent.data.name, newOption)
+
 
             attr.value = value
           }

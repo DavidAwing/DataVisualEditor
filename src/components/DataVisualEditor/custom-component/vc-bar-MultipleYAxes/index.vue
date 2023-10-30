@@ -1,7 +1,6 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <div class="container">
-    <div :id="element.data.chartId"></div>
   </div>
 </template>
 

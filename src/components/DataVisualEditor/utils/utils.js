@@ -6,9 +6,9 @@ import axios from 'axios'
 const funcMap = new Map()
 
 // 节流
-export function throttle(fn, delay = 500) {
+export function throttle(fn, delay = 500, key = null) {
 
-  const key = fn.toString()
+  key = key ?? fn.toString()
   let call = funcMap.get(key)
   if (call != null) {
     return call

@@ -1,6 +1,6 @@
 .container {
     height: 100%;
-    display: flex; 
+    display: flex;
     flex-flow: column nowrap;
     background-color: transparent;
     overflow: visible;
@@ -14,7 +14,7 @@
 .series-container {
     display: flex;
     flex-flow: row nowrap;
-    height: 300px;
+    height: 50vh;
 
     & .active-serie {
         color: blue;
@@ -24,9 +24,7 @@
         display: flex;
         flex-flow: column nowrap;
 
-        &>div:nth-child(1) {
-
-        }
+        &>div:nth-child(1) {}
 
         &>div:nth-child(2) {
             display: flex;
@@ -52,6 +50,7 @@
 
             & span {
                 text-align: left;
+
                 &:nth-child(n+2) {
                     margin-top: 6px;
                 }
@@ -59,15 +58,16 @@
         }
     }
 
-    
+
     &>.edit-area {
         width: 100%;
         height: 100%;
-        margin-left: 16px; 
+        margin-left: 16px;
         background-image: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
         border-radius: 6px 6px 6px 6px;
         padding: 10px 10px;
         overflow: auto;
+
         &::-webkit-scrollbar {
             width: 10px;
         }
@@ -77,3 +77,30 @@
 /deep/ .el-tag .el-icon-close {
     right: -55px;
 }
+
+/deep/ #jsonEditor>div>div.jsoneditor-menu>a {
+    display: none !important;
+}
+
+/deep/ #jsonEditor>div>div.jsoneditor-outer.has-main-menu-bar.has-status-bar>div>div.ace_gutter>div,
+/deep/ #jsonEditor>div>div.jsoneditor-outer.has-main-menu-bar.has-status-bar>div>div.ace_gutter {
+    width: 39px !important;
+}
+
+/deep/ #jsonEditor>div>div.jsoneditor-outer.has-main-menu-bar.has-status-bar>div>div.ace_gutter>div>div {
+    padding-left: 3px !important;
+
+}
+
+/deep/ #jsonEditor>div>div.jsoneditor-outer.has-main-menu-bar.has-status-bar {
+    padding-bottom: 0px;
+}
+
+/deep/ #jsonEditor>div>div.jsoneditor-statusbar {
+    display: none;
+}
+
+/deep/ .chart-list {}
+
+
+ 

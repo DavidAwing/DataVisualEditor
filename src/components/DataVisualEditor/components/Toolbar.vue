@@ -47,7 +47,7 @@
       <el-button v-if="false" @click="unlock">解锁</el-button>
 
       <div class="canvas-config">
-        <span>尺寸</span>
+        <!-- <span>尺寸</span> -->
         <input style="padding: 6px" v-model="canvasData.width" />
         <span>*</span>
         <input style="padding: 6px" v-model="canvasData.height" />

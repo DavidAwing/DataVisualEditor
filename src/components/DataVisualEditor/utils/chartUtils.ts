@@ -25,6 +25,8 @@ export function setJsonAttribute(json: string | object, attributePath: string, v
   }
   const originalObj = currentObj;
   for (let i = 0; i < properties.length; i++) {
+
+
     const property = properties[i];
     const isArray = /^[a-zA-Z]\w*\[(\d+|\w+)\]$/.test(property);
     if (isArray) {
@@ -62,8 +64,6 @@ export function setJsonAttribute(json: string | object, attributePath: string, v
           currentObj[match[1]] = []
           currentObj[match[1]][index] = {}
         }
-
-
       }
       currentObj = currentObj[match[1]][index];
     } else if (
@@ -149,9 +149,9 @@ export function getValueByAttributePath(this: any, from: any, attributePath: str
         }
       }
 
-      if (currentObj[match[1]] === undefined || currentObj[match[1]] === null) 
-        return currentObj[match[1]] 
-        
+      if (currentObj[match[1]] === undefined || currentObj[match[1]] === null)
+        return currentObj[match[1]]
+
       currentObj = currentObj[match[1]][index];
     } else if (
       Object.prototype.toString.call(currentObj) === "[object Object]"

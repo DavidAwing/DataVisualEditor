@@ -86,7 +86,7 @@
     mounted() {
       // this.imgHeight = getComputedStyle(document.getElementsByClassName('list')[0]).width;
 
-      axios.get(`/BI-API/Component/GetUserCustomizedComponentList`).then(({ data }) => {
+      axios.get(`/BI-API/Component/GetUserCustomizedComponentList?type=.ct`).then(({ data }) => {
         for (const item of data.data) {
           this.userComponentList.push(JSON.parse(item));
         }
@@ -108,7 +108,7 @@
           this.curComponent.icon = image;
           const curComponentText = JSONfn.stringify(this.curComponent);
           await axios.post(`/BI-API/Component/SaveUserCustomizedComponent`, {
-            name: this.curComponent.data.name,
+            name: this.curComponent.data.name + '.ct',
             component: curComponentText,
           });
           for (let i = 0; i < this.userComponentList.length; i++) {

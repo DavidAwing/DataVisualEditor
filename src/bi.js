@@ -22,7 +22,7 @@ import * as ElementUI from 'element-ui';
 import * as xlsx from 'xlsx-js-style';
 import eventBus from './components/DataVisualEditor/utils/eventBus';
 import MySharedWorker from './components/DataVisualEditor/utils/shared-worker.worker.js'
-
+import * as echarts from "echarts";
 import draggable from '@shopify/draggable'
 
 import { loadModule } from './components/DataVisualEditor/utils/webpackUtils';
@@ -36,6 +36,8 @@ import * as repl from '@/vue3/repl'
 import Scene from "scenejs";
 import * as BABYLON from 'babylonjs';
 import * as THREE from 'three';
+
+import * as _ from 'lodash'
 // import Monaco from '@/vue3/repl/dist/monaco-editor.js'
 
 
@@ -102,6 +104,9 @@ const loadAll = async () => {
   bi.repl = repl
   // bi.Monaco = Monaco
   bi.CompilerSFC = CompilerSFC
+  bi.echarts = echarts
+
+  bi._ = _
 
   bi.debug = (msg) => {
     if (window.BI_DEBUG) {

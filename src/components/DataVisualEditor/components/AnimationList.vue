@@ -9,6 +9,7 @@
           :key="index"
           closable
           @close="removeAnimation(index)"
+          @click=""
         >
           {{ tag.label }}
           <i
@@ -133,6 +134,10 @@ export default {
       width: 50%;
       margin: auto;
       margin-bottom: 10px;
+
+      &:hover {
+        cursor: pointer;
+      }
     }
   }
 

@@ -312,7 +312,7 @@ export default class ChartsComponentBase extends ComponentBase {
               }
             } else if (typeof obj[prop] === "object") {
               correctiveData(obj[prop]);
-            } else if (typeof obj[prop] === "string" && /^function\s*\([\w,\s]*\)\s*{/.test(obj[prop])) {
+            } else if (typeof obj[prop] === "string" && /^function\s*\([\w,\s]*\)\s*\{[.\s\S]*\}$/.test(obj[prop].trim())) {
               // eslint-disable-next-line no-eval
               obj[prop] = eval('(' + obj[prop] + ')');
             }

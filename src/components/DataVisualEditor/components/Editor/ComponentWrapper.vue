@@ -1,5 +1,5 @@
 <template>
-  <div @click="handleClick" @mousedown="handleMousedown" ref="shape" class="shape" :style="getComponentStyle()">
+  <div @click="handleClick" @mousedown="handleMousedown" ref="shape" class="shape" :style="getComponentStyle()" >
     <component :is="element.component" class="component" :id="'component' + element.id" :prop-value="element.propValue"
       :element="element" />
   </div>
@@ -10,7 +10,7 @@
   import runAnimation from "../../utils/runAnimation";
   import { mixins } from "../../utils/events";
   import { mapState } from "vuex";
-
+  import eventBus from "../../utils/eventBus";
 
 
   export default {
@@ -34,8 +34,12 @@
     },
     mounted() {
       try {
+
+
         // todo 动画
+        runAnimation(this.$refs.shape, this.element.animations);
         // runAnimation(this.$refs.component.$el, this.element.animations);
+        // eventBus.$emit("runAnimation");
       } catch (error) {
         console.error('ComponentWrapper', error);
       }

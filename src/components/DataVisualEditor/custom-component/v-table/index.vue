@@ -15,11 +15,12 @@
 
     <el-pagination background layout="prev, pager, next" :total="10" v-if="false"> </el-pagination>
 
-    <top-el-dialog title="编辑表头" :visible.sync="element.data.editColumnsDialog" width="35%" v-el-drag-dialog center>
-      <el-form :inline="true" label-width="auto">
-        <el-form-item label="列名" class="full-width" :style="{ width: '100%' }">
+    <top-el-dialog title="编辑表头" :visible.sync="element.data.editColumnsDialog" width="23%" v-el-drag-dialog center>
+      <el-form :inline="true" label-width="auto" class="test">
+
+        <el-form-item label="列表" class="full-width" :style="{ width: '100%'}">
           <el-select v-model="selected" clearable filterable placeholder="" autocomplete="off" @blur="addColumn"
-            @clear="removeColumn" class="full-width" :style="{ width: '100%' }">
+            @clear="removeColumn" @keyup.enter.native="addColumn" class="full-width" :style="{ width: '100%' }">
             <el-option v-for="(item, index) in element.data.columns" :key="index" :label="item.label"
               :value="item.prop">
             </el-option>
@@ -45,7 +46,23 @@
             <el-option label="right" value="right"> </el-option>
           </el-select>
         </el-form-item>
+
+        <el-form-item label="" class="full-width" :style="{ width: '100%' }">
+          <div style="display: flex;justify-content: center;">
+            <el-button type="primary" icon="el-icon-top" circle
+              :style="{ marginLeft: '1%', scale: 0.8, rotate: '-90deg', margin: '0 8px' }"
+              @click="moveColumn(-1)"></el-button>
+            <el-button type="primary" icon="el-icon-top" circle
+              :style="{ marginLeft: '1%', scale: 0.8,  rotate: '90deg', margin: '0 8px' }"
+              @click="moveColumn(+1)"></el-button>
+            <el-button type="primary" icon="el-icon-plus" circle
+              :style="{ marginLeft: '1%', scale: 0.8, margin: '0 8px' }" @click="addColumn"></el-button>
+            <el-button type="primary" icon="el-icon-minus" circle
+              :style="{ marginLeft: '1%', scale: 0.8, margin: '0 8px' }" @click="removeColumn"></el-button>
+          </div>
+        </el-form-item>
       </el-form>
+
 
       <span slot="footer" class="dialog-footer">
         <el-button @click="element.data.editColumnsDialog = false">取 消</el-button>
@@ -191,6 +208,10 @@
       eventBus.$on('onEditColumns', (name, event) => {
         if (name !== this.element.data.name) return
         Vue.set(this.element.data, "editColumnsDialog", true)
+
+        if (this.selected.trim() == '') {
+          this.selected = this.element.data.columns[0].prop
+        }
       });
 
       eventBus.$on('onEditStyle', async (name, event) => {
@@ -378,17 +399,21 @@
       getRandStr,
 
       addColumn(event) {
-        const value = event.target.value
-        if (!value)
-          return
+        let value = event.target.value
+        if (!value) {
+          value = '[未定义]'
+        }
+
         const hasLabel = this.element.data.columns.some(obj => obj.label === value);
         if (!hasLabel) {
 
           const columns = this.element.data.columns
           columns.push({ prop: value, label: value, width: 10, align: 'center' })
           Vue.set(this.element.data, "columns", columns)
-          this.column = columns.slice(-1)[0]
-          this.selected = this.column.prop
+          this.selected = columns.slice(-1)[0].prop
+        } else {
+          const i = this.element.data.columns.findIndex(obj => obj.label === value)
+          this.selected = this.element.data.columns[i].prop
         }
       },
 
@@ -412,6 +437,17 @@
           }
           Vue.set(this.element.data, "columns", columns)
         }
+      },
+      moveColumn(move) {
+        const columns = this.element.data.columns
+        const i = columns.findIndex(obj => obj.prop === this.selected)
+        if (i + move >= columns.length || i + move < 0) {
+          return
+        }
+        const temp = columns[i + move]
+        columns[i + move] = columns[i]
+        columns[i] = temp
+        this.$forceUpdate()
       }
 
     }

@@ -44,6 +44,8 @@ Vue.config.warnHandler = (msg: string, vm: Vue, trace: string) => {
 }
 
 
+localStorage.setItem('UserId', 'admin')
+
 Vue.config.productionTip = false
 
 new Vue({

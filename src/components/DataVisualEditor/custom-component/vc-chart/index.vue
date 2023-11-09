@@ -218,16 +218,23 @@
           return
         }
 
-        const fn =  () => {
+        const fn = () => {
 
           const list = this.chartTemplateList
 
           toImage(document.getElementById('component' + this.element.id)).then(async image => {
 
+            const { name, details, permission } = this.chartTemplate
             this.element.icon = image;
-            this.element.details = this.chartTemplate.details
-            this.element.name = this.chartTemplate.name
+            this.element.details = details
+            this.element.name = name
+            this.element.permission = permission
             const curComponentText = JSONfn.stringify(this.element);
+
+            delete this.element.icon
+            delete this.element.details
+            delete this.element.name
+            delete this.element.permission
 
             await axios.post(`/BI-API/Component/SaveUserCustomizedComponent`, {
               name: this.chartTemplate.name + '.vct',

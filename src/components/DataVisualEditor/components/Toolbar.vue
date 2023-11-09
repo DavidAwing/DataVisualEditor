@@ -71,13 +71,15 @@
         </el-form-item> -->
 
         <div style="display: flex; justify-content: flex-end">
-          <a :href="'/bi/#/DatasourceEditor?name=' + currentCanvasName" target="_blank" class="">
+          <a :href="'/bi/#/DatasourceEditor?name=' + currentCanvasName" target="_blank" class=""
+            @click="canvasConfigDialogVisible = false">
             <el-button type="text" style="font-size: 16px">进入数据源编辑器</el-button>
           </a>
         </div>
         <el-input type="textarea" v-model="canvasData.dataSource.parameters" autocomplete="off" :rows="10"></el-input>
         <div style="display: flex; justify-content: flex-end">
-          <a :href="'/bi/#/WorkFlowEditor?name=' + currentCanvasName" target="_blank" class="">
+          <a :href="'/bi/#/WorkFlowEditor?name=' + currentCanvasName" target="_blank" class=""
+            @click="canvasConfigDialogVisible = false">
             <el-button type="text" style="font-size: 16px">进入工作流编辑器</el-button>
           </a>
         </div>
@@ -685,7 +687,7 @@
         this.$store.commit('setEditMode', 'preview');
       },
 
-      save() {
+      async save() {
 
         const componentNameList = [];
         for (const component of this.canvasComponentData) {
@@ -702,13 +704,26 @@
           }
           componentNameList.push(componentName);
         }
-        saveCanvas(this.currentCanvasName, this.canvasComponentData, this.canvasData).then(res => {
-          if (res === true) {
-            toast('保存成功', 'success');
-          }
-        }).catch(error => {
-          console.warn('save', error);
-        })
+        const isSave = saveCanvas(this.currentCanvasName, this.canvasComponentData, this.canvasData)
+
+        // const obj = { action: 'refresh', urls: [`/DatasourceEditor?name=${this.currentCanvasName}`] }
+        // bi.sharedWorker.postMessage(JSON.stringify(obj))
+        toast('保存成功', 'success');
+
+        const obj1 = {
+          action: 'setState',
+          urls: [`/DatasourceEditor?name=${this.currentCanvasName}`],
+          data: [{ key: 'canvasComponentData', value: this.canvasComponentData },
+          { key: 'canvasData', value: this.canvasData }]
+        }
+        const obj2 = {
+          action: 'emitEvent',
+          urls: [`/DatasourceEditor?name=${this.currentCanvasName}`],
+          name: 'setCanvasDataSourceList',
+          data: this.canvasData.dataSource.parameters
+        }
+        bi.sharedWorker.postMessage(JSONfn.stringify(obj1))
+        bi.sharedWorker.postMessage(JSONfn.stringify(obj2))
         return true
       },
 

@@ -157,7 +157,7 @@
         </el-form>
       </div>
       <div slot="footer">
-        <el-button @click="addDatabaseDialogVisible = false">取 消</el-button>
+        <el-button @click="cancelDatabaseDialogVisibl">取 消</el-button>
         <el-button type="primary" v-if="addDatabaseDialogTitle === '删除或更新数据库?'" @click="addDatabase('update')">更
           新</el-button>
         <el-button type="primary"
@@ -179,7 +179,7 @@
   import Vue from 'vue';
   import { mapState } from 'vuex';
   import axios from 'axios';
-
+  import eventBus from '../../components/DataVisualEditor/utils/eventBus';
 
   import {
     getStyle,
@@ -224,6 +224,7 @@
         canvasDataSourceList: [],
         canvasDataSource: {
           dataSourceType: 'database',
+          dataSource: ''
         },
         canvasName: '',
         componentPreviewDialogVisible: false,
@@ -231,6 +232,7 @@
         temp: {},
         addDatabaseDialogTitle: '添加数据库',
         databasePattern: 'sql',
+        dataSourceOld: ''
       };
     },
     components: { CodeEditor, Shape },
@@ -260,9 +262,6 @@
       }
     },
     beforeCreate() {
-
-
-
 
 
 
@@ -311,15 +310,30 @@
           if (this.canvasDataSourceList.length > 0) this.canvasDataSource = this.canvasDataSourceList[0];
           else console.log('找不到数据源');
         });
+
+
+      this.$watch(() => this.canvasDataSource.dataSource, (val, old) => {
+        if (val == '') {
+          this.dataSourceOld = old
+        }
+      })
+
+      eventBus.$on('setCanvasDataSourceList', (data) => {
+        this.canvasDataSourceList = JSONfn.parse(data)
+      })
     },
     mounted() {
       setTimeout(() => { }, 1000);
     },
     methods: {
+      cancelDatabaseDialogVisibl() {
+        this.addDatabaseDialogVisible = false;
+        this.canvasDataSource.dataSource = this.dataSourceOld
+      },
       isDBExist(event) {
         const name = event.target.value.trim();
         const db = this.databaseList.find(item => item.name === name)
-        return db !== undefined
+        return db != null
       },
       convertCron() {
 
@@ -413,7 +427,7 @@
               Vue.set(this.databaseList, i, this.temp)
             }
 
-            Vue.set(this.canvasDataSource, 'dataSource',  this.temp.name)
+            Vue.set(this.canvasDataSource, 'dataSource', this.temp.name)
           });
           this.addDatabaseDialogVisible = false;
         } else if (type === 'showRemove') {
@@ -438,7 +452,7 @@
             this.temp.id = data.data;
             const db = this.databaseList.find(item => item.id === data.data)
             toast('更新成功', 'success');
-            Vue.set(this.canvasDataSource, 'dataSource',  this.temp.name)
+            Vue.set(this.canvasDataSource, 'dataSource', this.temp.name)
           });
           this.addDatabaseDialogVisible = false;
         }
@@ -571,14 +585,14 @@
 
         return type;
       },
-      saveCanvasDataSourceList() {
+      async saveCanvasDataSourceList() {
         // todo 保存之前先检测sql或脚本语法
         this.canvasDataSourceList.forEach(item => {
           if (item.dataSourceType === 'script') {
             // 检查类型注解
             if (/@[a-zA-Z]+/.test(item.script)) return 'ts';
           } else if (item.dataSourceType === 'database') {
-            if (item.sql === undefined || item.sql === null || item.sql === '') {
+            if (item.sql == null || item.sql.trim() == '') {
               toast(`${item.name}❎需要填写sql`);
               throw Error('需要填写sql');
             }
@@ -588,24 +602,22 @@
             const commentLine = sqlArr[0].substring(0, sqlArr[0].indexOf('\n')).trim();
             if (
               count === 1 &&
-              (item.componentName === undefined || item.componentName === null || item.componentName.trim() === '')
+              (item.componentName == null || item.componentName.trim() === '')
             ) {
-              const kv = commentLine.match(/@[\wa-zA-Z0-9]+\s*:\s*[a-zA-Z0-9_\-\u4e00-\u9fa5~!@#$%^&*()+]+/g);
-              if (!commentLine.startsWith('--') || kv === null) {
+              const kv = commentLine.match(/@[\wa-zA-Z0-9]+\s*(:|\s+)\s*[a-zA-Z0-9_\-\u4e00-\u9fa5~!@#$%^&*()+]+/g);
+              if (!commentLine.startsWith('--') || kv == null) {
                 toast('单个sql项必须指定一个组件名称');
                 throw Error('单个sql查询必须指定组件名称');
               } else {
                 const value = kv
                   .find(str => str.startsWith('@NAME'))
-                  .split(':')[1]
+                  .split(/(:|\s+)/).filter(s => s.trim())[1]
                   .trim();
                 if (this.ComponentList.find(item => item.data.name === value) === undefined) {
-                  toast('sql中指定的组件名称不存在');
+                  toast('sql中指定的组件名称不存在: ' + value);
                   throw Error();
                 }
-
                 Vue.set(item, 'componentName', value);
-                // item.componentName = value
               }
             } else if (
               count > 1 &&
@@ -624,16 +636,16 @@
 
         axios
           .post(`/BI-API/DataSource/SaveCanvasDataSourceList`, this.canvasDataSourceList, {
-            params: { userId: 'admin', canvasName: this.canvasName },
+            params: { userId: bi.uid, canvasName: this.canvasName },
           })
 
-        saveCanvas(this.canvasName, this.canvasComponentData, this.canvasData).then((res) => {
-          if (res === true) {
-            toast('保存成功', 'success');
-            const obj = { action: 'refresh', urls: ['/editor', '/viewer'] }
-            bi.sharedWorker.postMessage(JSON.stringify(obj))
-          }
-        })
+        const isSave = await saveCanvas(this.canvasName, this.canvasComponentData, this.canvasData)
+        if (!isSave) {
+          return
+        }
+        toast('保存成功', 'success');
+        const obj = { action: 'refresh', urls: ['/editor'] }
+        bi.sharedWorker.postMessage(JSON.stringify(obj))
 
       },
       getComponentStyle(component) {

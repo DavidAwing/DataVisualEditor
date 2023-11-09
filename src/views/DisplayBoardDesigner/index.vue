@@ -14,7 +14,7 @@
         </el-tabs>
       </section>
       <!-- 中间画布 -->
-      <section class="center" >
+      <section class="center">
         <div class="content" @drop="handleDrop" @dragover="handleDragOver" @mousedown="handleMouseDown"
           @mousemove="handleMouseMove" @mouseup="deselectCurComponent">
           <Editor v-show="canvasData.deviceType === 'pc'" />
@@ -29,10 +29,10 @@
         <div style="position: relative; margin-top: 8px;width: 80%;left: 10%;display: flex;justify-content: center;">
           <div style="display: flex;flex-flow: row nowrap; justify-content: center;align-items: center;
           background-color:  rgba(0, 0, 0, 0.3);  width: fit-content; padding: 0px 22px;border-radius: 5px;">
-            <div  v-for="item in topIntelligentMenu.children"  :class="'top-intelligent-menu-item ' +  (item.className)" v-show="item.show"
-            @click="handleTopMenu(item.name)">
-              <img draggable="false"    :width="(item.width || topIntelligentMenu.width) * 0.7"
-              height="auto" :src="item.img" alt="" srcset="">
+            <div v-for="item in topIntelligentMenu.children" :class="'top-intelligent-menu-item ' +  (item.className)"
+              v-show="item.show" @click="handleTopMenu(item.name)">
+              <img draggable="false" :width="(item.width || topIntelligentMenu.width) * 0.7" height="auto"
+                :src="item.img" alt="" srcset="">
             </div>
           </div>
         </div>
@@ -51,7 +51,7 @@
           <el-tab-pane label="样式" name="style">
             <StyleList
               v-if="curComponent && (curComponent.component.startsWith('v-') ||  curComponent.component === 'Group' )" />
-            <ChartStyleList v-else-if="curComponent && curComponent.component.startsWith('vc-')" />
+            <ChartStyleList v-else-if="curComponent && curComponent.component.startsWith('vc-') && false" />
             <p v-else class="placeholder">请选择组件</p>
           </el-tab-pane>
           <el-tab-pane label="动画" name="animation">
@@ -67,7 +67,7 @@
     </main>
 
     <img draggable="false" style="position: absolute;left: 0;right: 0;" id="EmbeddedComponentModeDiv" width="30"
-    height="auto" src="http://127.0.0.1/files/drag.png" alt="" srcset="">
+      height="auto" src="http://127.0.0.1/files/drag.png" alt="" srcset="">
 
   </div>
 </template>
@@ -101,12 +101,11 @@
   } from "../../components/DataVisualEditor/utils/generateID";
   import { listenGlobalKeyDown } from "../../components/DataVisualEditor/utils/shortcutKey";
   import eventBus from "../../components/DataVisualEditor/utils/eventBus";
-
   import * as DB from '../../components/DataVisualEditor/utils/indexDB';
   const JSONfn = require("jsonfn").JSONfn;
   const LZ = require("lz-string");
-
-
+  import axios from 'axios';
+  import { saveCanvas } from '../../components/DataVisualEditor/components/MenuHandler';
 
   // http://127.0.0.1:9538/#/DataVisualEditor?type=print&max=100&labelName=SN&labelPath=C%3A%5CMES_upload_file%5CLabel%5CSN.label&sqlPath=N%2FA&printData=%22C%3A%5C%5CMES_upload_file%5C%5CLabel%5C%5CTemp%5C%5C445bdeab-85e3-4f29-aa07-ae453078f177.tmp%22&id=0000&name=undefined&language=undefined&siteid=2035&userno=0000&sitename=HS1&cardid=undefined&address=undefined&authorization=undefined&userid=20000063
 
@@ -145,7 +144,7 @@
       "canvasName",
       "activeComponentList",
       "topIntelligentMenu",
-      "setTopMenuShow"
+      "setTopMenuShow",
     ]),
     watch: {
       canvasData: {
@@ -164,7 +163,7 @@
       },
       canvasName: function (val) {
         this.loadMobileUrl();
-      },
+      }
     },
     beforeCreate() {
 
@@ -289,16 +288,24 @@
 
       resetID,
 
-      handleDrop(event) {
+      async handleDrop(event) {
 
         console.log("放下组件", event);
 
         event.preventDefault();
         event.stopPropagation();
         const index = event.dataTransfer.getData("index");
+        const from = event.dataTransfer.getData("from");
         const rectInfo = this.editor.getBoundingClientRect();
         if (index) {
-          const component = deepCopy(componentList[index] || userComponentList.find(item => item.data.name === index));
+          let component = null
+          if (from === 'ComponentMarket') {
+            component = deepCopy(userComponentList.find(item => item.name === index) || userComponentList.find(item => item.data.name === index));
+          } else {
+            component = deepCopy(componentList[index]);
+          }
+
+
           if (component.component === 'Group') {
             component.propValue.forEach(item => {
               item.id = generateID();
@@ -308,7 +315,60 @@
           component.style.top = parseInt(event.clientY - rectInfo.y);
           component.style.left = parseInt(event.clientX - rectInfo.x);
           component.id = generateID();
+
+          // 是组件市场的,需要把数据源的名称修改过来
+          const oldName = component.data.name
           component.data.name = getRandStr();
+          if (from === 'ComponentMarket') {
+
+            const parameters = JSONfn.parse(bi.store.state.canvasData.dataSource.parameters || '[]')
+
+            if (component.dataSourcelist) {
+              for (const item of component.dataSourcelist) {
+
+                if (item.componentName === oldName) {
+
+                } else if (item.dataSourceType === "database") {
+                  const regexp = new RegExp(`@NAME\\s+${oldName}`, 'i')
+                  if (!regexp.test(item.sql)) {
+                    continue
+                  }
+                  item.sql = item.sql.replace(regexp, `@NAME ${component.data.name}`)
+                } else {
+                  continue
+                }
+
+                let id = 0
+                while (parameters.find(item => item.id === id)) {
+                  id++
+                }
+                item.id = id
+                item.name = item.name + "_" + parameters.length;
+                parameters.push(item)
+              }
+
+              delete component.dataSourcelist
+            }
+
+            delete component.icon
+            delete component.details
+            delete component.name
+            delete component.permission
+
+            this.$set(this.canvasData.dataSource, 'parameters', JSONfn.stringify(parameters))
+
+            const dataSourceParameters = JSONfn.stringify(parameters);
+            DB.setItem(`bi-user-canvas-data-source-${this.canvasName}`, dataSourceParameters);
+
+            await axios
+              .post(`/BI-API/DataSource/SaveCanvasDataSourceList`, parameters, {
+                params: { userId: bi.uid, canvasName: this.canvasName },
+              })
+            await saveCanvas(this.canvasName, this.canvasComponentData, this.canvasData)
+            const obj = { action: 'refresh', urls: [`/DatasourceEditor?name=${this.canvasName}`] }
+            bi.sharedWorker.postMessage(JSON.stringify(obj))
+          }
+
 
           if (event.target.dataset.onDrop) {
 

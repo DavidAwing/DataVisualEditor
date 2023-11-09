@@ -36,7 +36,15 @@ function extractFunctionBody(str: string) {
 
 
 
+// "async (data, fileName) => {\r\n               await f.exportExcle(data, fileName + '')\r\n            }"
+
 export function stringToFunction(soundCode: string): any {
+
+  if (/^\s*async\s+/.test(soundCode) || /^\s*\(\s*async\s+(.|\s)+\)$/.test(soundCode)) {
+    // eslint-disable-next-line no-eval
+    return eval(soundCode)
+    // soundCode.match(/async\s+function\s+(\w+)\s*\(/)![1]
+  }
 
   if ((soundCode.startsWith("\"") && soundCode.endsWith("\"")) || (soundCode.startsWith("'") && soundCode.endsWith("'")))
     soundCode = soundCode.substring(1, soundCode.length - 1)
@@ -48,6 +56,8 @@ export function stringToFunction(soundCode: string): any {
   let funcName = null;
   let funcArguments: any[] = [];
   let funcBody = null;
+
+
   // soundCode = soundCode.replace(/^\s*\/\/.*/gm, "").trim()
   if (soundCode.startsWith("function") || soundCode.startsWith("export function") || soundCode.startsWith("export default function")) {
 

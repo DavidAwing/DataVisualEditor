@@ -1,5 +1,4 @@
-
-.user-component-item  {
+.user-component-item {
     display: flex;
     flex-flow: column nowrap;
 }
@@ -12,9 +11,47 @@
     object-fit: contain;
 }
 
-.user-component-item > label{
+.user-component-item>label {
     width: 100%;
     text-overflow: ellipsis;
-    overflow: hidden; /* 超出部分隐藏 */ 
-    white-space: nowrap; /* 禁止文本换行 */
+    overflow: hidden;
+    /* 超出部分隐藏 */
+    white-space: nowrap;
+    /* 禁止文本换行 */
+}
+
+
+.group-title {
+    margin-left: 8px;
+}
+
+
+
+
+
+
+
+/deep/ .el-form-item__content {
+    width: 100%;
+}
+
+
+
+
+.el-tag+.el-tag {
+    margin-left: 10px;
+}
+
+.button-new-tag {
+    margin-left: 10px;
+    height: 32px;
+    line-height: 30px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.input-new-tag {
+    width: 90px;
+    margin-left: 10px;
+    vertical-align: bottom;
 }

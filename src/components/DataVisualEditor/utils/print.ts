@@ -69,7 +69,7 @@ export function toHtml(htmlText: string) {
   return doc
 }
 
-export function compileVueTemplate(templateString: string, templateData: object, id: string, container: any, mounted: any = null) {
+export function compileVueTemplate(templateString: string, templateData: object = {}, id: string, container: any, mounted: any = null) {
 
   let vueTemplate = {
     template: templateString,
@@ -309,7 +309,6 @@ function getNodeText(container: any, node: any) {
   return list
 }
 
-
 // todo 尺寸单位
 export function toPrintObject(container: HTMLElement) {
 
@@ -377,7 +376,7 @@ export function toPrintObject(container: HTMLElement) {
   return printObject
 }
 
-export async function print(templateString: string, templateData: any, container: any = null) {
+export async function print(template: string | HTMLElement, templateData: any = {}, container: any = null) {
 
   if (container === null) {
     container = document.createElement("DIV")
@@ -431,12 +430,22 @@ export async function print(templateString: string, templateData: any, container
 
     doc.write(el.outerHTML);
     doc.close();
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
-    document.body.removeChild(iframe);
+
+    return new Promise((resolve, reject) => {
+      iframe.contentWindow.addEventListener('load', () => {
+        if (doc.readyState === 'complete') {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+          document.body.removeChild(iframe);
+          resolve(undefined)
+        }
+      });
+    })
+
   };
 
-  const html = toHtml(templateString);
+  // const html = toHtml(templateString);
+  const html = template instanceof HTMLElement ? toHtml(template.outerHTML) : toHtml(template);
   // const templateEle = html.body.children[0];
   const templateEle = html.querySelector('body > div');
   if (templateEle === null) {
@@ -463,8 +472,10 @@ export async function print(templateString: string, templateData: any, container
     (intance.$el as any).style.backgroundColor = "";
   }
 
-  printElement(container)
-  container.remove()
+  printElement(container).then(() => {
+    container.remove()
+  })
+
 }
 
 export async function printByTemplate(templateName: string, templateData: any) {

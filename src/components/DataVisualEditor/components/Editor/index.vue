@@ -64,7 +64,7 @@
   const dragIconUrl = new URL(require('@/assets/drag.png')) //
   // const dragIcon = require('@/assets/drag.png')
 
-  console.log('dragIcon', dragIconUrl);
+  const JSONfn = require('jsonfn').JSONfn;
 
   export default {
     components: { Shape, ContextMenu, MarkLine, Area, Grid },
@@ -109,15 +109,16 @@
     watch: {
       canvasComponentData: {
         handler: function (val, old) {
+
+          const obj = {
+            action: 'setState',
+            urls: [`/DatasourceEditor?name=${this.canvasName}`],
+            data: [{ key: 'canvasComponentData', value: this.canvasComponentData }]
+          }
+          bi.sharedWorker.postMessage(JSONfn.stringify(obj))
+
         },
-        deep: false,
-      },
-      canvasName: {
-        handler: function (val, old) {
-          if (this.canvasName === undefined || this.canvasName === null || this.canvasName.trim() === '') return;
-        },
-        deep: false,
-        immediate: true,
+        deep: true,
       }
     },
     created() {

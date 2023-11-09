@@ -57,10 +57,13 @@ const FFmpeg = require('@ffmpeg/ffmpeg');
 const FFmpegUtil = require('@ffmpeg/util');
 
 
-const bi = {}
+const bi = { uid: "" }
 bi.utils = {}
 window.f = bi.utils
 window.bi = bi
+
+
+bi.uid = 'admin'
 
 bi.addProperty = (...params) => {
 
@@ -144,16 +147,42 @@ const loadAll = async () => {
 
       console.log('SharedWorker消息: ', event);
 
-      const msgObj = JSON.parse(event.data)
-      switch (msgObj.action) {
-        case 'refresh': {
-          let url = location.hash.match(/\/\w+(?=\?{0,1})/)
-          url = url && url[0]
-          if (url && msgObj.urls && msgObj.urls.includes(url)) {
-            location.reload()
-          }
-          break
+      const isUrl = (obj) => {
+        let url = location.hash.includes('#') ? location.hash.split('#')[1] : location.hash.match(/\/\w+(?=\?{0,1})/)
+        url = Array.isArray(url) ? url[0] : url
+        if (url && obj.urls && obj.urls.includes(decodeURI(url))) {
+          return true
+        } else {
+          return false
         }
+      }
+
+      const refresh = (obj) => {
+        location.reload()
+      }
+
+      const setState = (obj) => {
+        obj.data.forEach(item => {
+          let key = item.key
+          if (!key.startsWith('set')) {
+            key = 'set' + key[0].toUpperCase() + key.substring(1);
+          }
+          store.commit(key, item.value);
+        })
+      }
+
+      const emit = (obj) => {
+        eventBus.$emit(obj.name, obj.data);
+      }
+
+      const msgObj = JSONfn.parse(event.data)
+      if (!isUrl(msgObj)) {
+        return
+      }
+      switch (msgObj.action) {
+        case 'refresh': return refresh(msgObj)
+        case 'setState': return setState(msgObj)
+        case 'emitEvent': return emit(msgObj)
       }
     }
   }

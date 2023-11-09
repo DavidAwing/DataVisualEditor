@@ -144,7 +144,7 @@ export default {
           {
             key: "isModal",
             type: "checkbox",
-            label: '悬浮框模式',
+            label: '浮框模式',
             bind: "data"
           },
           {

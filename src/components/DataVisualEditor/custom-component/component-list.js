@@ -599,6 +599,139 @@ const list = [
         // }
       ]
   },
+  // 表单
+  {
+    component: "v-form",
+    label: '表单',
+    icon: 'wenben',
+    animations: [],
+    events: {},
+    style: {
+      rotate: 0,
+      opacity: 1,
+      left: 130,
+      top: 215,
+      width: 430,
+      height: 500,
+      backgroundColor: "rgba(255,255,255,1)",
+      borderRadius: 0
+    },
+    data: {
+      name: "",
+      show: true,
+      isAlign: false,
+      isModal: false,
+      dialogAlign: "top|center",
+      formConf: {
+        fields: [],
+        formRef: "elForm",
+        formModel: "formData",
+        size: "medium",
+        labelPosition: "right",
+        labelWidth: 100,
+        formRules: "rules",
+        gutter: 15,
+        disabled: false,
+        span: 6,
+        formBtns: true
+      },
+      showFormDesignerDialog: false
+    },
+    styleUnit: {
+      top: "px",
+      left: "px",
+      width: "px",
+      height: "px",
+      borderRadius: "px"
+    },
+    attrList: [
+      {
+        key: "name",
+        type: "text",
+        label: "名称",
+        bind: "data",
+        options: {}
+      },
+      {
+        key: "show",
+        type: "checkbox",
+        label: "显示",
+        bind: "data",
+        options: {}
+      },
+      {
+        key: "isModal",
+        type: "checkbox",
+        label: "浮框模式",
+        bind: "data"
+      },
+      {
+        key: "isDrag",
+        type: "checkbox",
+        label: "可拖拽",
+        bind: "data"
+      },
+      {
+        key: "left",
+        type: "number",
+        label: "x 坐标",
+        bind: "style",
+        options: {}
+      },
+      {
+        key: "top",
+        type: "number",
+        label: "y 坐标",
+        bind: "style",
+        options: {}
+      },
+      {
+        key: "width",
+        type: "number",
+        label: "宽",
+        bind: "style",
+        options: {}
+      },
+      {
+        key: "height",
+        type: "number",
+        label: "高",
+        bind: "style",
+        options: {}
+      },
+      {
+        key: "rotate",
+        type: "number",
+        label: "旋转",
+        bind: "style",
+        options: {}
+      },
+      {
+        key: "backgroundColor",
+        type: "color-picker",
+        label: "背景色",
+        bind: "style",
+        options: {
+          showAlpha: true
+        }
+      },
+      {
+        key: "borderRadius",
+        type: "number",
+        label: "边框半径",
+        bind: "style"
+      },
+      {
+        type: "eventbus-button",
+        label: '',
+        bind: {
+          label: '表单设计',
+          click: "onFormDesigner",
+          dblclick: "onFormDesigner"
+        }
+      }
+    ]
+  },
   // 按钮
   {
     component: 'v-button',
@@ -1389,7 +1522,6 @@ const list = [
         label: 'x 坐标',
         bind: "style",
         events: {
-          onInput: function (self, value) { }
         }
       },
       {
@@ -1398,8 +1530,7 @@ const list = [
         label: 'y 坐标',
         bind: "style",
         events: {
-          onInput: function (self, value) {
-          }
+
         }
       },
       {
@@ -1408,7 +1539,6 @@ const list = [
         label: '宽',
         bind: "style",
         events: {
-          onInput: function (self, value) { }
         }
       },
       {
@@ -1417,7 +1547,6 @@ const list = [
         label: '高',
         bind: "style",
         events: {
-          onInput: function (self, value) { }
         }
       },
       {
@@ -1426,7 +1555,6 @@ const list = [
         label: '旋转',
         bind: "style",
         events: {
-          onInput: function (self, value) { }
         }
       },
       {
@@ -1638,10 +1766,10 @@ const list = [
           align: "center"
         },
         {
-          "prop": "city",
-          "label": "市区",
-          "width": 10,
-          "align": "center"
+          prop: "city",
+          label: "市区",
+          width: 10,
+          align: "center"
         },
         {
           "prop": "address",
@@ -2888,7 +3016,7 @@ const list = [
       {
         key: "isModal",
         type: "checkbox",
-        label: '悬浮框模式',
+        label: '浮框模式',
         bind: "data"
       },
       {

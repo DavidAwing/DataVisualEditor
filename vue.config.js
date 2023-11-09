@@ -87,7 +87,7 @@ module.exports = defineConfig({
     ],
     // devtool: "source-map",
     mode: "development",
-    devtool: IS_PROD ? 'nosources-source-map' : 'eval-cheap-module-source-map',//"cheap-source-map",
+    devtool: IS_PROD ? 'nosources-source-map' : 'eval-cheap-module-source-map',//'cheap-source-map'
     externals: {
       './cptable': 'var cptable'
     },
@@ -104,7 +104,7 @@ module.exports = defineConfig({
       },
     },
     optimization: {
-      minimize: false,
+      minimize: IS_PROD,
       moduleIds: "named",
       runtimeChunk: IS_PROD,
       splitChunks: {

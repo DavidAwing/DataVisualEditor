@@ -17,7 +17,7 @@ const components = [
   'v-iframe',
   'v-video',
   'vc-chart',
-  'vc-bar-MultipleYAxes',
+  'v-form',
   'VContainer',
 ]
 

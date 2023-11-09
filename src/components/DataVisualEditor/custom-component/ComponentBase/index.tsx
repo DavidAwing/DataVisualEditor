@@ -16,9 +16,12 @@ export default class ComponentBase extends Vue {
 
   static EventMap: any = {}
 
-
-
   public async onEvent(name: string, data = {}) {
+
+    if (!this.element || !this.element.data) {
+      console.warn(`onEvent|数据未定义,name:${name}, data: ${data}`);
+      return
+    }
 
     let func = ComponentBase.EventMap[this.element.data.name + '.' + name];
     if (!func) {
@@ -88,7 +91,7 @@ export default class ComponentBase extends Vue {
             }
           }
 
-          const { state, data } = (await axios.post(`/BI-API/AI/ConversionCode`, { code: line, component: this.element.component }, {
+          const { state, data } = (await axios.post(`/BI-API/AI/ConversionCode`, { code: line, component: this.element.component, userId: localStorage.getItem('UserId'), canvasName: (window as any).bi.store.state.canvasName }, {
             headers: {
               'Content-Type': 'application/json',
             },
@@ -99,13 +102,12 @@ export default class ComponentBase extends Vue {
           }
 
           switch (data.type) {
-            case 'Link':
+            case 'link':
 
               break;
-            case 'Script':
-            case 'Function':
+            case 'script':
               return data.code
-            case 'ParseFunction': {
+            case 'function': {
 
               const arr = line.split(/\s+/).splice(1).map((s: any) => {
                 if (s.toLowerCase() === 'false') {
@@ -116,7 +118,8 @@ export default class ComponentBase extends Vue {
                 return isNaN(s) ? s : Number(s)
               })
 
-              const func = (await Promise.resolve(stringToFunction(data.code)(line)))
+              const func = await Promise.resolve(stringToFunction(data.code))
+              // const func = stringToFunction(data.code)
 
               let parameters = ""
               arr.forEach(item => {
@@ -153,7 +156,13 @@ export default class ComponentBase extends Vue {
 
       const codeStatements = await conversionCode(lines)
 
-      func = stringToFunction(`function ${name}(param) {${codeStatements}}`)
+      let isAsync = false
+      if (/await\s+/.test(codeStatements)) {
+        isAsync = true
+      } else {
+        isAsync = false
+      }
+      func = stringToFunction(!isAsync ? `function ${name}(param) {${codeStatements}}` : `(async function (param) {${codeStatements}})`)
 
       if (!func) {
         console.warn(`onEvent|组件${this.element.data.name}未定义${name}事件`);
@@ -200,6 +209,12 @@ export default class ComponentBase extends Vue {
   // }
 
   public created() {
+
+
+    if (!this.element || !this.element.data) {
+      return
+    }
+
     // this.element.data.p = "父组件挂载的数据"
     this.onEvent('onCreated')
 
@@ -246,31 +261,12 @@ export default class ComponentBase extends Vue {
   }
 
   public mounted() {
+
+    if (!this.element || !this.element.data) {
+      return
+    }
+
     this.onEvent('onMounted')
-
-
-
-
-    // <top-el-dialog
-    // id="test-dialog"
-    //   title="编辑表头"
-    //   :visible.sync="visible"
-    //   :isModalDialog="isModalDialog"
-    //   width="35%"
-    //   v-el-drag-dialog
-    //   center
-    //   v-if="sssssss"
-    // >
-
-    // <div style="display: inline;">1113213232132</div>
-    // <span slot="footer" class="dialog-footer">
-    //   <el-button>取 消</el-button>
-    //   <el-button type="primary">确 定</el-button>
-    // </span>
-    // </top-el-dialog>
-
   }
-
-
 
 }

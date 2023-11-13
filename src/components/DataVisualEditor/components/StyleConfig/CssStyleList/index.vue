@@ -115,7 +115,7 @@
                   </div>
 
                   <div v-else-if="type == 'number'" style="display: flex; width: 100%; position: relative">
-                    <el-input v-model.number="curStyle.attrList[index].value" type="number" />
+                    <el-input v-model.number="curStyle.attrList[index].value" type="number" :step="(options && options.step) || 1" />
                     <el-select v-if="curStyle.attrList[index].options.units"
                       v-model="curStyle.attrList[index].options.unit" style="width: 100px; margin-left: 6px">
                       <el-option v-for="(item) in curStyle.attrList[index].options.units" :key="item.value"

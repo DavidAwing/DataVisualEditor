@@ -16,25 +16,19 @@
     created() {
 
       this.$watch(() => this.element.data.isModal, (val) => {
-
         if (!location.hash.includes('/editor')) return
-
         if (val === false) {
           this.$set(this.element.data, 'show', true)
         }
       }, { immediate: true, deep: false })
 
-
       this.$watch(() => this.element.data.show, (val) => {
-
-        if (location.hash.includes('/editor')) {
-
-          if (this.element.data.isModal === false && this.element.data.show === true) {
-            this.$nextTick(() => {
-              document.getElementById('editor').appendChild($(this.$el).parent()[0])
-            })
-          }
-
+        if (!location.hash.includes('/editor'))
+          return
+        if (this.element.data.isModal === false && this.element.data.show === true) {
+          this.$nextTick(() => {
+            document.getElementById('editor').appendChild($(this.$el).parent()[0])
+          })
         }
       }, { immediate: true, deep: false })
 
@@ -50,7 +44,7 @@
       },
     },
     methods: {
-      test(){
+      test() {
         console.log('tuossfsdf');
       }
     },

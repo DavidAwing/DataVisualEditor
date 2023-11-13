@@ -36,8 +36,6 @@
     <!-- 选中区域 -->
     <Area v-show="isShowArea" :start="start" :width="width" :height="height" />
 
-
-
   </div>
 </template>
 
@@ -428,6 +426,7 @@
       getShapeStyle(style, styleUnit) {
         const result = {};
         ['width', 'height', 'top', 'left', 'rotate'].forEach(attr => {
+          if (style[attr] == null) return
           if (attr != 'rotate') {
             result[attr] = style[attr] + (styleUnit ? styleUnit[attr] : 'px');
           } else {

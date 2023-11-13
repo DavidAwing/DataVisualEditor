@@ -346,6 +346,10 @@
           })
         } else if (this.curComponent) {
 
+          ['save', 'undo', 'redo'].forEach(name => {
+            this.$store.commit('setTopMenuShow', [name, false])
+          })
+
           const compose = this.areaData.components.length > 1
           this.$store.commit('setTopMenuShow', ['compose', compose])
 
@@ -373,7 +377,7 @@
           ['undo', 'redo', 'save', 'compose', 'lock', 'unlock', 'decompose'].forEach(name => {
             this.$store.commit('setTopMenuShow', [name, false])
           })
-        }, 8000, 'hideTopMenuShow')
+        }, 6000, 'hideTopMenuShow')
 
       })
     },

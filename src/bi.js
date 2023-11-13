@@ -186,6 +186,10 @@ const loadAll = async () => {
         eventBus.$emit(obj.name, obj.data);
       }
 
+      const setFormConf = (obj) => {
+        eventBus.$emit('setFormConf', obj.name, obj.data);
+      }
+
       if (!event.data.startsWith('{') && !event.data.endsWith('}')) {
         console.warn('SharedWorker|onmessage', '共享消息只能接收json字符串', event.data);
         return
@@ -199,10 +203,10 @@ const loadAll = async () => {
         case 'refresh': return refresh(msgObj)
         case 'setState': return setState(msgObj)
         case 'emitEvent': return emit(msgObj)
+        case 'setFormConf': return setFormConf(msgObj)
       }
     }
   }
-
   bi.sharedWorker.start(SharedWorkerScript)
 
   bi.utils.getValueByAttributePath = getValueByAttributePath;
@@ -221,6 +225,11 @@ const loadAll = async () => {
     } else {
       data.show = isShow
     }
+  }
+
+  bi.utils.getURLParam = () => {
+    const { href } = location
+    return new URLSearchParams(href.substring(href.indexOf('?'))).get('c')
   }
 
   bi.utils.deepCopy = deepCopy

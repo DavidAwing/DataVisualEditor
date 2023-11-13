@@ -261,10 +261,6 @@
 
       handleMouseDownOnShape(e) {
 
-        ['save', 'undo', 'redo'].forEach(name => {
-          this.$store.commit('setTopMenuShow', [name, false])
-        })
-
         this.lastClickDate = new Date()
 
         this.$store.commit("setInEditorStatus", true);

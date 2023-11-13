@@ -614,7 +614,11 @@ const list = [
       width: 430,
       height: 500,
       backgroundColor: "rgba(255,255,255,1)",
-      borderRadius: 0
+      borderRadius: 0,
+      paddingLeft: 0,
+      paddingTop: 0,
+      paddingRight: 0,
+      paddingBottom: 0,
     },
     data: {
       name: "",
@@ -641,7 +645,11 @@ const list = [
       left: "px",
       width: "px",
       height: "px",
-      borderRadius: "px"
+      borderRadius: "px",
+      paddingLeft: "px",
+      paddingTop: "px",
+      paddingRight: "px",
+      paddingBottom: "px",
     },
     attrList: [
       {
@@ -712,6 +720,33 @@ const list = [
         bind: "style",
         options: {
           showAlpha: true
+        }
+      },
+      {
+        key: "paddingTop",
+        type: "number",
+        label: "上边距",
+        bind: "style",
+        options: {
+          step: 1
+        }
+      },
+      {
+        key: "paddingLeft",
+        type: "number",
+        label: "左边距",
+        bind: "style",
+        options: {
+          step: 1
+        }
+      },
+      {
+        key: "paddingRight",
+        type: "number",
+        label: "右边距",
+        bind: "style",
+        options: {
+          step: 1
         }
       },
       {

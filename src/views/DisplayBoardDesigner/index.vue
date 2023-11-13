@@ -404,11 +404,7 @@
             this.showCanvasIocn = false
           }, 6000, 'showCanvasIocn')
         } else if (event.layerY < 60 && (event.layerX > contentRect.width * 0.35 && event.layerX < contentRect.width * 0.75)) {
-
-
           eventBus.$emit('TopMenu.setTopMenuShow', 1)
-
-
         }
       },
 

@@ -14,7 +14,7 @@
         </div>
 
         <div v-else-if="type == 'number'" style="display: flex; width: 100%; position: relative">
-          <el-input v-model.number="curComponent[bind][key]" type="number" step="0.1" />
+          <el-input v-model.number="curComponent[bind][key]" type="number" :step="(options && options.step) || 1" />
           <el-select v-if="curComponent.styleUnit[key]" v-model="curComponent.styleUnit[key]"
             style="width: 100px; margin-left: 6px">
             <el-option key="px" label="px" value="px"></el-option>
@@ -152,9 +152,8 @@
 
       this.$watch(() => this.curComponent.data.isModal, (val) => {
         if (val) {
-          if (this.curComponent.attrList.find(item => item.key === 'dialogAlign')) {
+          if (this.curComponent.attrList.find(item => item.key == 'dialogAlign'))
             return
-          }
           this.curComponent.attrList.push(
             {
               key: "dialogAlign",
@@ -187,9 +186,8 @@
           )
         } else {
           const i = this.curComponent.attrList.findIndex(item => item.key === 'dialogAlign')
-          if (i === -1) {
+          if (i === -1)
             return
-          }
           this.curComponent.attrList.splice(i, 1)
         }
       })

@@ -483,7 +483,13 @@ function getDataTypeToken(data) {
 
   }
 
-  if (Array.isArray(data) && data.every(item => Array.isArray(item))) {
+
+  if (Array.isArray(data) && data.length == 0) {
+    console.error('getDataTypeToken|数据异常', data);
+    return null
+  }
+
+  if (data.every(item => Array.isArray(item))) {
     for (let i = 0; i < data.length; i++) {
       const objArr = data[i];
       // 检测是不是[n][n]{SameAttributeName}
@@ -539,7 +545,7 @@ function getDataTypeToken(data) {
     }
 
     throw new Error("getDataTypeToken|无法解析的数据", data)
-  } else if (Array.isArray(data) && data.every(item => Object.prototype.toString.call(item) === "[object Object]")) {
+  } else if (data.every(item => Object.prototype.toString.call(item) === "[object Object]")) {
     for (let i = 0; i < data.length; i++) {
       const obj = data[i];
       const keys = Object.keys(obj)
@@ -549,7 +555,7 @@ function getDataTypeToken(data) {
       }
     }
     return "[n]{@PATH:value}"
-  } else if (Array.isArray(data) && data.every(item => Array.isArray(item))) {
+  } else if (data.every(item => Array.isArray(item))) {
 
   }
 }
@@ -991,7 +997,7 @@ export function requestCanvasData(canvasName, callback) {
                 task.call = () => {
                   axios.post('/BI-API/DataSource/GetData', task, { timeout: 100000 }).then(({ data }) => {
                     if (data.state !== 200) {
-                      console.error("请求数据异常");
+                      console.error("请求数据异常", data);
                       return
                     }
                     if (!task.dataTypeToken && task.componentType === "vc-chart") {

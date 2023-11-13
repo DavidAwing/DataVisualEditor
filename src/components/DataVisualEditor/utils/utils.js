@@ -11,22 +11,23 @@ export function throttle(fn, delay = 500, key = null) {
   key = key ?? fn.toString()
   let call = funcMap.get(key)
   if (call != null) {
+    call()
     return call
   }
 
   let timer = null
 
   call = function () {
-    if (timer) {
+    if (timer)
       return
-    }
     timer = setTimeout(() => {
       fn.apply(this, arguments)
       timer = null
-    })
+    }, delay)
   }
 
   funcMap.set(key, call)
+  call()
   return call
 }
 
@@ -36,6 +37,7 @@ export function debounce(fn, delay = 500) {
   const key = fn.toString()
   let call = funcMap.get(key)
   if (call != null) {
+    call()
     return call
   }
 
@@ -43,9 +45,8 @@ export function debounce(fn, delay = 500) {
   let timer = null
 
   call = function () {
-    if (timer) {
+    if (timer)
       clearTimeout(timer)
-    }
     timer = setTimeout(() => {
       fn.apply(this, arguments)
       timer = null
@@ -53,6 +54,7 @@ export function debounce(fn, delay = 500) {
   }
 
   funcMap.set(key, call)
+  call()
   return call
 }
 

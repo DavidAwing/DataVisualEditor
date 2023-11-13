@@ -1,3 +1,5 @@
+/* global $ */
+
 import store from '@/store'
 import eventBus from './eventBus'
 
@@ -21,6 +23,7 @@ const pKey = 80 // 预览
 const dKey = 68 // 删除
 const deleteKey = 46 // 删除
 const eKey = 69 // 清空画布
+const escKey = 27 // 取消组件选择
 
 const tabKey = 9
 
@@ -225,7 +228,13 @@ export function listenGlobalKeyDown() {
   window.onkeyup = (e) => {
     const { keyCode } = e
 
+    console.log('keyCode', keyCode);
+
     // KeyboardManager.delete(keyCode)
+
+    if (keyCode == escKey) {
+      store.commit("setCurComponent", { component: null, index: null });
+    }
 
     if (keyCode === ctrlKey || keyCode === commandKey) {
       isCtrlOrCommandDown = false

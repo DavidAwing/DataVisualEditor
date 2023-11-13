@@ -230,7 +230,7 @@
       },
       attrList: {
         handler: function (val, old) {
-          debounce(this.addStyle, 300, 'addStyle-2a9258bb')()
+          debounce(this.addStyle, 300, 'addStyle-2a9258bb')
         },
         deep: true
       },

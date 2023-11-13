@@ -226,32 +226,18 @@ const data = {
 
     setTopMenuShow(state, val) {
       let name, show;
-
       if (Array.isArray(val)) {
         name = val[0]
         show = val[1]
       } else if (typeof val === 'string') {
         name = val
       }
-
       const menus = state.topIntelligentMenu.children
       const m = menus.find(item => item.name === name)
       if (m) {
-        if (show === undefined) {
-          show = !m.show
-        }
         Vue.set(m, 'show', show)
       }
-
-      debounce(() => {
-        menus.forEach(m => {
-          Vue.set(m, 'show', false)
-        })
-      }, 8000)()
-
     },
-
-
 
     // 设置组件的属性
     setCanvasComponentAttribute(state, params) {
@@ -266,12 +252,12 @@ const data = {
         let component = item
         if (item.component === "Group")
           component = component.propValue.find(item => name === item.data.name)
-        if (component === undefined || component === null || component.data.name !== name)
+        if (!component || component.data.name !== name)
           continue
 
         if (component.component.startsWith("vc-")) {
 
-          if (data.dataTypeToken !== undefined && data.dataTypeToken !== null) {
+          if (data.dataTypeToken) {
             const option = component.data.option
             if (data.dataTypeToken === "[n]{@PATH:value}") {
               for (let i = 0; i < data.data.length; i++) {
@@ -294,7 +280,7 @@ const data = {
               keys.forEach(name => {
 
                 let serie = option.series.find(item => item.name === name)
-                if (serie === undefined) {
+                if (!serie) {
                   serie = option.series[serieIndex]
                 }
                 serieIndex++

@@ -154,7 +154,7 @@
   import ComponentListViewer from './ComponentListViewer';
   import { commonStyle, commonAttr } from '../custom-component/component-list';
   import eventBus from '../utils/eventBus';
-  import { deepCopy, selectFile, saveText, closeWindow } from '../utils/utils';
+  import { deepCopy, selectFile, saveText, closeWindow, throttle, debounce } from '../utils/utils';
   import { divide, multiply } from 'mathjs';
   import * as DB from '../utils/indexDB';
   import { toImage } from '../utils/domUtils';
@@ -193,26 +193,6 @@
       ...mapState(['canvasComponentData', 'canvasData', 'areaData', 'curComponent', 'curComponentIndex', 'canvasName', 'activeComponentList']),
       saveMenuShow() {
 
-      },
-      composeMenuShow() {
-        return this.areaData.components.length > 1
-      },
-      lockMenuShow() {
-        return !(!this.curComponent || this.curComponent.isLock)
-      },
-      unlockMenuShow() {
-        return !(!this.curComponent || !this.curComponent.isLock)
-      },
-      decomposeMenuShow() {
-        if (this.activeComponentList.length > 1) {
-          for (let i = 0; i < this.activeComponentList.length; i++) {
-            const c = this.canvasComponentData.find(c => c.id === this.activeComponentList[i])
-            if (c && c.component === 'Group') {
-              return false
-            }
-          }
-        }
-        return !(!this.curComponent || this.curComponent.isLock || this.curComponent.component != 'Group')
       }
     },
     watch: {
@@ -333,21 +313,6 @@
       eventBus.$on('save', this.save);
       eventBus.$on('clearCanvas', this.clearCanvas);
 
-      this.$watch(() => this.composeMenuShow, (val) => {
-        this.$store.commit('setTopMenuShow', ['compose', val])
-      })
-      this.$watch(() => this.lockMenuShow, (val) => {
-        this.$store.commit('setTopMenuShow', ['lock', val])
-      })
-      this.$watch(() => this.unlockMenuShow, (val) => {
-        this.$store.commit('setTopMenuShow', ['unlock', val])
-      })
-      this.$watch(() => this.decomposeMenuShow, (val) => {
-        this.$store.commit('setTopMenuShow', ['decompose', val])
-      })
-
-
-
       eventBus.$on('TopMenu.save', this.save)
       eventBus.$on('TopMenu.undo', this.undo)
       eventBus.$on('TopMenu.redo', this.redo)
@@ -355,6 +320,62 @@
       eventBus.$on('TopMenu.decompose', this.decompose)
       eventBus.$on('TopMenu.lock', this.lock)
       eventBus.$on('TopMenu.unlock', this.unlock)
+
+      this.$watch(() => this.curComponent, () => {
+        eventBus.$emit('TopMenu.setTopMenuShow', 2)
+      }, {
+        deep: true
+      })
+
+      eventBus.$on('TopMenu.setTopMenuShow', (type) => {
+
+        if (!this.curComponent && type == 1) {
+
+          ['compose', 'lock', 'unlock', 'decompose'].forEach(name => {
+            this.$store.commit('setTopMenuShow', [name, false])
+          })
+
+          const menus = ['undo', 'redo', 'save']
+          menus.forEach(name => {
+            this.$store.commit('setTopMenuShow', [name, true])
+          })
+        } else if (!this.curComponent && type == 2) {
+
+          ['compose', 'lock', 'unlock', 'decompose'].forEach(name => {
+            this.$store.commit('setTopMenuShow', [name, false])
+          })
+        } else if (this.curComponent) {
+
+          const compose = this.areaData.components.length > 1
+          this.$store.commit('setTopMenuShow', ['compose', compose])
+
+          const lock = !(!this.curComponent || this.curComponent.isLock)
+          this.$store.commit('setTopMenuShow', ['lock', lock])
+
+          const unlock = !(!this.curComponent || !this.curComponent.isLock)
+          this.$store.commit('setTopMenuShow', ['unlock', unlock])
+
+          let decompose = null
+          if (this.activeComponentList.length > 1) {
+            for (let i = 0; i < this.activeComponentList.length; i++) {
+              const c = this.canvasComponentData.find(c => c.id === this.activeComponentList[i])
+              if (c && c.component === 'Group') {
+                decompose = false
+                break
+              }
+            }
+          }
+          decompose ?? (decompose = !(!this.curComponent || this.curComponent.isLock || this.curComponent.component != 'Group'))
+          this.$store.commit('setTopMenuShow', ['decompose', decompose])
+        }
+
+        debounce(() => {
+          ['undo', 'redo', 'save', 'compose', 'lock', 'unlock', 'decompose'].forEach(name => {
+            this.$store.commit('setTopMenuShow', [name, false])
+          })
+        }, 8000, 'hideTopMenuShow')
+
+      })
     },
     mounted() {
       const that = this;

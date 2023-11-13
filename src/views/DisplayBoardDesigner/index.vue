@@ -93,6 +93,7 @@
     selectFile,
     saveText,
     getRandStr,
+    throttle
   } from "../../components/DataVisualEditor/utils/utils";
   import { get, post } from "../../components/DataVisualEditor/utils/request";
   import { mapState } from "vuex";
@@ -143,8 +144,7 @@
       "editorHint",
       "canvasName",
       "activeComponentList",
-      "topIntelligentMenu",
-      "setTopMenuShow",
+      "topIntelligentMenu"
     ]),
     watch: {
       canvasData: {
@@ -398,11 +398,17 @@
 
         const content = document.getElementsByClassName("content")[0];
         const contentRect = content.getClientRects()[0];
-        if (event.offsetY < 60 && event.offsetX > contentRect.width - 100) {
+        if (event.layerY < 60 && event.layerX > contentRect.width - 100) {
           this.showCanvasIocn = true
-          setTimeout(() => {
+          throttle(() => {
             this.showCanvasIocn = false
-          }, 6000);
+          }, 6000, 'showCanvasIocn')
+        } else if (event.layerY < 60 && (event.layerX > contentRect.width * 0.35 && event.layerX < contentRect.width * 0.75)) {
+
+
+          eventBus.$emit('TopMenu.setTopMenuShow', 1)
+
+
         }
       },
 

@@ -102,8 +102,7 @@
         'editor',
         'canvasName',
         'activeComponentList',
-        'curComponentIndex',
-        'setTopMenuShow'
+        'curComponentIndex'
       ]),
     },
     watch: {
@@ -292,11 +291,6 @@
 
         document.addEventListener('mousemove', move);
         document.addEventListener('mouseup', up);
-
-        ['save', 'undo', 'redo'].forEach(name => {
-          this.$store.commit('setTopMenuShow', [name, true])
-        })
-
       },
 
       handleMouseMove(e) {

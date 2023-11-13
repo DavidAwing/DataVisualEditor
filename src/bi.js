@@ -332,13 +332,15 @@ const loadAll = async () => {
       styT = +styT.replace(/\px/g, '')
     }
 
-    document.onmousemove = (typeof callback === 'function') ? function (e) {
-      // 通过事件委托，计算移动的距离
-      let left = e.clientX - disX;
-      let top = e.clientY - disY;
-      callback(left + styL, top + styT);
-    }
-      : function (e) {
+    if (typeof callback == 'function') {
+      document.onmousemove = function (e) {
+        // 通过事件委托，计算移动的距离
+        let left = e.clientX - disX;
+        let top = e.clientY - disY;
+        callback(left + styL, top + styT)
+      }
+    } else {
+      document.onmousemove = function (e) {
         // 通过事件委托，计算移动的距离
         let left = e.clientX - disX
         let top = e.clientY - disY
@@ -356,6 +358,7 @@ const loadAll = async () => {
         // 移动当前元素
         dragDom.style.cssText += `;left:${left + styL}px;top:${top + styT}px;`
       }
+    }
 
     document.onmouseup = function () {
       document.onmousemove = null
@@ -363,7 +366,6 @@ const loadAll = async () => {
       dragDom.onmousemove = null
       document.onmouseup = null
     }
-
   }
 
 
@@ -383,9 +385,9 @@ const loadAll = async () => {
 
 loadAll()
 
-window.addEventListener('message', function (event) {
-  console.log('Received message:', event.data);
-});
+// window.addEventListener('message', function (event) {
+//   console.log('Received message:', event.data);
+// });
 
 // function loadScript(url, callback) {
 //   const script = document.createElement('script');

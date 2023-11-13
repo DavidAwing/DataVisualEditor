@@ -114,7 +114,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog :visible.sync="addDatabaseDialogVisible" class="add-database-dialog">
+    <el-dialog :visible.sync="addDatabaseDialogVisible" class="add-database-dialog" @close="cancelDatabaseDialogVisibl">
       <div slot="title">
         <div style="font-size: 16px; width: 10vw">
           {{ addDatabaseDialogTitle }}
@@ -337,6 +337,7 @@
       setTimeout(() => { }, 1000);
     },
     methods: {
+
       cancelDatabaseDialogVisibl() {
         this.addDatabaseDialogVisible = false;
         this.canvasDataSource.dataSource = this.dataSourceOld

@@ -119,6 +119,18 @@
 
         },
         deep: true,
+      },
+      canvasData: {
+        handler: function (val, old) {
+
+          const obj = {
+            action: 'setState',
+            urls: [`/DatasourceEditor?name=${this.canvasName}`],
+            data: [{ key: 'canvasData', value: this.canvasData }]
+          }
+          bi.sharedWorker.postMessage(JSONfn.stringify(obj))
+        },
+        deep: true,
       }
     },
     created() {

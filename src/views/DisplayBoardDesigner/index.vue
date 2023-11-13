@@ -166,15 +166,14 @@
       }
     },
     beforeCreate() {
-
+      document.title = "数据可视化编辑器";
     },
     created() {
       eventBus.$on("saveEvent", this.save);
       eventBus.$on("restoreEvent", this.restore);
 
       // 全局监听按键事件
-      listenGlobalKeyDown();
-      document.title = "数据可视化编辑器";
+      listenGlobalKeyDown()
     },
     mounted() {
       console.log("document.body.offsetwidth", document.body.offsetwidth);
@@ -321,7 +320,7 @@
           component.data.name = getRandStr();
           if (from === 'ComponentMarket') {
 
-            const parameters = JSONfn.parse(bi.store.state.canvasData.dataSource.parameters || '[]')
+            const parameters = JSONfn.parse(this.canvasData.dataSource.parameters || '[]')
 
             if (component.dataSourcelist) {
               for (const item of component.dataSourcelist) {
@@ -355,17 +354,21 @@
             delete component.name
             delete component.permission
 
-            this.$set(this.canvasData.dataSource, 'parameters', JSONfn.stringify(parameters))
-
             const dataSourceParameters = JSONfn.stringify(parameters);
+            this.$set(this.canvasData.dataSource, 'parameters', dataSourceParameters)
             DB.setItem(`bi-user-canvas-data-source-${this.canvasName}`, dataSourceParameters);
 
-            await axios
+            axios
               .post(`/BI-API/DataSource/SaveCanvasDataSourceList`, parameters, {
                 params: { userId: bi.uid, canvasName: this.canvasName },
               })
-            await saveCanvas(this.canvasName, this.canvasComponentData, this.canvasData)
-            const obj = { action: 'refresh', urls: [`/DatasourceEditor?name=${this.canvasName}`] }
+
+            const obj = {
+              action: 'emitEvent',
+              urls: [`/DatasourceEditor?name=${this.canvasName}`],
+              name: 'setCanvasDataSourceList',
+              data: dataSourceParameters
+            }
             bi.sharedWorker.postMessage(JSON.stringify(obj))
           }
 

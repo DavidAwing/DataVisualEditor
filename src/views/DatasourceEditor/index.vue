@@ -67,8 +67,8 @@
       </div>
 
       <div>
-        <div><el-button @click="testDataSource">测试</el-button></div>
-        <div><el-button @click="saveCanvasDataSourceList">保存</el-button></div>
+        <div v-if="false"><el-button @click="testDataSource">测试</el-button></div>
+        <div style="width: 80%;"><el-button @click="saveCanvasDataSourceList" style="width: 80%;">保存</el-button></div>
       </div>
 
       <div class="subcomponent" v-if="Component.component === 'Group'"></div>
@@ -237,6 +237,20 @@
     },
     components: { CodeEditor, Shape },
     props: {},
+    watch: {
+      canvasDataSourceList: {
+        handler: function (val, old) {
+          this.canvasData.dataSource.parameters = this.canvasDataSourceList.length == 0 ? '' : JSONfn.stringify(this.canvasDataSourceList)
+          const obj = {
+            action: 'setState',
+            urls: [{ url: `/editor`, canvasName: this.canvasName }],
+            data: [{ key: 'canvasData', value: this.canvasData }]
+          }
+          bi.sharedWorker.postMessage(JSONfn.stringify(obj))
+        },
+        deep: true,
+      },
+    },
     computed: {
       ...mapState(['canvasData', 'canvasComponentData']),
       ComponentList() {
@@ -262,12 +276,9 @@
       }
     },
     beforeCreate() {
-
-
-
+      document.title = '数据源编辑器';
     },
     created() {
-      document.title = '组件数据源编辑';
 
       this.canvasName = this.$route.query.name;
 
@@ -578,9 +589,9 @@
         } else if (type === 'http') {
           return 'HTTP';
         } else if (type === 'script') {
-          return 'js/ts';
+          return '脚本';
         } else if (type === 'mock') {
-          return '测试';
+          return '测试数据';
         }
 
         return type;
@@ -644,8 +655,6 @@
           return
         }
         toast('保存成功', 'success');
-        const obj = { action: 'refresh', urls: ['/editor'] }
-        bi.sharedWorker.postMessage(JSON.stringify(obj))
 
       },
       getComponentStyle(component) {

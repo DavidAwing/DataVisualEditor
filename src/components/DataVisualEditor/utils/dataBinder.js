@@ -84,10 +84,10 @@ export class TaskManager {
 
     function invoke() {
       // 是否立即调用? 默认尽量调用
-      const v = task.config['@watch_invoke'];
+      const v = task.config['@watch_immediate'];
       if (v) {
-        const isNotInvoke = /false/gi.test(v) || /0/g.test(v)
-        !isNotInvoke && TaskManager.invoke(name)
+        const immediate = /false/gi.test(v) || /0/g.test(v)
+        !immediate && TaskManager.invoke(name)
       } else {
         TaskManager.invoke(name)
       }
@@ -273,8 +273,6 @@ function parseText(text) {
         continue
       }
 
-      // console.log("验证字符串", CronExpressionValidator.validateCronExpression(line), line);
-
       if ((i === 0) && /^\[[^\]]+\]$/.test(line)) {
         obj.jobName = line.substring(1, line.length - 1);
       } else if ((i < 3) &&
@@ -380,7 +378,7 @@ function testTask(task) {
 
 
 
-// 先判断长度，再遍历比较
+// 数组比较
 function ArrayCompare(array1, array2) {
   // 如果长度不一样，则直接不相等
   if (array1.length != array2.length) {
@@ -597,18 +595,13 @@ function convertDataFormat(token, data) {
 
 export function commitData(store, task, response) {
 
-  if (
-    (Array.isArray(response) &&
-      (task.componentName !== undefined && task.componentName !== null && task.componentName.trim() !== "") &&
-      task.dataSourceType && task.name) ||
-    (response.data.headers === undefined &&
-      response.data.request === undefined &&
-      response.data.status === undefined &&
-      response.attributeName !== undefined &&
-      response.attributeName !== null &&
-      response.attributeName.trim() !== "" &&
-      typeof response === 'object' &&
-      typeof response.name === "string")) {
+  if ((Array.isArray(response) && task.componentName && task.dataSourceType && task.name) ||
+    (!response.data.headers &&
+      !response.data.request &&
+      !response.data.status &&
+      response.attributeName &&
+      typeof response == 'object' &&
+      typeof response.name == "string")) {
 
     if (Array.isArray(response)) {
 
@@ -636,11 +629,9 @@ export function commitData(store, task, response) {
         data
       ]);
     }
-  } else if (response.attributeName === undefined || response.attributeName === null || response.attributeName === "" ||
-    response.name === undefined || response.name === null || response.name === "") {
+  } else if (!response.attributeName || !response.name) {
 
-    if (task.componentName !== undefined && task.componentName !== null && task.componentName.trim() !== "" &&
-      task.componentType !== undefined && task.componentType !== null && task.componentType.trim() !== "") {
+    if (task.componentName && task.componentType) {
 
       let attributeName = ""
       let data = null
@@ -659,7 +650,7 @@ export function commitData(store, task, response) {
         attributeName = "data.text"
         data = newItem[keys[0]]
       } else if (task.componentType === "v-select") {
-        if (Array.isArray(item) && item.length > 0 && item[0].label !== undefined && item[0].value !== undefined) {
+        if (Array.isArray(item) && item.length > 0 && item[0].label && item[0].value) {
           attributeName = "data.options"
           data = item
         }
@@ -701,17 +692,16 @@ export function commitData(store, task, response) {
 
       for (let index = 0; index < response.data.length; index++) {
         const item = response.data[index];
-
         try {
-          if (task.sqlMap !== undefined && task.sqlMap[`sql[${index}]`] !== undefined) {
-            if (Object.prototype.toString.call(item) === '[object Array]') {
+          if (task.sqlMap && task.sqlMap[`sql[${index}]`]) {
+            if (Array.isArray(item)) {
 
               let attributeName = ""
               let data = null
               const name = task.sqlMap[`sql[${index}]`].find(val => val.trim().startsWith("@NAME")).split(/\s+/g)[1].trim()
 
               const component = window.bi.utils.getComponentData(name)
-              if (component === undefined) {
+              if (!component) {
                 console.log("未找到组件", name);
                 continue
               }
@@ -729,7 +719,7 @@ export function commitData(store, task, response) {
                   if (key.trim().startsWith("@NAME")) {
                     const name = key.trim().substring("@NAME".length).trim()
                     const component = window.bi.utils.getComponentData(name)
-                    if (component === undefined) {
+                    if (!component) {
                       console.log("未找到组件", name);
                       return
                     }
@@ -752,7 +742,7 @@ export function commitData(store, task, response) {
                       console.warn("无法设置数据", newItem);
                       return
                     }
-                    if (attributeName === "" || data === undefined || data === null) {
+                    if (!attributeName || !data) {
                       console.log("组件数据错误");
                       return
                     }
@@ -765,7 +755,7 @@ export function commitData(store, task, response) {
                 })
                 continue
               } else {
-                console.warn("数据不对劲...");
+                console.warn("数据不对劲...", item);
                 continue
               }
               store.commit("setCanvasComponentAttribute", [
@@ -775,40 +765,40 @@ export function commitData(store, task, response) {
               ]);
             }
           } else if (Object.prototype.toString.call(item) === '[object Object]' || (Array.isArray(item) && item.length === 1 &&
-            Object.prototype.toString.call(item[0]) === '[object Object]' && Object.keys(item[0])[0].trim().startsWith("@NAME"))) {
+            Object.prototype.toString.call(item[0]) === '[object Object]' && Object.keys(item[0]).find(key => key.trim().toUpperCase().startsWith("@NAME")))) {
 
             let newItem = item
             if (Array.isArray(newItem))
               newItem = newItem[0]
             const keys = Object.keys(newItem)
             keys.forEach(key => {
-              if (key.trim().startsWith("@NAME")) {
+              if (key.trim().toUpperCase().startsWith("@NAME")) {
                 const name = key.trim().substring("@NAME".length).trim()
                 const component = window.bi.utils.getComponentData(name)
-                if (component === undefined) {
+                if (!component) {
                   console.log("未找到组件", name);
                   return
                 }
                 let attributeName = ""
                 let data = null
-                if (component.component === 'v-text') {
+                if (component.component == 'v-text') {
                   attributeName = "data.text"
                   data = newItem[key]
-                } else if (component.component === 'v-picture') {
+                } else if (component.component == 'v-picture') {
                   data = newItem[key]
                   if (data.startsWith("/") || data.startsWith("http")) {
                     attributeName = "data.imageUrl"
                   } else {
                     attributeName = "data.image"
                   }
-                } else if (component.component === "v-video") {
+                } else if (component.component == "v-video") {
                   attributeName = "data.video"
                   data = newItem[key]
                 } else {
                   console.warn("无法设置数据", newItem);
                   return
                 }
-                if (attributeName === "" || data === undefined || data === null) {
+                if (!attributeName || !data) {
                   console.log("组件数据错误");
                   return
                 }
@@ -828,17 +818,11 @@ export function commitData(store, task, response) {
         }
       }
 
-
       let index = 0
       response.data.forEach(item => {
 
-
       })
-
     }
-
-
-
   } else {
     const data = response.data.data
     if (Array.isArray(data)) {
@@ -848,7 +832,6 @@ export function commitData(store, task, response) {
           name,
           data
         ]);
-
       })
     }
   }
@@ -859,7 +842,7 @@ export function commitData(store, task, response) {
 // todo: 用户注册的回调函数修改数据请求
 export function requestCanvasData(canvasName, callback) {
 
-  if (canvasName === undefined) {
+  if (!canvasName) {
     console.warn("未设置看板名称");
     return
   }
@@ -870,14 +853,16 @@ export function requestCanvasData(canvasName, callback) {
   const getCanvasData = async (name, callback) => {
 
     const canvasList = await DB.getAllItemByType("Canvas-Data");
-
     let hasName = false
-    if (canvasList !== undefined && canvasList !== null && canvasList.length > 0) {
+
+    // const data = canvasList.find(data => data.name == name)
+
+    if (canvasList && canvasList.length > 0) {
       for (const data of canvasList) {
         if (data.name === name) {
-          if (data.checkCode !== undefined) {
+          if (data.checkCode) {
             const response = await axios.get(`/BI-API/Component/GetCanvasCheckCode?name=${name}`)
-            if (response !== undefined && response.data !== undefined) {
+            if (response && response.data) {
               const code = response.data.data
               if (data.checkCode !== code) {
                 hasName = false
@@ -910,22 +895,21 @@ export function requestCanvasData(canvasName, callback) {
                 let component = canvasComponentData[i];
                 if (component.component === "Group")
                   component = component.propValue.find(item => item.data.name === task.componentName)
-                if (component === undefined || component === null)
+                if (!component)
                   continue
                 if (task.componentName === component.data.name) {
                   task.componentType = component.component
                   break
                 }
               }
-              if (task.componentType === undefined) {
+              if (!task.componentType) {
                 console.warn("组件丢失了: " + task.componentName);
               }
               if (task.dataSourceType === "script") {
 
                 task.call = () => {
-                  if (task.method === undefined) {
+                  if (!task.method) {
                     codeToInstance(task.scriptLanguage || "js", task.script).then(instance => {
-                      console.log("Object.prototype.toString.call(instance)", Object.prototype.toString.call(instance));
                       if (Object.prototype.toString.call(instance) === "[object Module]") {
                         task.method = instance.default.bind(this)
                       } else if (Object.prototype.toString.call(instance) === '[object Function]') {
@@ -956,7 +940,7 @@ export function requestCanvasData(canvasName, callback) {
                   // console.log("数据异常", task, "componentName: " + task.componentName, "componentType: " + task.componentType);
                 }
 
-                if (task.sqlMap === undefined) {
+                if (!task.sqlMap) {
 
                   // 解析任务的配置,提供给框架决策
                   task.config = {}
@@ -976,9 +960,8 @@ export function requestCanvasData(canvasName, callback) {
                       if (kvArr.length > 0) {
                         for (const item of kvArr) {
                           const at = item.indexOf(' ')
-                          if (at === -1) {
+                          if (at === -1)
                             continue
-                          }
                           const k = item.substring(0, at).trim().toLowerCase()
                           const v = item.substring(at).trim()
                           task.config[k] = v
@@ -1011,7 +994,7 @@ export function requestCanvasData(canvasName, callback) {
                       console.error("请求数据异常");
                       return
                     }
-                    if (task.dataTypeToken === undefined && task.componentType === "vc-chart") {
+                    if (!task.dataTypeToken && task.componentType === "vc-chart") {
                       task.dataTypeToken = getDataTypeToken(data.data)  // data.data
                     }
                     if (task.componentType === "vc-chart") {
@@ -1047,10 +1030,10 @@ export function requestCanvasData(canvasName, callback) {
                 let component = canvasComponentData[i];
                 if (component.component === "Group")
                   component = component.propValue.find(item => Object.keys(task.element).includes(item.data.name))
-                if (component === undefined || component === null)
+                if (!component)
                   continue
                 const element = task.element[component.data.name]
-                if (element === undefined || element === null)
+                if (!element)
                   continue
                 element.componentType = component.component
                 if (element.componentType === "vc-chart") {
@@ -1059,7 +1042,7 @@ export function requestCanvasData(canvasName, callback) {
 
               // 合并任务
               testTask(task).then((task) => {
-                if (task.cron === undefined)
+                if (!task.cron)
                   task.cron = dataSource.cron
                 if (task.type === "get") {
                   task.call = () => {
@@ -1093,9 +1076,7 @@ export function requestCanvasData(canvasName, callback) {
 
                   task.call = () => {
 
-                    if (task.method === undefined || task.method === null) {
-                      if (task.method === null)
-                        return
+                    if (!task.method) {
                       const arr = task.source.trim().split("*")
                       const scriptPath = arr[0].trim()
                       const methodName = arr[1]
@@ -1105,35 +1086,33 @@ export function requestCanvasData(canvasName, callback) {
                           name: scriptPath,
                         },
                         timeout: 6000,
-                      })
-                        .then(({ data }) => {
-                          if (data.state !== 200) {
-                            console.warn("执行任务获取脚本异常", data);
+                      }).then(({ data }) => {
+                        if (data.state !== 200) {
+                          console.warn("执行任务获取脚本异常", data);
+                          return
+                        }
+                        codeToInstance(scriptPath, data.data).then(instance => {
+                          let method = null
+                          if (Object.prototype.toString.call(instance) === "[object Module]") {
+                            if (!methodName) {
+                              method = instance.default.bind(this)
+                            } else if (Object.prototype.toString.call(methodName) === "[object String]" &&
+                              Object.prototype.toString.call(instance[methodName]) === "[object Function]") {
+                              method = instance[methodName].bind(this)
+                            } else {
+                            }
+                          } else if (Object.prototype.toString.call(instance) === '[object Function]') {
+                          } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
+                          }
+                          if (!method) {
+                            console.error(`找不到任务执行的方法`, "方法名: " + methodName, "实例类型: " + Object.prototype.toString.call(instance), "代码: " + data.data);
                             return
                           }
-                          codeToInstance(scriptPath, data.data).then(instance => {
-                            let method = null
-                            if (Object.prototype.toString.call(instance) === "[object Module]") {
-                              if (methodName === undefined || methodName === null) {
-                                method = instance.default.bind(this)
-                              } else if (Object.prototype.toString.call(methodName) === "[object String]" &&
-                                Object.prototype.toString.call(instance[methodName]) === "[object Function]") {
-                                method = instance[methodName].bind(this)
-                              } else {
-                              }
-                            } else if (Object.prototype.toString.call(instance) === '[object Function]') {
-                            } else if (Object.prototype.toString.call(module.default) === '[object Object]') {
-                            }
-                            if (method === null) {
-                              console.error(`找不到任务执行的方法`, "方法名: " + methodName, "实例类型: " + Object.prototype.toString.call(instance), "代码: " + data.data);
-                              return
-                            }
-                            task.method = method
-                          })
+                          task.method = method
                         })
-                        .catch((error) => {
-                          console.error(`${scriptPath}脚本异常: `, error);
-                        });
+                      }).catch((error) => {
+                        console.error(`${scriptPath}脚本异常: `, error);
+                      });
                     } else {
                       const response = task.method()
                       if (Object.prototype.toString.call(response) === "[object Promise]") {
@@ -1171,12 +1150,10 @@ export function requestCanvasData(canvasName, callback) {
                     TaskManager.invoke(task.name)
                   }
                 )
-
                 if (job) {
                   TaskManager.add(task.name, task, job)
                   TaskManager.invoke(task.name)
                 }
-
               })
             });
           }
@@ -1192,34 +1169,28 @@ export function requestCanvasData(canvasName, callback) {
           name: name,
         },
         timeout: 1000 * 60 * 30,
-      })
-        .then(({ data }) => {
-          if (data.state !== 200) {
-            callback(false, data)
-            return
-          }
-          DB.setItem(name, JSON.parse(data.data)).then(() => {
-            getCanvasData(name);
-          }).catch((error) => {
-            toast("浏览器数据保存异常")
-            console.error("getCanvasData|浏览器数据保存异常", error);
-          })
+      }).then(({ data }) => {
+
+        if (data.state !== 200) {
+          // eslint-disable-next-line node/no-callback-literal
+          callback(false, data)
+          return
+        }
+        DB.setItem(name, JSON.parse(data.data)).then(() => {
+          getCanvasData(name);
+        }).catch((error) => {
+          toast("浏览器数据保存异常")
+          console.error("getCanvasData|浏览器数据保存异常", error);
         })
-        .catch((error) => {
-          console.error("getCanvasData|indexDB保存数据异常", JSON.stringify(error));
-          callback(false, error)
-        });
+      }).catch((error) => {
+        console.error("getCanvasData|indexDB保存数据异常", JSON.stringify(error));
+        // eslint-disable-next-line node/no-callback-literal
+        callback(false, error)
+      });
     }
   };
 
-  if (callback === undefined) {
-    callback = (success, error) => {
-      if (!success) {
-        console.trace("发生异常", error);
-      }
-    }
-  }
-
+  callback ?? (callback = (success, error) => !success && console.trace("requestCanvasData发生异常", error));
   getCanvasData(canvasName, callback);
 }
 

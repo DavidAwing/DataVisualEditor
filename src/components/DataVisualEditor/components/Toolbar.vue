@@ -15,7 +15,7 @@
       <!-- <el-button @click="redo">预览</el-button> -->
       <!-- 填写接口或者json数据测试 -->
 
-      <el-button class="ai-dialog-button" icon="el-icon-search" :circle="false"
+      <el-button class="ai-dialog-button" icon="el-icon-search" :circle="false" v-if="false"
         @click="showChatDialogVisible"></el-button>
 
       <el-button class="show-canvas-config-dialog" icon="el-icon-search" :circle="false"
@@ -27,6 +27,7 @@
       </el-select> -->
 
       <el-button :class="'device-' + canvasData.deviceType" type="primary--" icon="el-icon-search" :circle="false"
+        v-if="false"
         @click="()=>{canvasData.deviceType === 'mobile' ? canvasData.deviceType = 'pc': canvasData.deviceType = 'mobile'}"></el-button>
 
       <!-- <el-button @click="redo" style="margin-left: 10px">其他</el-button> -->
@@ -48,9 +49,9 @@
 
       <div class="canvas-config">
         <!-- <span>尺寸</span> -->
-        <input style="padding: 6px" v-model="canvasData.width" />
+        <input style="padding: 6px" v-model="canvasData.width" :style="{height: '32px', borderRadius: '4px'}" />
         <span>*</span>
-        <input style="padding: 6px" v-model="canvasData.height" />
+        <input style="padding: 6px" v-model="canvasData.height" :style="{height: '32px', borderRadius: '4px'}" />
       </div>
       <el-select v-model="canvasData.unit" style="width: 70px; min-width: 70px" class="canvas-config">
         <el-option key="px" label="px" value="px"></el-option>
@@ -59,7 +60,8 @@
       </el-select>
       <div class="canvas-config">
         <span>缩放</span>
-        <input style="padding: 6px" v-model="scale" @input="handleScaleChange" />
+        <input style="padding: 6px" v-model="scale" @input="handleScaleChange"
+          :style="{height: '32px', borderRadius: '4px'}" />
         %
       </div>
     </div>
@@ -71,12 +73,13 @@
         </el-form-item> -->
 
         <div style="display: flex; justify-content: flex-end">
-          <a :href="'/bi/#/DatasourceEditor?name=' + currentCanvasName" target="_blank" class=""
-            @click="canvasConfigDialogVisible = false">
+          <a target="_blank"
+            @click="openWindow($event, `/bi/#/DatasourceEditor?name=${currentCanvasName}`, '数据源编辑器-' + currentCanvasName)">
             <el-button type="text" style="font-size: 16px">进入数据源编辑器</el-button>
           </a>
         </div>
-        <el-input type="textarea" v-model="canvasData.dataSource.parameters" autocomplete="off" :rows="10"></el-input>
+        <el-input type="textarea" readonly :value="canvasData.dataSource.parameters" autocomplete="off"
+          :rows="10"></el-input>
         <div style="display: flex; justify-content: flex-end">
           <a :href="'/bi/#/WorkFlowEditor?name=' + currentCanvasName" target="_blank" class=""
             @click="canvasConfigDialogVisible = false">
@@ -266,6 +269,7 @@
                       timeout: 1000 * 60 * 30,
                     })
                     .then(({ data }) => {
+                      debugger
                       if (data.state !== 200) {
                         console.warn('currentCanvasName|GetCanvasTemplate发生错误', data);
                         return;
@@ -373,6 +377,14 @@
       });
     },
     methods: {
+
+      openWindow(event, url, windowName) {
+        event.preventDefault();
+        this.canvasConfigDialogVisible = false;
+        setTimeout(() => {
+          f.openWindow(url, windowName);
+        }, 20);
+      },
 
       async onSendMsg({ type, content }) {
 
@@ -512,22 +524,18 @@
       importTemplate() {
         selectFile().then(fileList => {
           const that = this;
-
           const reader = new FileReader();
           reader.readAsText(fileList[0], 'UTF-8');
           reader.onload = function (e) {
             const text = e.target.result;
             const canvas = JSONfn.parse(text);
-
             // 用保存的数据恢复画布
             if (typeof canvas.canvasComponentData === 'string') {
               that.$store.commit('setCanvasComponentData', that.resetID(JSONfn.parse(canvas.canvasComponentData)));
             }
-
             if (typeof canvas.canvasData === 'string') {
               that.$store.commit('setCanvasData', JSONfn.parse(canvas.canvasData));
             }
-
             const name = fileList[0].name;
             that.$store.commit('setCanvasName', name.substring(0, name.length - 6));
           };
@@ -704,21 +712,19 @@
           }
           componentNameList.push(componentName);
         }
-        const isSave = saveCanvas(this.currentCanvasName, this.canvasComponentData, this.canvasData)
 
-        // const obj = { action: 'refresh', urls: [`/DatasourceEditor?name=${this.currentCanvasName}`] }
-        // bi.sharedWorker.postMessage(JSON.stringify(obj))
+        if (!saveCanvas(this.canvasName, this.canvasComponentData, this.canvasData))
+          return
         toast('保存成功', 'success');
-
         const obj1 = {
           action: 'setState',
-          urls: [`/DatasourceEditor?name=${this.currentCanvasName}`],
+          urls: [`/DatasourceEditor?name=${this.canvasName}`],
           data: [{ key: 'canvasComponentData', value: this.canvasComponentData },
           { key: 'canvasData', value: this.canvasData }]
         }
         const obj2 = {
           action: 'emitEvent',
-          urls: [`/DatasourceEditor?name=${this.currentCanvasName}`],
+          urls: [`/DatasourceEditor?name=${this.canvasName}`],
           name: 'setCanvasDataSourceList',
           data: this.canvasData.dataSource.parameters
         }
@@ -760,7 +766,13 @@
             DB.setItem('CurrentCanvasName', this.currentCanvasName)
           }
 
-          axios.get(`/BI-API/Component/DeleteCanvasTemplate?name=${currentCanvasName}`)
+          axios.get(`/BI-API/Component/DeleteCanvasTemplate`,
+            {
+              params: { name: currentCanvasName },
+              //请求头配置
+              headers: { uid: bi.uid }
+            })
+          DB.removeItem(`bi-user-canvas-data-source-${currentCanvasName}`);
 
         }).catch(async () => {
           this.currentCanvasName = await DB.getItem('CurrentCanvasName')
@@ -784,7 +796,11 @@
         this.currentCanvasName = event.target.value;
 
         try {
-          requestCanvasData.bind(this)(this.currentCanvasName);
+          requestCanvasData.bind(this)(this.currentCanvasName, isSuccess => {
+            if (!isSuccess) {
+              this.canvasData.dataSource.parameters = ""
+            }
+          });
         } catch (error) {
           console.error('数据绑定异常', error);
         }

@@ -44,7 +44,7 @@ module.exports = defineConfig({
   configureWebpack: {
     // provide the app's title in webpack's name field, so that
     // it can be accessed in index.html to inject the correct title.
-    name: "数据可视化编辑器",
+    name: "低代码编辑器",
     resolve: {
       alias: {
         vue: 'vue/dist/vue.esm.js',
@@ -98,6 +98,8 @@ module.exports = defineConfig({
       filename: (pathData) => {
         if (pathData.chunk.name === 'runtime~app') {
           return 'bi-[name].js';
+        } else if (pathData.chunk.name.includes('shared-worker.worker')) {
+          return 'js/[name].js';
         } else {
           return 'bi-[name].[contenthash].js'
         }
@@ -287,6 +289,15 @@ module.exports = defineConfig({
         ws: true,
         pathRewrite: {
           '^/test': '',
+        }
+      },
+      '/FormDesigner': {
+        target: 'http://192.168.0.100:8080',
+        secure: true,
+        changeOrigin: true,
+        ws: true,
+        pathRewrite: {
+          '^/FormDesigner': '/FormDesigner',
         }
       }
     }

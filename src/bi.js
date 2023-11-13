@@ -21,7 +21,7 @@ import store from '@/store';
 import * as ElementUI from 'element-ui';
 import * as xlsx from 'xlsx-js-style';
 import eventBus from './components/DataVisualEditor/utils/eventBus';
-import MySharedWorker from './components/DataVisualEditor/utils/shared-worker.worker.js'
+import SharedWorkerScript from './components/DataVisualEditor/utils/shared-worker.worker.js'
 import * as echarts from "echarts";
 import draggable from '@shopify/draggable'
 
@@ -39,7 +39,6 @@ import * as THREE from 'three';
 
 import * as _ from 'lodash'
 // import Monaco from '@/vue3/repl/dist/monaco-editor.js'
-
 
 // const repl = require('@vue/repl')
 // const  Monaco = require('@vue/repl/monaco-editor')
@@ -119,21 +118,25 @@ const loadAll = async () => {
 
   bi.sharedWorker = {
     worker: null,
-    start: (SharedWorkerConstructor) => {
-      if (!SharedWorkerConstructor) {
-        throw new Error('当前浏览器不支持SharedWorker')
+    start: (SharedWorkerConstructor, options) => {
+      let worker = null
+      if (typeof SharedWorkerConstructor === 'string' && SharedWorkerConstructor.endsWith('.worker.js')) {
+        worker = new SharedWorker(SharedWorkerConstructor, options)
+      } else {
+        if (!SharedWorkerConstructor) {
+          throw new Error('当前浏览器不支持SharedWorker')
+        }
+        worker = new SharedWorkerConstructor()
       }
-      const worker = new SharedWorkerConstructor()
       worker.port.start()
       worker.port.onmessage = (e) => {
-        const onmessage = bi.sharedWorker.onmessage
+        const { onmessage } = bi.sharedWorker
         if (!onmessage) {
           console.warn(`sharedWorker消息处理函数未定义,消息事件: ${e}`);
         } else {
           onmessage(e)
         }
       }
-
       bi.sharedWorker.worker = worker
       return worker
     },
@@ -144,17 +147,25 @@ const loadAll = async () => {
       bi.sharedWorker.worker.port.postMessage(msg)
     },
     onmessage: (event) => {
-
-      console.log('SharedWorker消息: ', event);
+      console.log('SharedWorker|onmessage', event);
 
       const isUrl = (obj) => {
         let url = location.hash.includes('#') ? location.hash.split('#')[1] : location.hash.match(/\/\w+(?=\?{0,1})/)
         url = Array.isArray(url) ? url[0] : url
-        if (url && obj.urls && obj.urls.includes(decodeURI(url))) {
-          return true
-        } else {
+
+        if (!url)
           return false
+        url = decodeURI(url)
+        if (!obj.urls)
+          return false
+        for (const item of obj.urls) {
+          if (typeof item == 'string' && item == url) {
+            return true
+          } else if (typeof item == 'object' && item.url == url && bi.store.state.canvasName == item.canvasName) {
+            return true
+          }
         }
+        return false
       }
 
       const refresh = (obj) => {
@@ -175,6 +186,11 @@ const loadAll = async () => {
         eventBus.$emit(obj.name, obj.data);
       }
 
+      if (!event.data.startsWith('{') && !event.data.endsWith('}')) {
+        console.warn('SharedWorker|onmessage', '共享消息只能接收json字符串', event.data);
+        return
+      }
+
       const msgObj = JSONfn.parse(event.data)
       if (!isUrl(msgObj)) {
         return
@@ -186,7 +202,8 @@ const loadAll = async () => {
       }
     }
   }
-  bi.sharedWorker.start(MySharedWorker)
+
+  bi.sharedWorker.start(SharedWorkerScript)
 
   bi.utils.getValueByAttributePath = getValueByAttributePath;
   bi.utils.setJsonAttribute = setJsonAttribute;
@@ -348,12 +365,27 @@ const loadAll = async () => {
     }
 
   }
-};
 
+
+  bi.utils.openWindow = (url, windowName) => {
+
+    if (windowName == null)
+      windowName = url
+    const existingWindow = window.open('', windowName);
+    if (existingWindow) {
+      existingWindow.location.href = url;
+    } else {
+      window.open(url, windowName);
+    }
+    return existingWindow
+  }
+};
 
 loadAll()
 
-
+window.addEventListener('message', function (event) {
+  console.log('Received message:', event.data);
+});
 
 // function loadScript(url, callback) {
 //   const script = document.createElement('script');

@@ -3,21 +3,10 @@
   <div class="v-form">
 
     <div v-if="element.data.formConf.fields.length == 0" class="empty-info">
-      点选组件进行表单设计
+      请打开表单设计器进行编辑
     </div>
 
     <parser v-else :key="element.data.name" :form-conf="element.data.formConf" @submit="sumbitForm" />
-
-    <top-el-dialog title="表单设计" :visible.sync="element.data.showFormDesignerDialog" width="90%" v-el-drag-dialog center>
-      <el-form :inline="true" label-width="auto">
-        <VIframe :src="iframeSrc" style="width: 90vw; height: 70vh;" />
-      </el-form>
-
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="element.data.showFormDesignerDialog = false">取 消</el-button>
-        <el-button type="primary" @click="element.data.showFormDesignerDialog = false">确 定</el-button>
-      </span>
-    </top-el-dialog>
 
   </div>
 
@@ -51,20 +40,13 @@
     },
     data() {
       return {
-        iframeSrc: 'http://192.168.0.100:8080/#/'
+        iframeSrc: '/FormDesigner/#/home'
       }
     },
     created() {
       eventBus.$on('onFormDesigner', (name, event) => {
-
-        console.log('onFormDesigner', name, event);
-
         if (name !== this.element.data.name) return
-
-
-
-        this.element.data.showFormDesignerDialog = true
-
+        f.openWindow(`/FormDesigner/#/home?c=${name}`, '表单设计器-' + name)
       });
     },
     mounted() {

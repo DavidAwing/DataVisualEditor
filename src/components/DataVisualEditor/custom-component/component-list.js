@@ -171,7 +171,7 @@ const list = [
       left: 0,
       textAlign: '',
       color: 'rgba(0, 0, 0, 1)',
-      backgroundColor: 'rgba(0,0,0,0)',
+      backgroundColor: 'rgba(255,255,255,1)',
       fontFamily: '宋体'
     },
     styleUnit: {
@@ -238,7 +238,7 @@ const list = [
         label: '颜色',
         bind: 'style',
         options: {
-          showAlpha: false
+          showAlpha: true
         }
       },
       {
@@ -247,7 +247,7 @@ const list = [
         label: '背景色',
         bind: 'style',
         options: {
-          showAlpha: false
+          showAlpha: true
         }
       },
       {
@@ -634,8 +634,7 @@ const list = [
         disabled: false,
         span: 6,
         formBtns: true
-      },
-      showFormDesignerDialog: false
+      }
     },
     styleUnit: {
       top: "px",
@@ -725,7 +724,7 @@ const list = [
         type: "eventbus-button",
         label: '',
         bind: {
-          label: '表单设计',
+          label: '打开表单设计器',
           click: "onFormDesigner",
           dblclick: "onFormDesigner"
         }

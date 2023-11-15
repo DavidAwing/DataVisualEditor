@@ -16,7 +16,7 @@ import eventBus from "../utils/eventBus";
 import {
   debounce
 } from "../utils/utils";
-
+const JSONfn = require("jsonfn").JSONfn;
 
 
 Vue.use(Vuex)
@@ -216,6 +216,7 @@ const data = {
     },
 
     setCanvasComponentData(state, canvasComponentData = []) {
+      if (typeof canvasComponentData == 'string') canvasComponentData = JSONfn.parse(canvasComponentData)
       Vue.set(state, 'canvasComponentData', canvasComponentData)
 
       // todo 此处可用优化

@@ -741,20 +741,20 @@
         if (!saveCanvas(this.canvasName, this.canvasComponentData, this.canvasData))
           return
         toast('保存成功', 'success');
-        const obj1 = {
-          action: 'setState',
-          urls: [`/DatasourceEditor?name=${this.canvasName}`],
-          data: [{ key: 'canvasComponentData', value: this.canvasComponentData },
-          { key: 'canvasData', value: this.canvasData }]
-        }
-        const obj2 = {
-          action: 'emitEvent',
-          urls: [`/DatasourceEditor?name=${this.canvasName}`],
-          name: 'setCanvasDataSourceList',
-          data: this.canvasData.dataSource.parameters
-        }
-        bi.sharedWorker.postMessage(JSONfn.stringify(obj1))
-        bi.sharedWorker.postMessage(JSONfn.stringify(obj2))
+        // const obj1 = {
+        //   action: 'setState',
+        //   urls: [`/DatasourceEditor?name=${this.canvasName}`],
+        //   data: [{ key: 'canvasComponentData', value: JSONfn.stringify(this.canvasComponentData) },
+        //   { key: 'canvasData', value: this.canvasData }]
+        // }
+        // const obj2 = {
+        //   action: 'emitEvent',
+        //   urls: [`/DatasourceEditor?name=${this.canvasName}`],
+        //   name: 'setCanvasDataSourceList',
+        //   data: this.canvasData.dataSource.parameters
+        // }
+        // bi.sharedWorker.postMessage(obj1)
+        // bi.sharedWorker.postMessage(obj2)
         return true
       },
 
@@ -841,7 +841,7 @@
 
 <style lang="less" scoped>
   .toolbar {
-    padding: 15px 10px;
+    padding: 5px 10px;
     white-space: nowrap;
     overflow-x: auto;
     background: #fff;

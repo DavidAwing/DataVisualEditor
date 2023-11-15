@@ -188,6 +188,8 @@
       var demo1_h = window.getComputedStyle(ele).getPropertyValue("height");
 
       $('#EmbeddedComponentModeDiv').css('display', 'none')
+
+
     },
     methods: {
 
@@ -367,9 +369,9 @@
               action: 'emitEvent',
               urls: [`/DatasourceEditor?name=${this.canvasName}`],
               name: 'setCanvasDataSourceList',
-              data: dataSourceParameters
+              data: parameters
             }
-            bi.sharedWorker.postMessage(JSON.stringify(obj))
+            bi.sharedWorker.postMessage(obj)
           }
 
 
@@ -396,6 +398,10 @@
 
       handleMouseMove(event) {
 
+        const left = document.querySelector("#app > div > main > section.left").offsetWidth
+        const top = document.querySelector("#app > div > div > div.toolbar").offsetHeight
+        const position = bi.$(event.target).position()
+
         const content = document.getElementsByClassName("content")[0];
         const contentRect = content.getClientRects()[0];
         if (event.layerY < 60 && event.layerX > contentRect.width - 100) {
@@ -403,7 +409,7 @@
           throttle(() => {
             this.showCanvasIocn = false
           }, 6000, 'showCanvasIocn')
-        } else if (event.layerY < 60 && (event.layerX > contentRect.width * 0.35 && event.layerX < contentRect.width * 0.75)) {
+        } else if (event.layerY + position.top - top < 60 && (event.layerX + position.left > contentRect.width * 0.35 && event.layerX + position.left < contentRect.width * 0.75)) {
           eventBus.$emit('TopMenu.setTopMenuShow', 1)
         }
       },
@@ -437,7 +443,7 @@
     background: #fff;
 
     main {
-      height: calc(100% - 64px);
+      height: calc(100% - 47px);
       position: relative;
 
       .left {

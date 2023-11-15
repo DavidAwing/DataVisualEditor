@@ -110,9 +110,9 @@
           const obj = {
             action: 'setState',
             urls: [`/DatasourceEditor?name=${this.canvasName}`],
-            data: [{ key: 'canvasComponentData', value: this.canvasComponentData }]
+            data: [{ key: 'canvasComponentData', value: JSONfn.stringify(this.canvasComponentData) }]
           }
-          bi.sharedWorker.postMessage(JSONfn.stringify(obj))
+          bi.sharedWorker.postMessage(obj)
 
         },
         deep: true,
@@ -125,7 +125,7 @@
             urls: [`/DatasourceEditor?name=${this.canvasName}`],
             data: [{ key: 'canvasData', value: this.canvasData }]
           }
-          bi.sharedWorker.postMessage(JSONfn.stringify(obj))
+          bi.sharedWorker.postMessage(obj)
         },
         deep: true,
       }

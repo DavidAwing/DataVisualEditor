@@ -358,29 +358,20 @@ const list = [
     ],
     eventOptions: [
       {
-        label: "click",
+        label: "点击",
         value: "onClick"
       },
       {
-        label: "hover",
-        value: "onHover"
+        label: "鼠标悬停",
+        value: "onMouseover"
       },
       {
-        label: "mouseover",
-        value: "onMouseover"
+        label: "鼠标移出",
+        value: "onMouseout"
       }
     ],
-    events: {
-    },
-    styleList: //todo: 从后台读取组件支持的样式列表
-      [
-        // {
-        //   elementId: "",
-        //   selector: "",
-        //   styleName: "",
-        //   css: ""
-        // }
-      ]
+    events: {},
+    styleList: [] //todo: 从后台读取组件支持的样式列表
   },
   // 组件容器
   {
@@ -605,7 +596,6 @@ const list = [
     label: '表单',
     icon: 'wenben',
     animations: [],
-    events: {},
     style: {
       rotate: 0,
       opacity: 1,
@@ -620,6 +610,25 @@ const list = [
       paddingRight: 0,
       paddingBottom: 0,
     },
+    eventOptions: [
+      {
+        label: "提交表单",
+        value: "onSubmitForm"
+      },
+      {
+        label: "数据改变",
+        value: "onModelChange"
+      },
+      {
+        label: "鼠标悬停",
+        value: "onMouseover"
+      },
+      {
+        label: "鼠标移出",
+        value: "onMouseout"
+      }
+    ],
+    events: {},
     data: {
       name: "",
       show: true,
@@ -780,16 +789,16 @@ const list = [
     },
     eventOptions: [
       {
-        label: "click",
+        label: "点击",
         value: "onClick"
       },
       {
-        label: "hover",
-        value: "onHover"
+        label: "鼠标悬停",
+        value: "onMouseover"
       },
       {
-        label: "mouseover",
-        value: "onMouseover"
+        label: "鼠标移出",
+        value: "onMouseout"
       }
     ],
     events: {
@@ -897,16 +906,24 @@ const list = [
         value: "onClear"
       },
       {
-        label: "keyup",
+        label: "键盘弹起",
         value: "onKeyup"
       },
       {
-        label: "keydown",
+        label: "键盘按下",
         value: "onKeydown"
       },
       {
         label: "keypress",
         value: "onKeypress"
+      },
+      {
+        label: "鼠标悬停",
+        value: "onMouseover"
+      },
+      {
+        label: "鼠标移出",
+        value: "onMouseout"
       }
     ],
     events: {
@@ -1474,19 +1491,21 @@ const list = [
       }
     ],
     eventOptions: [
+      {
+        label: "点击",
+        value: "onClick"
+      },
+      {
+        label: "鼠标悬停",
+        value: "onMouseover"
+      },
+      {
+        label: "鼠标移出",
+        value: "onMouseout"
+      }
     ],
-    events: {
-
-    },
-    styleList: //todo: 从后台读取组件支持的样式列表
-      [
-        // {
-        //   elementId: "",
-        //   selector: "",
-        //   styleName: "",
-        //   css: ""
-        // }
-      ]
+    events: {},
+    styleList: []
   },
   // 边框
   {
@@ -2168,16 +2187,11 @@ const list = [
         value: "onExpandChange"
       }
     ],
-    events: {
-
-
-    },
+    events: {},
     selectorList: [
       //  { label: "奇数行颜色", value: ".el-table tbody tr:nth-child(odd) .cell" },
     ],
-    styleList: //todo: 已应用的样式列表, 从后台读取组件支持的样式列表
-      [
-      ]
+    styleList: []
   },
   // 视频
   {
@@ -2292,6 +2306,18 @@ const list = [
 
     ],
     eventOptions: [
+      {
+        label: "点击",
+        value: "onClick"
+      },
+      {
+        label: "鼠标悬停",
+        value: "onMouseover"
+      },
+      {
+        label: "鼠标移出",
+        value: "onMouseout"
+      }
     ],
     events: {
 
@@ -2510,18 +2536,21 @@ const list = [
       }
     ],
     eventOptions: [
+      {
+        label: "点击",
+        value: "onClick"
+      },
+      {
+        label: "鼠标悬停",
+        value: "onMouseover"
+      },
+      {
+        label: "鼠标移出",
+        value: "onMouseout"
+      }
     ],
-    events: {
-    },
-    styleList: //todo: 从后台读取组件支持的样式列表
-      [
-        // {
-        //   elementId: "",
-        //   selector: "",
-        //   styleName: "",
-        //   css: ""
-        // }
-      ]
+    events: {},
+    styleList: []
   },
   // 网页
   {
@@ -2760,6 +2789,22 @@ const list = [
       show: true,
       isAlign: false,
       isModal: false,
+      format: "CODE128",
+      mod43: true,
+      ean128: true,
+      width: 2,
+      height: 100,
+      displayValue: true,
+      fontOptions: '',
+      font: '等宽',
+      fontSize: 16,
+      textAlign: 'center',
+      textPosition: 'bottom',
+      textMargin: 2,
+      background: '#ffffff',
+      lineColor: '#000000',
+      margin: 10,
+      text: 'test'
     },
     style: {
       width: 300,
@@ -2778,21 +2823,6 @@ const list = [
       letterSpacing: 'px'
     },
     styleExcludes: ['fontFamily'],
-    format: "CODE128",
-    mod43: true,
-    ean128: true,
-    width: 2,
-    height: 100,
-    displayValue: true,
-    fontOptions: '',
-    font: '等宽',
-    fontSize: 16,
-    textAlign: 'center',
-    textPosition: 'bottom',
-    textMargin: 2,
-    background: '#ffffff',
-    lineColor: '#000000',
-    margin: 10,
     valid: function (valid) {
       if (!valid) {
         // toast("条码生成失败")
@@ -2800,10 +2830,64 @@ const list = [
     },
     attrList: [
       {
-        key: "barcode-attr-0",
+        key: "name",
+        type: "text",
+        label: '名称',
+        bind: "data"
+      },
+      {
+        key: "show",
+        type: "checkbox",
+        label: '显示',
+        bind: "data"
+      },
+      {
+        key: "isAlign",
+        type: "checkbox",
+        label: '对齐',
+        bind: 'data'
+      },
+      {
+        key: "left",
+        type: "number",
+        label: 'x 坐标',
+        bind: "style"
+      },
+      {
+        key: "top",
+        type: "number",
+        label: 'y 坐标',
+        bind: "style"
+      },
+      {
+        key: "width",
+        type: "number",
+        label: '宽',
+        bind: "style"
+      },
+      {
+        key: "height",
+        type: "number",
+        label: '高',
+        bind: "style"
+      },
+      {
+        key: "rotate",
+        type: "number",
+        label: '旋转',
+        bind: "style"
+      },
+      {
+        key: "text",
+        type: "text",
+        label: '文本',
+        bind: "data"
+      },
+      {
+        key: "format",
         type: "select",
         label: '条形码类型',
-        bind: 'format',
+        bind: 'data',
         options: [{
           value: 'CODE128',
           label: 'CODE128'
@@ -2861,40 +2945,40 @@ const list = [
         }]
       },
       {
-        key: "barcode-attr-mod43",
+        key: "mod43",
         type: "checkbox",
         label: 'mod43',
-        bind: 'mod43'
+        bind: 'data'
       },
       {
-        key: "barcode-attr-ean128",
+        key: "ean128",
         type: "checkbox",
         label: 'ean128',
-        bind: 'ean128'
+        bind: 'data'
       },
       {
-        key: "barcode-attr-width",
+        key: "width",
         type: "number",
         label: '竖线宽度',
-        bind: 'width'
+        bind: 'data'
       },
       {
-        key: "barcode-attr-height",
+        key: "height",
         type: "number",
         label: '条形码高度',
-        bind: 'height'
+        bind: 'data'
       },
       {
-        key: "barcode-attr-displayValue",
+        key: "displayValue",
         type: "checkbox",
         label: '是否显示文本',
-        bind: 'displayValue'
+        bind: 'data'
       },
       {
-        key: "barcode-attr-fontOptions",
+        key: "fontOptions",
         type: "select",
         label: '文本选项',
-        bind: 'fontOptions',
+        bind: 'data',
         options: [
           {
             value: '',
@@ -2911,76 +2995,76 @@ const list = [
           }]
       },
       {
-        key: "text-attr-font",
+        key: "font",
         type: "select",
         label: '字体',
-        bind: 'font',
+        bind: 'data',
         options: fontFamilyOpts
       },
       {
-        key: "barcode-attr-fontSize",
+        key: "fontSize",
         type: "number",
         label: '字体大小',
-        bind: 'fontSize'
+        bind: 'data'
       },
       {
-        key: "barcode-attr-textAlign",
+        key: "textAlign",
         type: "select",
         label: '文本对齐',
-        bind: 'textAlign',
+        bind: 'data',
         options: [{
           value: 'center',
-          label: 'center'
+          label: '居中'
         }, {
           value: 'left',
-          label: 'left'
+          label: '左'
         }, {
           value: 'right',
-          label: 'right'
+          label: '右'
         }]
       },
       {
-        key: "barcode-attr-textPosition",
+        key: "textPosition",
         type: "select",
         label: '文本位置',
-        bind: 'textPosition',
+        bind: 'data',
         options: [{
           value: 'bottom',
-          label: 'bottom'
+          label: '底'
         }, {
           value: 'top',
-          label: 'top'
+          label: '顶'
         }]
       },
       {
-        key: "barcode-attr-textMargin",
+        key: "textMargin",
         type: "number",
-        label: '文本顶边',
-        bind: 'textMargin'
+        label: '文本边距',
+        bind: 'data'
       },
       {
-        key: "barcode-attr-background",
+        key: "background",
         type: "color-picker",
         label: '背景',
-        bind: 'background',
+        bind: 'data',
         options: {
           showAlpha: true
         }
       },
       {
-        key: "barcode-attr-lineColor",
+        key: "lineColor",
         type: "color-picker",
         label: '条码颜色',
-        bind: 'lineColor',
+        bind: 'data',
         options: {
           showAlpha: true
         }
       },
       {
-        key: "barcode-attr-margin",
+        key: "margin",
         type: "number",
         label: '页边空白',
-        bind: 'margin'
+        bind: 'data'
       },
     ]
   },

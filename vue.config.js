@@ -22,7 +22,7 @@ function resolve(dir) {
 
 const IS_PROD = ['production', 'prod'].includes(process.env.NODE_ENV)
 
-const port = process.env.NODE_ENV === 'development' ? 9538 : 8019 // dev port
+const port = process.env.NODE_ENV === 'development' ? 8060 : 8019 // dev port
 
 let devIPList = {
   "默认": "http://127.0.0.1:8019",
@@ -292,7 +292,7 @@ module.exports = defineConfig({
         }
       },
       '/FormDesigner': {
-        target: 'http://192.168.0.100:8080',
+        target: 'http://192.168.0.100:8061',
         secure: true,
         changeOrigin: true,
         ws: true,

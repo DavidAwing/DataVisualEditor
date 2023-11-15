@@ -5,20 +5,19 @@
 </template>
 
 <script>
-  import { EditorView, ViewPlugin, ViewUpdate } from '@codemirror/view';
+  import { keymap, ViewPlugin, ViewUpdate } from '@codemirror/view';
   import { EditorState, StateEffect, StateEffectSpec } from '@codemirror/state';
-  import { basicSetup } from 'codemirror';
+  import { EditorView, basicSetup } from 'codemirror';
   import { json } from '@codemirror/lang-json';
   import { themesMap } from './editor-helper';
   import { foldGutter } from '@codemirror/language';
-  import { javascript, esLint } from '@codemirror/lang-javascript';
+  import { javascript, esLint, javascriptLanguage, scopeCompletionSource } from '@codemirror/lang-javascript';
   import { linter, lintGutter } from '@codemirror/lint';
   import { oneDark } from '@codemirror/theme-one-dark';
-  import { autocompletion, snippetCompletion } from '@codemirror/autocomplete';
+  import { autocompletion, snippetCompletion, completeFromList, completionKeymap, ifNotIn } from '@codemirror/autocomplete';
   // Uses linter.mjs
   import * as eslint from 'eslint-linter-browserify';
   const { js_beautify } = require('js-beautify');
-
   import { stringToFunction } from '../../utils/compiler.ts';
 
   const config = {
@@ -75,6 +74,7 @@
       });
 
       function myCompletions(context) {
+        console.log('输入', context);
         let word = context.matchBefore(/\w*/);
         if (word.from == word.to && !context.explicit) return null;
         return {
@@ -82,21 +82,39 @@
           options: [
             { label: 'match', type: 'keyword' },
             { label: 'hello', type: 'variable', info: '(World)' },
-            { label: 'magic', type: 'text', apply: '⠁⭒*.✩.*⭒⠁', detail: 'macro' },
+            { label: 'magic', type: 'text', apply: '// ⠁⭒*.✩.*⭒⠁', detail: '星星符号' },
+            { label: 'log', type: 'text', apply: 'console.log(\'\')', detail: 'log' },
           ],
         };
       }
 
+      function moveToLine(view) {
+        let line = prompt("跳转到哪一行?")
+        if (!/^\d+$/.test(line) || +line <= 0 || +line > view.state.doc.lines)
+          return false
+        let pos = view.state.doc.line(+line).from
+        view.dispatch({ selection: { anchor: pos }, userEvent: "select" })
+        return true
+      }
+
       const view = new EditorView({
         parent: this.$refs.editor,
+        handleTab: true,
         // doc: "console.log('hello');\n",
         extensions: [
+          // autocompletion({ override: [myCompletions] }),
+          keymap.of([{ key: "Alt-l", run: moveToLine }]),
           basicSetup,
           javascript(),
+          javascriptLanguage.data.of({ autocomplete: scopeCompletionSource(globalThis) }),
+          javascriptLanguage.data.of({
+            autocomplete: myCompletions,
+          }),
+
+
           // lintGutter(),
           // eslint-disable-next-line
           linter(esLint(new eslint.Linter(), config)),
-          autocompletion({ override: [myCompletions] }),
           EditorView.updateListener.of(v => {
             this.code = v.state.doc.toString();
             //监测得到的最新代码

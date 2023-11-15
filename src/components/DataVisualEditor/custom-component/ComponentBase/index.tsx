@@ -224,39 +224,33 @@ export default class ComponentBase extends Vue {
     if (!this.element.eventOptions)
       this.element.eventOptions = []
 
-    if (!this.element.eventOptions.find((m: any) => m.label === "创建前")) {
-      this.element.eventOptions.unshift({
-        label: "销毁后",
-        value: "onDestroy"
-      })
-      this.element.eventOptions.unshift({
-        label: "销毁前",
-        value: "onBeforeDestroy"
-      })
-      this.element.eventOptions.unshift({
-        label: "更新后",
-        value: "onUpdated"
-      })
-      this.element.eventOptions.unshift({
-        label: "更新前",
-        value: "onBeforeUpdate"
-      })
-      this.element.eventOptions.unshift({
-        label: "挂载后",
-        value: "onMounted"
-      })
-      this.element.eventOptions.unshift({
-        label: "挂载前",
-        value: "onBeforeMount"
-      })
-      this.element.eventOptions.unshift({
+    if (!this.element.eventOptions.find((m: any) => m.value == "onMounted")) {
+      // this.element.eventOptions.push(...[{
+      //   label: "销毁后",
+      //   value: "onDestroy"
+      // }, {
+      //   label: "销毁前",
+      //   value: "onBeforeDestroy"
+      // }, {
+      //   label: "更新后",
+      //   value: "onUpdated"
+      // },{
+      //   label: "更新前",
+      //   value: "onBeforeUpdate"
+      // },{
+      //   label: "挂载前",
+      //   value: "onBeforeMount"
+      // },{
+      //   label: "创建前",
+      //   value: "onBeforeCreate"
+      // }])
+      this.element.eventOptions.unshift(...[{
         label: "创建后",
         value: "onCreated"
-      })
-      this.element.eventOptions.unshift({
-        label: "创建前",
-        value: "onBeforeCreate"
-      })
+      }, {
+        label: "挂载后",
+        value: "onMounted"
+      }])
     }
   }
 

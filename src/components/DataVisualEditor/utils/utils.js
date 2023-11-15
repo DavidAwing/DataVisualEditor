@@ -61,17 +61,12 @@ export function debounce(fn, delay = 500) {
 
 export function deepCopy(target, map = new WeakMap()) {
 
-  if (target == null) {
+  if (target == null)
     return target
-  }
-
-  if (map.get(target)) {
+  if (map.get(target))
     return map.get(target);
-  }
-
   if (typeof target == 'object') {
     const result = Array.isArray(target) ? [] : {}
-    console.log('target', target);
     map.set(target, target);
     for (const key in target) {
       if (typeof target[key] == 'object') {

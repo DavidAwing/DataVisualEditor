@@ -246,7 +246,7 @@
             urls: [{ url: `/editor`, canvasName: this.canvasName }],
             data: [{ key: 'canvasData', value: this.canvasData }]
           }
-          bi.sharedWorker.postMessage(JSONfn.stringify(obj))
+          bi.sharedWorker.postMessage(obj)
         },
         deep: true,
       },
@@ -330,7 +330,8 @@
       })
 
       eventBus.$on('setCanvasDataSourceList', (data) => {
-        this.canvasDataSourceList = JSONfn.parse(data)
+        console.log('设置数据', data);
+        this.canvasDataSourceList = data
       })
     },
     mounted() {

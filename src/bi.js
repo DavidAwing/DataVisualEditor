@@ -28,13 +28,13 @@ import draggable from '@shopify/draggable'
 import { loadModule } from './components/DataVisualEditor/utils/webpackUtils';
 
 import * as tesseract from 'tesseract.js'
-import * as tf from '@tensorflow/tfjs';
+// import * as tf from '@tensorflow/tfjs';
 // import * as ml5 from 'ml5';
 import * as Vue3 from '@/vue3/vue@3.3.4.esm-browser.js'
 import * as CompilerSFC from '@/vue3/compiler-sfc'
 import * as repl from '@/vue3/repl'
 import Scene from "scenejs";
-import * as BABYLON from 'babylonjs';
+// import * as BABYLON from 'babylonjs';
 import * as THREE from 'three';
 
 import * as _ from 'lodash'
@@ -86,7 +86,7 @@ const loadAll = async () => {
   bi.JSONfn = JSONfn;
 
   bi.Scene = Scene
-  bi.BABYLON = BABYLON
+  // bi.BABYLON = BABYLON
   bi.THREE = THREE
   bi.store = store;
 
@@ -100,7 +100,7 @@ const loadAll = async () => {
   bi.FFmpeg = FFmpeg
   bi.FFmpegUtil = FFmpegUtil
   bi.cv = window.cv
-  bi.tf = tf
+  // bi.tf = tf
   bi.tesseract = tesseract
   bi.Vue3 = Vue3
   bi.repl = repl
@@ -187,15 +187,14 @@ const loadAll = async () => {
       }
 
       const setFormConf = (obj) => {
-        eventBus.$emit('setFormConf', obj.name, obj.data);
+        eventBus.$emit('setFormConf', obj.componentName, obj.canvasName, obj.data);
       }
 
-      if (!event.data.startsWith('{') && !event.data.endsWith('}')) {
-        console.warn('SharedWorker|onmessage', '共享消息只能接收json字符串', event.data);
-        return
+      const getFormConf = (obj) => {
+        eventBus.$emit('getFormConf', obj.componentName, obj.canvasName, obj.data);
       }
 
-      const msgObj = JSONfn.parse(event.data)
+      const msgObj = typeof event.data == 'object' ? event.data : JSONfn.parse(event.data);
       if (!isUrl(msgObj)) {
         return
       }
@@ -204,6 +203,7 @@ const loadAll = async () => {
         case 'setState': return setState(msgObj)
         case 'emitEvent': return emit(msgObj)
         case 'setFormConf': return setFormConf(msgObj)
+        case 'getFormConf': return getFormConf(msgObj)
       }
     }
   }
@@ -389,6 +389,10 @@ const loadAll = async () => {
       window.open(url, windowName);
     }
     return existingWindow
+  }
+
+  bi.utils.isOpenWindow = window => {
+    return window.location.href == "about:blank"
   }
 };
 

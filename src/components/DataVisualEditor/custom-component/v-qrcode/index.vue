@@ -1,7 +1,7 @@
 <template>
   <div style="overflow: hidden">
     <canvas
-      :id="element.uniqueId"
+      :id="'qrcode_' + element.data.name"
       :width="width"
       :height="height"
       :style="element.data.code == '' ? 'background-color: rgba(0,0,0,0.25)' : 'background-color: #fff;'"
@@ -45,9 +45,9 @@ export default {
     },
   },
   created() {
-    if (this.element.uniqueId == null || this.element.uniqueId == '') {
-      this.element.uniqueId = generateUniqueId();
-    }
+    // if (this.element.uniqueId == null || this.element.uniqueId == '') {
+    //   this.element.uniqueId = generateUniqueId();
+    // }
   },
   mounted() {
     this.drawCode(this.element, this.element.data.text);
@@ -102,7 +102,7 @@ export default {
       };
 
       this.$nextTick(() => {
-        const qrcodeCanvas = document.getElementById(ele.uniqueId);
+        const qrcodeCanvas = document.getElementById('qrcode_' + ele.data.name);
         QRCode.toCanvas(qrcodeCanvas, val, opts, function (error) {
           if (error) {
             toast('二维码生成' + error);

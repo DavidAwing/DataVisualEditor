@@ -374,222 +374,222 @@ const list = [
     styleList: [] //todo: 从后台读取组件支持的样式列表
   },
   // 组件容器
-  {
-    uniqueId: '',
-    component: 'v-container',
-    label: '容器',
-    icon: 'wenben',
-    data: {
-      text: "请拖放组件到容器上",
-      verticalAlign: "",
-      writingMode: "horizontal",
-      show: true,
-      isAlign: true,
-      isModal: false
-    },
-    attrExcludes: [],
-    style: {
-      width: 330,
-      height: 160,
-      fontSize: 14,
-      fontStyle: 2500,
-      fontWeight: 2500,
-      borderRadius: 0,
-      lineHeight: '',
-      letterSpacing: 0,
-      left: 0,
-      textAlign: '',
-      color: 'rgba(0, 0, 0, 1)',
-      backgroundColor: 'rgba(0,0,0,0.1)',
-      fontFamily: '宋体'
-    },
-    styleUnit: {
-      top: "px",
-      left: "px",
-      width: 'px',
-      height: 'px',
-      fontSize: 'px',
-      borderRadius: 'px',
-    },
-    attrList: [
-      {
-        key: "name",
-        type: "text",
-        label: '名称',
-        bind: "data"
-      },
-      {
-        key: "show",
-        type: "checkbox",
-        label: '显示',
-        bind: 'data'
-      },
-      {
-        key: "isAlign",
-        type: "checkbox",
-        label: '对齐',
-        bind: 'data'
-      },
-      {
-        key: "left",
-        type: "number",
-        label: 'x 坐标',
-        bind: "style"
-      },
-      {
-        key: "top",
-        type: "number",
-        label: 'y 坐标',
-        bind: "style"
-      },
-      {
-        key: "width",
-        type: "number",
-        label: '宽',
-        bind: "style"
-      },
-      {
-        key: "rotate",
-        type: "number",
-        label: '旋转',
-        bind: "style"
-      },
-      {
-        key: "color",
-        type: "color-picker",
-        label: '颜色',
-        bind: 'style',
-        options: {
-          showAlpha: false
-        }
-      },
-      {
-        key: "backgroundColor",
-        type: "color-picker",
-        label: '背景色',
-        bind: 'style',
-        options: {
-          showAlpha: false
-        }
-      },
-      {
-        key: "borderRadius",
-        type: "number",
-        label: '边框半径',
-        bind: 'style'
-      },
-      {
-        key: "fontSize",
-        type: "number",
-        label: '字体大小',
-        bind: 'style'
-      },
-      {
-        key: "fontWeight",
-        type: "number",
-        label: '字体粗细',
-        bind: 'style'
-      },
-      {
-        key: "lineHeight",
-        type: "number",
-        label: '行高',
-        bind: 'style'
-      },
-      {
-        key: "letterSpacing",
-        type: "number",
-        label: '字间距',
-        bind: 'style'
-      },
-      {
-        key: "writingMode",
-        type: "select",
-        label: '文字排列',
-        bind: 'data',
-        options: [
-          {
-            label: '水平',
-            value: 'horizontal'
-          },
-          {
-            label: '垂直',
-            value: 'vertical'
-          }
-        ]
-      },
-      {
-        key: "textAlign",
-        type: "select",
-        label: '左右对齐',
-        bind: 'style',
-        options: [
-          {
-            label: '左对齐',
-            value: 'left'
-          },
-          {
-            label: '居中',
-            value: 'center',
-          },
-          {
-            label: '右对齐',
-            value: 'right',
-          }
-        ]
-      },
-      {
-        key: "verticalAlign",
-        type: "select",
-        label: '垂直对齐',
-        bind: 'data',
-        options: [
-          {
-            label: '上对齐',
-            value: 'top'
-          },
-          {
-            label: '居中',
-            value: 'middle',
-          },
-          {
-            label: '下对齐',
-            value: 'bottom',
-          }
-        ]
-      },
-      {
-        key: "opacity",
-        type: "number",
-        label: '透明度',
-        bind: 'style'
-      },
-      {
-        key: "fontFamily",
-        type: "select",
-        label: '字体',
-        options: fontFamilyOpts,
-        bind: 'style'
-      },
-      {
-        key: "text",
-        type: "textarea",
-        label: '文本',
-        bind: "data"
-      }
-    ],
-    events: {
-    },
-    styleList: //todo: 从后台读取组件支持的样式列表
-      [
-        // {
-        //   elementId: "",
-        //   selector: "",
-        //   styleName: "",
-        //   css: ""
-        // }
-      ]
-  },
+  // {
+  //   uniqueId: '',
+  //   component: 'v-container',
+  //   label: '容器',
+  //   icon: 'wenben',
+  //   data: {
+  //     text: "请拖放组件到容器上",
+  //     verticalAlign: "",
+  //     writingMode: "horizontal",
+  //     show: true,
+  //     isAlign: true,
+  //     isModal: false
+  //   },
+  //   attrExcludes: [],
+  //   style: {
+  //     width: 330,
+  //     height: 160,
+  //     fontSize: 14,
+  //     fontStyle: 2500,
+  //     fontWeight: 2500,
+  //     borderRadius: 0,
+  //     lineHeight: '',
+  //     letterSpacing: 0,
+  //     left: 0,
+  //     textAlign: '',
+  //     color: 'rgba(0, 0, 0, 1)',
+  //     backgroundColor: 'rgba(0,0,0,0.1)',
+  //     fontFamily: '宋体'
+  //   },
+  //   styleUnit: {
+  //     top: "px",
+  //     left: "px",
+  //     width: 'px',
+  //     height: 'px',
+  //     fontSize: 'px',
+  //     borderRadius: 'px',
+  //   },
+  //   attrList: [
+  //     {
+  //       key: "name",
+  //       type: "text",
+  //       label: '名称',
+  //       bind: "data"
+  //     },
+  //     {
+  //       key: "show",
+  //       type: "checkbox",
+  //       label: '显示',
+  //       bind: 'data'
+  //     },
+  //     {
+  //       key: "isAlign",
+  //       type: "checkbox",
+  //       label: '对齐',
+  //       bind: 'data'
+  //     },
+  //     {
+  //       key: "left",
+  //       type: "number",
+  //       label: 'x 坐标',
+  //       bind: "style"
+  //     },
+  //     {
+  //       key: "top",
+  //       type: "number",
+  //       label: 'y 坐标',
+  //       bind: "style"
+  //     },
+  //     {
+  //       key: "width",
+  //       type: "number",
+  //       label: '宽',
+  //       bind: "style"
+  //     },
+  //     {
+  //       key: "rotate",
+  //       type: "number",
+  //       label: '旋转',
+  //       bind: "style"
+  //     },
+  //     {
+  //       key: "color",
+  //       type: "color-picker",
+  //       label: '颜色',
+  //       bind: 'style',
+  //       options: {
+  //         showAlpha: false
+  //       }
+  //     },
+  //     {
+  //       key: "backgroundColor",
+  //       type: "color-picker",
+  //       label: '背景色',
+  //       bind: 'style',
+  //       options: {
+  //         showAlpha: false
+  //       }
+  //     },
+  //     {
+  //       key: "borderRadius",
+  //       type: "number",
+  //       label: '边框半径',
+  //       bind: 'style'
+  //     },
+  //     {
+  //       key: "fontSize",
+  //       type: "number",
+  //       label: '字体大小',
+  //       bind: 'style'
+  //     },
+  //     {
+  //       key: "fontWeight",
+  //       type: "number",
+  //       label: '字体粗细',
+  //       bind: 'style'
+  //     },
+  //     {
+  //       key: "lineHeight",
+  //       type: "number",
+  //       label: '行高',
+  //       bind: 'style'
+  //     },
+  //     {
+  //       key: "letterSpacing",
+  //       type: "number",
+  //       label: '字间距',
+  //       bind: 'style'
+  //     },
+  //     {
+  //       key: "writingMode",
+  //       type: "select",
+  //       label: '文字排列',
+  //       bind: 'data',
+  //       options: [
+  //         {
+  //           label: '水平',
+  //           value: 'horizontal'
+  //         },
+  //         {
+  //           label: '垂直',
+  //           value: 'vertical'
+  //         }
+  //       ]
+  //     },
+  //     {
+  //       key: "textAlign",
+  //       type: "select",
+  //       label: '左右对齐',
+  //       bind: 'style',
+  //       options: [
+  //         {
+  //           label: '左对齐',
+  //           value: 'left'
+  //         },
+  //         {
+  //           label: '居中',
+  //           value: 'center',
+  //         },
+  //         {
+  //           label: '右对齐',
+  //           value: 'right',
+  //         }
+  //       ]
+  //     },
+  //     {
+  //       key: "verticalAlign",
+  //       type: "select",
+  //       label: '垂直对齐',
+  //       bind: 'data',
+  //       options: [
+  //         {
+  //           label: '上对齐',
+  //           value: 'top'
+  //         },
+  //         {
+  //           label: '居中',
+  //           value: 'middle',
+  //         },
+  //         {
+  //           label: '下对齐',
+  //           value: 'bottom',
+  //         }
+  //       ]
+  //     },
+  //     {
+  //       key: "opacity",
+  //       type: "number",
+  //       label: '透明度',
+  //       bind: 'style'
+  //     },
+  //     {
+  //       key: "fontFamily",
+  //       type: "select",
+  //       label: '字体',
+  //       options: fontFamilyOpts,
+  //       bind: 'style'
+  //     },
+  //     {
+  //       key: "text",
+  //       type: "textarea",
+  //       label: '文本',
+  //       bind: "data"
+  //     }
+  //   ],
+  //   events: {
+  //   },
+  //   styleList: //todo: 从后台读取组件支持的样式列表
+  //     [
+  //       // {
+  //       //   elementId: "",
+  //       //   selector: "",
+  //       //   styleName: "",
+  //       //   css: ""
+  //       // }
+  //     ]
+  // },
   // 表单
   {
     component: "v-form",
@@ -618,6 +618,10 @@ const list = [
       {
         label: "数据改变",
         value: "onModelChange"
+      },
+      {
+        label: "触发事件",
+        value: "onTriggerEvent"
       },
       {
         label: "鼠标悬停",
@@ -2188,9 +2192,7 @@ const list = [
       }
     ],
     events: {},
-    selectorList: [
-      //  { label: "奇数行颜色", value: ".el-table tbody tr:nth-child(odd) .cell" },
-    ],
+    selectorList: [],
     styleList: []
   },
   // 视频
@@ -2322,18 +2324,8 @@ const list = [
     events: {
 
     },
-    selectorList: [
-      //  { label: "奇数行颜色", value: ".el-table tbody tr:nth-child(odd) .cell" },
-    ],
-    styleList: //todo: 已应用的样式列表, 从后台读取组件支持的样式列表
-      [
-        // {
-        //   elementId: "",
-        //   selector: "",
-        //   styleName: "",
-        //   css: ""
-        // }
-      ]
+    selectorList: [],
+    styleList: []
   },
   // 图表
   {

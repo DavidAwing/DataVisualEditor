@@ -245,11 +245,22 @@ export default class ComponentBase extends Vue {
       //   value: "onBeforeCreate"
       // }])
       this.element.eventOptions.unshift(...[{
-        label: "创建后",
-        value: "onCreated"
+        label: "创建前",
+        value: "onBeforeCreate"
       }, {
         label: "挂载后",
         value: "onMounted"
+      },
+      {
+        label: "销毁后",
+        value: "onDestroy"
+      }])
+    }
+
+    if (this.element.data.isModal && !this.element.eventOptions.find((m: any) => m.value == "onCloseDialog")) {
+      this.element.eventOptions.push(...[{
+        label: "关闭对话框",
+        value: "onCloseDialog"
       }])
     }
   }

@@ -1,19 +1,9 @@
 <!-- TODO: 这个页面后续将用 JSX 重构 -->
 <template>
   <div class="attr-list">
-
     <div>
       {{ JSON.stringify(curComponent)}}
     </div>
-
-
-
-
-
-
-
-
-
   </div>
 </template>
 

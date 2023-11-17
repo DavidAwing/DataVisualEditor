@@ -1,6 +1,6 @@
 <template>
   <div style="overflow: hidden">
-    <canvas :id="element.uniqueId"
+    <canvas :id="'barcode_' + element.data.name"
       :style="element.data.text == '' ? 'background-color: rgba(0,0,0,0.25)' : 'background-color: #fff;'"></canvas>
   </div>
 </template>
@@ -44,7 +44,6 @@
       },
     },
     mounted() {
-      console.log('ele.valid', this.element.valid);
       this.drawCode(this.element);
     },
     methods: {
@@ -58,7 +57,7 @@
           font, fontSize, textAlign, textPosition, textMargin, background,
           lineColor,
           margin,
-          text } = ele.data
+          text, name } = ele.data
 
         if (
           this.checkItems.text === text &&
@@ -83,9 +82,9 @@
           console.log('barcode未更新');
           return;
         }
-        if (ele.uniqueId == null || ele.uniqueId == '') {
-          ele.uniqueId = generateUniqueId();
-        }
+        // if (ele.uniqueId == null || ele.uniqueId == '') {
+        //   ele.uniqueId = generateUniqueId();
+        // }
 
         this.checkItems.text = text;
         this.checkItems.format = format;
@@ -105,7 +104,6 @@
         this.checkItems.margin = ele.margin;
         // this.checkItems.styleWidth === ele.style.width
         // this.checkItems.styleHeight === ele.style.height
-
 
         let opts = {
           format: format,
@@ -127,7 +125,7 @@
         };
 
         this.$nextTick(() => {
-          const codeCanvas = document.getElementById(ele.uniqueId);
+          const codeCanvas = document.getElementById('barcode_' + name);
           JsBarcode(codeCanvas, text, opts);
         });
       },

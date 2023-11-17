@@ -3,8 +3,12 @@
     <div v-if="element.data.formConf.fields.length == 0" class="empty-info">
       请打开表单设计器进行编辑
     </div>
-    <parser v-else ref="form" :key="element.data.name + formKey" :form-conf="element.data.formConf"
-      @submit="sumbitForm" />
+
+    <div v-else style="width: 100%;height: 100%;">
+      <parser ref="form" :key="element.data.name + formKey" :form-conf="element.data.formConf" @submit="sumbitForm" />
+      <el-button v-if="element.data.isModal" class="icon-form-close" icon="el-icon-close" circle type="danger"
+        @click="if(element.data.isModal){element.data.show=false;onEvent('onCloseDialog')}"></el-button>
+    </div>
   </div>
 </template>
 
@@ -39,15 +43,6 @@
       }
     },
     computed: {
-      model() {
-        try {
-          const form = this.$children[0]
-          return form.$refs.elForm._props.model
-        } catch (error) {
-          console.warn('模型model', error);
-          return {}
-        }
-      }
     },
     created() {
       eventBus.$on('onFormDesigner', (name, event) => {
@@ -71,7 +66,7 @@
       eventBus.$on('setFormConf', (name, canvasName, data) => {
         if (!location.hash.includes('/editor') || name !== this.element.data.name || canvasName !== bi.store.state.canvasName) return
         for (const field of data.fields) {
-          field.__config__.regList.forEach(reg => {
+          field.__config__.regList && field.__config__.regList.forEach(reg => {
             if (!/^\/.+\//.test(reg.pattern))
               reg.pattern = new RegExp(`${reg.pattern}`, 'g').toString()
           })
@@ -103,12 +98,14 @@
       const model = this.$children[0].$refs.elForm._props.model
 
       Object.keys(model).forEach(key => {
-        this.$watch(() => this.model[key], (val, old) => {
+        this.$watch(() => model[key], (val, old) => {
           if (!val)
             return
-          this.onEvent('onModelChange', { key, value: val, oldValue: old })
+          this.onEvent('onModelChange', { key, value: val, oldValue: old, model: model })
         }, { immediate: true, deep: false })
       })
+
+      this.repair()
 
       // 表单数据回填，模拟异步请求场景
       setTimeout(() => {
@@ -118,7 +115,93 @@
       }, 2000)
 
     },
+    updated() {
+
+    },
     methods: {
+
+      getAllComponents(c, list = []) {
+        if (Array.isArray(c)) {
+          c.forEach(item => this.getAllComponents(item, list))
+        } else {
+          if (!list.find(item => item.$el === c.$el) && c.$el.nodeType != 8) {
+            list.push(c)
+          }
+          if (c.$children) {
+            return this.getAllComponents(c.$children, list)
+          }
+        }
+        return list
+      },
+
+      repair() {
+
+
+
+        const addListener = (list) => {
+
+          window.test = list
+
+          list.forEach(c => {
+
+            if (c.$el.tagName === 'BUTTON' || c.$el.tagName === 'LABEL') {
+              c.$el.addEventListener('click', () => {
+                this.onEvent('onTriggerEvent', { eventName: 'click', el: c.$el, component: c })
+              })
+
+              c.$el.addEventListener('mouseover', () => {
+                this.onEvent('onTriggerEvent', { eventName: 'mouseover', el: c.$el, component: c })
+              })
+
+              c.$el.addEventListener('mouseout', () => {
+                this.onEvent('onTriggerEvent', { eventName: 'mouseout', el: c.$el, component: c })
+              })
+            }
+
+            if (c.$el.tagName === 'BUTTON') {
+
+              if (c.$el.parentNode.className.includes('el-upload')) {
+                return
+              }
+
+
+              // c.$el.removeEventListener('click', function () {
+              //   console.log("removing the click event!");
+              // }, false)
+
+              if (!c.$el.querySelector('span')) {
+                const spanText = c._props.conf?.__slot__.default
+                const span = document.createElement("span")
+                span.textContent = spanText
+                span.style.marginLeft = '5px'
+                c.$el.append(span)
+              }
+            }
+
+            if (c._vnode.tag === "vue-component-162-ElUpload") {
+
+              console.log('点击了文件1', c);
+
+              // c._props.conf.__config__.defaultValue = [1]
+
+              const _props = c.$children[0]._props
+
+              _props.onPreview = (file) => {
+                console.log('点击了文件11111111', file);
+              }
+
+              _props.onRemove = function (file, fileList) {
+                console.log('点击了文件2', file);
+              }
+
+              _props.onChange = f => console.log('点击了文件fff', f)
+            }
+
+          })
+        }
+        addListener(this.getAllComponents(this.form))
+      },
+
       setFieldValue(key, value) {
         const field = this.element.data.formConf.fields.find(item => item.__vModel__ === key)
         if (field) {
@@ -135,7 +218,13 @@
         })
       },
       sumbitForm(formData) {
-        this.onEvent('onSubmitForm', { formData })
+        const files = []
+        this.form.$el.querySelectorAll('.el-upload__input').forEach(input => {
+          input.files?.forEach(file => {
+            files.push(file)
+          })
+        })
+        this.onEvent('onSubmitForm', { formData, files })
       },
       getShapeStyle(style, styleUnit) {
         const result = {};

@@ -282,10 +282,19 @@
 
       this.canvasName = this.$route.query.name;
 
-      if (this.canvasName === undefined || this.canvasName === null || this.canvasName.trim() === '') {
+      if (!this.canvasName || this.canvasName.trim() === '') {
         // todo: 显示画布列表
-        toast('请设置画布名称!!!');
-        return;
+        const canvasName = window.prompt('请输入画布名称', '');
+        if (canvasName) {
+          const currentUrl = window.location.href;
+          let newQueryParam = `name=${canvasName}`;
+          const separator = currentUrl.includes('?') ? '&' : '?';
+          let newUrl = currentUrl + separator + newQueryParam;
+          window.location.href = newUrl;
+          this.canvasName = this.$route.query.name;
+        } else {
+          return;
+        }
       }
 
       this.$store.commit('setCanvasName', this.canvasName);
@@ -389,9 +398,8 @@
         } else if (type === 'add') {
           this.addDatabaseDialogTitle = '添加数据库';
 
-          if (!this.temp.name.trim()) {
+          if (!this.temp.name.trim())
             return
-          }
           if (!this.temp.dbType || !this.temp.dbType.trim()) {
             toast('请设置数据库类型')
             return

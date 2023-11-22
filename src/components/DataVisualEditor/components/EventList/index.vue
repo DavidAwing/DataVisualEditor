@@ -11,7 +11,9 @@
     </div>
     <!-- 选择事件 -->
     <Modal v-model="isShowEvent">
-      <div style="height: 100%; display: flex; flex-flow: column nowrap">
+
+
+      <div style="height: 100%; display: flex; flex-flow: column nowrap; ">
         <div style="
             display: flex;
             flex-flow: row nowrap;
@@ -19,12 +21,16 @@
             align-items: center;
             padding-top: 8px;
           ">
-          <div style="margin-left: 8px">事件名称:</div>
-          <el-select v-model="selectedEvent" placeholder="请选择事件" style="margin-left: 8px; flex: 1; margin-right: 8px">
+          <div style="margin-left: 8px">事件列表:</div>
+          <el-select v-model="selectedEvent" placeholder="请选择事件"
+            style="margin-left: 8px;  margin-right: 8px;width: 160px;">
             <template v-for="item in eventOptions">
               <el-option :label="item.label" :value="item.value" :key="item.value"></el-option>
             </template>
           </el-select>
+          <!-- <el-button type="primary" plain @click="curComponent.events[selectedEvent] = $refs.jsEditor.jsBeautify()">格式化</el-button> -->
+          <el-button type="primary" plain @click="runCode">运行</el-button>
+          <el-button type="primary" plain>搜索</el-button>
         </div>
 
         <div style="margin: 8px 8px;  flex: 1; overflow-y: hidden">
@@ -51,6 +57,14 @@
         </el-tab-pane>
       </el-tabs>
     </Modal>
+
+    <el-dialog title="代码运行控制台" :visible.sync="runCodeDialogVisible">
+      <div>
+        <el-input type="textarea" :rows="30" placeholder="" v-model="codeRunData">
+        </el-input>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -64,6 +78,8 @@
   import JsEditor from './JsEditor';
   import JsonEditor from './JsonEditor';
   import { stringToFunction, CompileSourcecode, CompileToModule, CompileTypescriptToIIFE } from '../../utils/compiler.ts';
+  import { parse, stringify, toJSON, fromJSON } from 'flatted';
+
 
   const JSONfn = require('jsonfn').JSONfn;
 
@@ -100,6 +116,8 @@
         dbInfo: dbInfo1,
         value: jsonData.toString(),
         jsonValue: JSON.stringify(dbInfo1, null, '\t'),
+        runCodeDialogVisible: false,
+        codeRunData: ''
       };
     },
     computed: {
@@ -121,7 +139,7 @@
 
             // }`);
 
-            return `const component = param.component;\nconst data = param.data;\nconst element = param.element;\nconsole.log("组件${this.selectedEvent}事件", component, data, element);`;
+            return `const component = param.component\nconst data = param.data\nconst element = param.element\nconsole.log("组件${this.selectedEvent}事件", component, data, element)`;
           }
 
           // return JSONfn.stringify(event).replace(/^("*)function\s+anonymous\(/, `"function ${this.selectedEvent}(`);
@@ -151,7 +169,82 @@
         // this.$refs.jsonEditor.updateDoc(this.jsonValue)
       });
     },
+    mounted() {
+    },
     methods: {
+      async runCode() {
+
+        const code = this.$refs.jsEditor.getSelectedCode()
+        if (!code || !code.trim()) {
+          toast('请选取需要运行的代码')
+          return
+        }
+        this.runCodeDialogVisible = true
+        this.codeRunData = ''
+        const overrideConsoleLog = () => {
+          const consoleLog = console.log;
+          console.log = (...args) => {
+            // const logOutput = args.map(arg => stringify(arg)).join(' ');
+            args.forEach(arg => {
+              try {
+                this.codeRunData += JSONfn.stringify(arg) + '  '
+              } catch (error) {
+                this.codeRunData += `---------- 异常 ----------\nname: ${error.name}\nmessage: ${error.message}\nmessage: ${error.stack}\narg:${arg}\n\n`
+              }
+            })
+            this.codeRunData += '\n'
+            consoleLog.apply(console, args);
+          };
+          return consoleLog
+        }
+
+        if (location.href.includes('/editor')) {
+          const log = window.log
+          window.log = (...args) => {
+            args.forEach(arg => {
+              try {
+                this.codeRunData += JSONfn.stringify(arg) + '  '
+              } catch (error) {
+                this.codeRunData += `\n⭒----------⭒*.✩.*⭒ log异常 ⭒*.✩.*⭒----------👇\nname: ${error.name}\nmessage: ${error.message}\nstack: ${error.stack}\n\n`
+              }
+            })
+            this.codeRunData += '\n'
+          }
+        }
+
+        try {
+          let result = null
+          const list = code.split('\n').filter(line => line.trim()).map(line => line.includes('//') ? line.substring(0, line.indexOf('//')) : line)
+          if (code.includes('await ')) {
+            const lastLine = list[list.length - 1].trim()
+            list[list.length - 1] = (lastLine.startsWith('return ')
+              || lastLine.startsWith('var')
+              || lastLine.startsWith('const')
+              || lastLine.startsWith('let')
+              || lastLine.startsWith(')')
+              || lastLine.startsWith('(')
+              || lastLine.startsWith('}')
+              || lastLine.startsWith('{')
+              || lastLine.startsWith('||')
+              || lastLine.startsWith('&&')
+              || lastLine.startsWith('=')
+              || lastLine.startsWith('!=')
+            ) ? lastLine : 'return ' + lastLine
+            result = await eval(`(async () => { ${list.join('\n')} })()`);
+          } else {
+            result = eval(list.join('\n'));
+          }
+          this.codeRunData += JSONfn.stringify(result) + '\n'
+        } catch (error) {
+          this.codeRunData += `\n⭒----------⭒*.✩.*⭒ 代码解析异常 ⭒*.✩.*⭒----------👇\nname: ${error.name}\nmessage: ${error.message}\nstack: ${error.stack}\n\n`
+        } finally {
+          setTimeout(() => {
+            window.log = log
+          }, 300);
+        }
+
+      },
+
       addEvent(event, param) {
         this.isShowEvent = false;
         this.$store.commit('addEvent', { event, param });
@@ -172,10 +265,8 @@
           const func = stringToFunction(code);
           this.curComponent.events[this.selectedEvent] = func;
         } catch (error) {
-
           this.curComponent.events[this.selectedEvent] = code;
-          bi.debug('脚本编译发生错误: ' + error.message + '\n' + error.stack);
-          // toast('脚本编译发生错误: ' + error.message + '\n' + error.stack);
+          bi.debug('脚本编译发生错误: ' + error.message + '\n' + error.stack)
         }
       },
 
@@ -188,6 +279,8 @@
     },
   };
 </script>
+
+
 
 <style lang="less" scoped>
   @import url(index.less);

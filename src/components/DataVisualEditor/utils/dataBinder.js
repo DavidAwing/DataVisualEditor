@@ -601,6 +601,38 @@ function convertDataFormat(token, data) {
 
 export function commitData(store, task, response) {
 
+  function toSelect(item) {
+    const attributeName = "data.options"
+    let data = null
+    if (Array.isArray(item) && item.length > 0) {
+      if (Array.isArray(item[0])) {
+        if (item[0].length == 1) {
+          data = item.map(arr => { return { label: arr[0], value: arr[0] } })
+        } else if (item[0].length >= 2) {
+          data = item.map(arr => { return { label: arr[arr[0]], value: arr[arr[1]] } })
+        } else {
+          return null
+        }
+      } else if (typeof item[0] == 'object') {
+        if (item[0].label && item[0].value) {
+          data = item
+        } else if (Object.keys(item[0]).length == 1) {
+          const key = Object.keys(item[0])[0]
+          data = item.map(obj => { return { label: obj[key], value: obj[key] } })
+        } else if (Object.keys(item[0]).length >= 2) {
+          const keys = Object.keys(item[0])
+          data = item.map(obj => { return { label: obj[keys[0]], value: obj[keys[1]] } })
+        } else {
+          return null
+        }
+      }
+    } else {
+      return null
+    }
+
+    return { attributeName: attributeName, data: data }
+  }
+
   if ((Array.isArray(response) && task.componentName && task.dataSourceType && task.name) ||
     (!response.data.headers &&
       !response.data.request &&
@@ -656,10 +688,11 @@ export function commitData(store, task, response) {
         attributeName = "data.text"
         data = newItem[keys[0]]
       } else if (task.componentType === "v-select") {
-        if (Array.isArray(item) && item.length > 0 && item[0].label && item[0].value) {
-          attributeName = "data.options"
-          data = item
-        }
+
+        const obj = toSelect(item)
+        attributeName = obj.attributeName
+        data = obj.data
+
       } else if (task.componentType === 'v-picture') {
 
         if (Array.isArray(item) && item.length > 1) {
@@ -714,10 +747,14 @@ export function commitData(store, task, response) {
 
               if (component.component === "vc-chart") {
                 data = { data: item, dataTypeToken: getDataTypeToken(item) }
-              } else if (component.component === "v-table") {
+              } else if (component.component == "v-table") {
                 attributeName = "data.tableData"
                 data = item
-              } else if (item.length === 1) {
+              } else if (component.component == "v-select") {
+                const obj = toSelect(item)
+                attributeName = obj.attributeName
+                data = obj.data
+              } else if (item.length == 1) {
 
                 const newItem = item[0]
                 const keys = Object.keys(newItem)

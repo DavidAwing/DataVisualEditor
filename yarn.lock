@@ -10014,10 +10014,10 @@
   "resolved" "https://registry.npmmirror.com/flat/-/flat-5.0.2.tgz"
   "version" "5.0.2"
 
-"flatted@^3.1.0":
-  "integrity" "sha512-WIWGi2L3DyTUvUrwRKgGi9TwxQMUEqPOPQBVi71R96jZXJdFskXEmf54BoZaS1kknGODoIGASGEzBUYdyMCBJg=="
-  "resolved" "https://registry.npmmirror.com/flatted/-/flatted-3.2.5.tgz"
-  "version" "3.2.5"
+"flatted@^3.1.0", "flatted@^3.2.9":
+  "integrity" "sha512-36yxDn5H7OFZQla0/jFJmbIKTdZAQHngCedGxiMmpNfEZM0sdEeT+WczLQrjK6D7o2aiyLYDnkw0R3JK0Qv1RQ=="
+  "resolved" "https://registry.npmmirror.com/flatted/-/flatted-3.2.9.tgz"
+  "version" "3.2.9"
 
 "flush-write-stream@^1.0.0":
   "integrity" "sha512-3Z4XhFZ3992uIq0XOqb9AreonueSYphE6oYbpt5+3u06JWklbsPkNv3ZKkP9Bz/r+1MWCaMoSQ28P85+1Yc77w=="

@@ -136,35 +136,24 @@
 
       repair() {
 
-
-
         const addListener = (list) => {
 
-          window.test = list
-
           list.forEach(c => {
-
             if (c.$el.tagName === 'BUTTON' || c.$el.tagName === 'LABEL') {
               c.$el.addEventListener('click', () => {
                 this.onEvent('onTriggerEvent', { eventName: 'click', el: c.$el, component: c })
               })
-
               c.$el.addEventListener('mouseover', () => {
                 this.onEvent('onTriggerEvent', { eventName: 'mouseover', el: c.$el, component: c })
               })
-
               c.$el.addEventListener('mouseout', () => {
                 this.onEvent('onTriggerEvent', { eventName: 'mouseout', el: c.$el, component: c })
               })
             }
 
             if (c.$el.tagName === 'BUTTON') {
-
-              if (c.$el.parentNode.className.includes('el-upload')) {
+              if (c.$el.parentNode.className.includes('el-upload'))
                 return
-              }
-
-
               // c.$el.removeEventListener('click', function () {
               //   console.log("removing the click event!");
               // }, false)
@@ -181,19 +170,13 @@
             if (c._vnode.tag === "vue-component-162-ElUpload") {
 
               console.log('点击了文件1', c);
-
-              // c._props.conf.__config__.defaultValue = [1]
-
               const _props = c.$children[0]._props
-
               _props.onPreview = (file) => {
                 console.log('点击了文件11111111', file);
               }
-
               _props.onRemove = function (file, fileList) {
                 console.log('点击了文件2', file);
               }
-
               _props.onChange = f => console.log('点击了文件fff', f)
             }
 

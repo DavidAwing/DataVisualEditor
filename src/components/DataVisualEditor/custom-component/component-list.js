@@ -3060,11 +3060,11 @@ const list = [
       },
     ]
   },
-  // 可变组件
+  // vue组件
   {
     uniqueId: '',
     component: 'v-variable',
-    label: '可变组件',
+    label: 'vue',
     icon: 'wenben',
     data: {
       verticalAlign: "",

@@ -1,37 +1,37 @@
 <template>
-    <div v-if="show" class="modal-bg" @click="hide">
-        <div class="fadeInLeft animated modal" @click="stopPropagation">
-            <slot></slot>
-        </div>
+  <div v-if="show" class="modal-bg" @click="hide">
+    <div class="fadeInLeft animated modal" @click="stopPropagation">
+      <slot></slot>
     </div>
+  </div>
 </template>
 
 <script>
-export default {
+  export default {
     model: {
-        prop: 'show',
-        event: 'change',
+      prop: 'show',
+      event: 'change',
     },
     props: {
-        show: {
-            type: Boolean,
-            default: false,
-        },
+      show: {
+        type: Boolean,
+        default: false,
+      },
     },
     methods: {
-        hide() {
-            this.$emit('change')
-        },
+      hide() {
+        this.$emit('change')
+      },
 
-        stopPropagation(e) {
-            e.stopPropagation()
-        },
+      stopPropagation(e) {
+        e.stopPropagation()
+      },
     },
-}
+  }
 </script>
 
 <style lang="less" scoped>
-.modal-bg {
+  .modal-bg {
     position: fixed;
     top: 0;
     left: 0;
@@ -41,9 +41,13 @@ export default {
     z-index: 1001;
 
     .modal {
-        width: 400px;
-        background: #fff;
-        height: 100%;
+      width: 400px;
+      background: #fff;
+      height: 100%;
     }
-}
+  }
+
+  .event-list .modal {
+    width: 60vw;
+  }
 </style>

@@ -76,12 +76,13 @@ export default class ComponentBase extends Vue {
 
       const conversionCode = async (lines: string[]) => {
 
-
         const resolvedArr = await Promise.all(lines.map(async (line: string, index: number) => {
 
-          line = line.trim();
+          if (line.includes('//'))
+            line = line.substring(0, line.indexOf('//'))
 
-          if (line.toUpperCase() === '@AI') {
+          line = line.trim();
+          if (line.toUpperCase() === '@AI' || !line || line.startsWith('//')) {
             return null;
           } else if (/^@AI\s+\w+/i.test(line)) {
             line = line.substring(4).trim()
@@ -144,14 +145,14 @@ export default class ComponentBase extends Vue {
         return (resolvedArr.map((statement: any) => {
           switch (typeof statement) {
             case 'string':
-              return statement.endsWith(';') ? statement : statement + ";";
+              return statement
             case 'function': {
-              return '(' + statement.toString() + ')' + '();'
+              return '(' + statement.toString() + ')' + '()'
             }
             default:
               return null;
           }
-        }).filter((item: any) => item).join(''))
+        }).filter((item: any) => item).join('\n'))
       }
 
       const codeStatements = await conversionCode(lines)

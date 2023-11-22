@@ -301,7 +301,7 @@
 
       DB.CallbackMap.onOpenSucceedEventList.push(() => {
         DB.getAllItemByType('Canvas-Data').then(canvasList => {
-          if (canvasList === undefined || canvasList === null || canvasList.length === 0) {
+          if (!canvasList || canvasList.length === 0) {
             toast('未找到存储的画布数据');
             return;
           }
@@ -312,7 +312,7 @@
               break;
             }
           }
-          if (this.canvas === undefined || this.canvas === null) {
+          if (!this.canvas) {
             toast('未找到画布数据');
             return;
           }

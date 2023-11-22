@@ -36,7 +36,7 @@ import * as repl from '@/vue3/repl'
 import Scene from "scenejs";
 // import * as BABYLON from 'babylonjs';
 import * as THREE from 'three';
-
+import * as flatted from 'flatted';
 import * as _ from 'lodash'
 // import Monaco from '@/vue3/repl/dist/monaco-editor.js'
 
@@ -109,12 +109,14 @@ const loadAll = async () => {
   bi.echarts = echarts
 
   bi._ = _
+  bi.flatted = flatted
 
-  bi.debug = (msg) => {
+  bi.debug = (...msg) => {
     if (window.BI_DEBUG) {
-      console.log(msg);
+      console.log(...msg);
     }
   }
+  window.log = bi.debug
 
   bi.sharedWorker = {
     worker: null,

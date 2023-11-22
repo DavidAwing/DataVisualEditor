@@ -119,6 +119,7 @@
   /deep/ .bi-component-select .el-input,
   /deep/ .bi-component-select .el-input input {
     height: 100%;
+    width: 100%;
   }
   @import 'index.less';
 </style>

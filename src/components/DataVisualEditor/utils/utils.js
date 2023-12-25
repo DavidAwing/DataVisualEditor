@@ -32,29 +32,38 @@ export function throttle(fn, delay = 500, key = null) {
 }
 
 // 防抖
-export function debounce(fn, delay = 500) {
+export function debounce(fn, delay = 500, args = null, bind = null) {
 
+  if (fn == null) {
+    console.warn("debounce|防抖函数未定义");
+    return
+  }
   const key = fn.toString()
   let call = funcMap.get(key)
   if (call != null) {
-    call()
+    if (args != null) {
+      call(args)
+    } else {
+      call()
+    }
     return call
   }
-
   // timer 是在闭包中的
   let timer = null
-
   call = function () {
     if (timer)
       clearTimeout(timer)
     timer = setTimeout(() => {
-      fn.apply(this, arguments)
+      fn.apply(bind ?? this, arguments)
       timer = null
     }, delay)
   }
-
   funcMap.set(key, call)
-  call()
+  if (args != null) {
+    call(args)
+  } else {
+    call()
+  }
   return call
 }
 

@@ -185,7 +185,6 @@
     getStyle,
     getComponentRotatedStyle,
     getCanvasStyle,
-    addStyleListToHead,
   } from '../../components/DataVisualEditor/utils/style';
 
   import {
@@ -279,10 +278,8 @@
       document.title = '数据源编辑器';
     },
     created() {
-
       this.canvasName = this.$route.query.name;
-
-      if (!this.canvasName || this.canvasName.trim() === '') {
+      if (this.canvasName == null || this.canvasName.trim() == '') {
         // todo: 显示画布列表
         const canvasName = window.prompt('请输入画布名称', '');
         if (canvasName) {
@@ -296,9 +293,7 @@
           return;
         }
       }
-
       this.$store.commit('setCanvasName', this.canvasName);
-
       DB.CallbackMap.onOpenSucceedEventList.push(() => {
         DB.getAllItemByType('Canvas-Data').then(canvasList => {
           if (!canvasList || canvasList.length === 0) {
@@ -397,57 +392,47 @@
           this.addDatabaseDialogVisible = true;
         } else if (type === 'add') {
           this.addDatabaseDialogTitle = '添加数据库';
-
           if (!this.temp.name.trim())
             return
           if (!this.temp.dbType || !this.temp.dbType.trim()) {
             toast('请设置数据库类型')
             return
           }
-
           if (!this.temp.dbName || !this.temp.dbName.trim()) {
             toast('请设置数据库名称')
             return
           }
-
           if (!this.temp.dbIp || !this.temp.dbIp.trim()) {
             toast('请设置数据库IP')
             return
           }
-
           if (!this.temp.dbPort || !this.temp.dbPort.trim()) {
             toast('请设置数据库端口')
             return
           }
-
           if (!this.temp.dbUserId || !this.temp.dbUserId.trim()) {
             toast('请设置数据库账号')
             return
           }
-
           if (!this.temp.dbPassword || !this.temp.dbPassword.trim()) {
             toast('请设置数据库密码')
             return
           }
-
           if (!this.temp.dbCharset || !this.temp.dbCharset.trim()) {
             Vue.set(this.temp, 'dbCharset', "utf-8")
           }
           if (!this.temp.remark) {
             Vue.set(this.temp, 'remark', "")
           }
-
           axios.post('/BI-API/DataSource/AddDatabase', this.temp).then(({ data }) => {
             this.temp.id = data.data;
             const db = this.databaseList.find(item => item.id === data.data)
-
             if (db === undefined) {
               this.databaseList.push(this.temp);
             } else {
               const i = this.databaseList.findIndex(item => item.id === data.data)
               Vue.set(this.databaseList, i, this.temp)
             }
-
             Vue.set(this.canvasDataSource, 'dataSource', this.temp.name)
           });
           this.addDatabaseDialogVisible = false;
@@ -504,7 +489,6 @@
             break;
           }
         }
-
         if (task.dataSourceType === 'script') {
           codeToInstance(task.scriptLanguage || 'js', task.script).then(instance => {
             let method = null;

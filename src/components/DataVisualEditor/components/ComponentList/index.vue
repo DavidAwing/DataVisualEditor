@@ -179,36 +179,28 @@
         }
       },
       addComponentMarket() {
-
-
         if (!this.componentTemplate.name.trim()) {
           toast('需要指定组件名称');
           return
         }
-
         if (!this.curComponent) {
           toast('需要选择一个组件');
           return;
         }
         toImage(document.getElementById('component' + this.curComponent.id)).then(async image => {
-
           const { name, details, permission, tags } = this.componentTemplate
-
           this.curComponent.icon = image;
           this.curComponent.details = details
           this.curComponent.name = name
           this.curComponent.permission = permission
-
           this.curComponent.permission = permission
           this.curComponent.dataSourcelist = []
           this.curComponent.dataSourcelist.tags = tags
-
           const dataSourcelist = JSONfn.parse(bi.store.state.canvasData.dataSource.parameters);
           dataSourcelist.forEach(item => {
             if (item.componentName === this.curComponent.data.name) {
               this.curComponent.dataSourcelist.push(item)
             } else if (item.dataSourceType === "database") {
-
               const regexp = new RegExp(`@NAME\\s+${this.curComponent.data.name}`, 'i')
               if (!regexp.test(item.sql)) {
                 return
@@ -222,27 +214,20 @@
               }
               item.sql = sqlStr.trim()
               this.curComponent.dataSourcelist.push(item)
-
             }
           })
-
           const curComponentText = JSONfn.stringify(this.curComponent);
-
           delete this.curComponent.icon;
           delete this.curComponent.details;
           delete this.curComponent.name;
           delete this.curComponent.permission;
           delete this.curComponent.dataSourcelist;
           delete this.curComponent.dataSourcelist.tags;
-
           await axios.post(`/BI-API/Component/SaveUserCustomizedComponent`, {
             name: name + '.ct',
             component: curComponentText,
           });
-
           toast('保存成功', 'success');
-
-
           for (let i = 0; i < this.userComponentList.length; i++) {
             const item = this.userComponentList[i];
             if (item.name === name) {
@@ -251,9 +236,7 @@
             }
           }
           this.userComponentList.push(JSON.parse(curComponentText));
-
         });
-
         this.componentTemplate.show = false
       },
     },
@@ -282,12 +265,10 @@
       &:active {
         cursor: grabbing;
       }
-
       .iconfont {
         margin-right: 4px;
         font-size: 20px;
       }
-
       .icon-wenben,
       .icon-tupian {
         font-size: 18px;

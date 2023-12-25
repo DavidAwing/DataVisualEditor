@@ -353,7 +353,6 @@
     updateStyle,
     convertToCss,
     parseCssExpressions,
-    addStyleListToHead,
     generateStyleId,
     removeAllStyleNotOfCanvasName,
   } from '@/components/DataVisualEditor/utils/style';

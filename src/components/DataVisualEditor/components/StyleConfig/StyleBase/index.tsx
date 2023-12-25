@@ -251,17 +251,13 @@ export default class StyleListBase extends tsc<Vue> {
   }
 
   public add(target: never, key: number | string, value: never, data: any) {
-
     if (Array.isArray(target)) {
-
       if (target[0] !== undefined && (target as []).length > 0 && !typeEqual(target[0], value))
         console.warn("设置的数值与数组元素类型不兼容", target, value);
-
       if (typeof key === "number") {
         (target as []).splice(key, 0, value)
         return
       }
-
       if (typeof key === 'string' && key.startsWith("@")) {
         for (let i = 0; i < this.curStyle.attrList.length; i++) {
           const attr = this.curStyle.attrList[i];
@@ -272,7 +268,6 @@ export default class StyleListBase extends tsc<Vue> {
           }
         }
       }
-
       (target as []).splice(parseInt(key + "") + 1, 0, value)
     }
   }
@@ -287,7 +282,7 @@ export default class StyleListBase extends tsc<Vue> {
   }
 
   setCurSerieName(index: number | string, extraData: any = undefined) {
-    if (this.curComponent.data.option === undefined)
+    if (this.curComponent.data.option == null)
       return
     const serie = this.curComponent.data.option.series[parseInt(index + "")]
     if (serie === undefined)
@@ -779,22 +774,16 @@ export default class StyleListBase extends tsc<Vue> {
   }
 
   switchToStyle(style: any) {
-
-    console.trace("switchToStyle")
-
-    if (style === undefined)
+    if (style == null)
       return
-
     this.curSelector = style.selector;
-
     const styleArr = this.getHierarchy(style.hierarchy);
-    if (styleArr === undefined || styleArr.length !== 2) return;
+    if (styleArr == null || styleArr.length !== 2) return;
     this.selectedStyle = styleArr;
-    if (this.curStyle === undefined || this.curStyle.attrList === undefined) {
+    if (this.curStyle == null || this.curStyle.attrList == null) {
       console.warn(`switchToStyle|当前样式异常: `, style);
       return;
     }
-
     this.$nextTick(() => {
       for (let i = 0; i < this.curStyle.attrList.length; i++) {
         const attr = this.curStyle.attrList[i];
@@ -802,9 +791,7 @@ export default class StyleListBase extends tsc<Vue> {
           ? attr.variable.substring(1)
           : attr.variable;
         if (style.cssData != null && Object.prototype.hasOwnProperty.call(style.cssData, key))
-
-          if (attr.type === 'number') {
-
+          if (attr.type == 'number') {
             Vue.set(attr, 'value', parseFloat(style.cssData[key]))
             const match = style.cssData[key].match(/(?!\d+)\w+/)
             if (match) {
@@ -813,7 +800,6 @@ export default class StyleListBase extends tsc<Vue> {
           } else {
             Vue.set(attr, 'value', style.cssData[key])
           }
-
       }
     })
   }

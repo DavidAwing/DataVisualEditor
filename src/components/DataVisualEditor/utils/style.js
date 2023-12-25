@@ -1,3 +1,4 @@
+/* eslint-disable no-eval */
 import { sin, cos, changeStyleWithScale } from './translate'
 import generateID from "./generateID";
 import BigNumber from "bignumber.js";
@@ -224,6 +225,8 @@ export function deleteSelectorForStyle(id, selector) {
     throw Error(`deleteSelectorForStyle|选择器类型不正确[${selector}]`)
   }
 }
+
+
 
 // 更新样式
 export function updateStyle(id, css) {
@@ -509,22 +512,19 @@ export function addSelectorToStyle(id, selector) {
 
 // 添加样式
 export function addStyleToHead(id, cssString, canvasName) {
-
-  if (document.getElementById(id) !== null)
-    throw Error(`addStyleToHead|指定id的样式已存在[${id}]`)
-
+  if (document.getElementById(id) !== null) {
+    console.error(`addStyleToHead|指定id的样式已存在[${id}]`)
+  }
   const style = document.createElement("style");
   style.setAttribute("type", "text/css");
   style.setAttribute("canvas-name", canvasName);
   style.setAttribute("id", id);
-
   if (style.styleSheet) { // IE
     style.styleSheet.cssText = cssString;
   } else { // w3c
     const cssText = document.createTextNode(cssString);
     style.appendChild(cssText);
   }
-
   const heads = document.getElementsByTagName("head");
   if (heads.length) {
     heads[0].appendChild(style);
@@ -535,7 +535,6 @@ export function addStyleToHead(id, cssString, canvasName) {
 
 // 删除所有非当前canvasName的style标签
 export function removeAllStyleNotOfCanvasName(canvasName) {
-
   const allStyleList = document.getElementsByTagName("style")
   for (const style of allStyleList) {
     const styleId = style.getAttribute("id")
@@ -590,8 +589,95 @@ export function getCanvasStyle(canvasData) {
   };
 }
 
-export function addStyleListToHead(component, canvasName) {
 
+
+export function addComponentStyleToHead(style, componentId, canvasName) {
+  console.log('添加下拉框2');
+  if (!canvasName) {
+    console.warn("addComponentStyleToHead|画布名称未指定不存在");
+    return
+  }
+  if (!style) {
+    console.warn("addComponentStyleToHead|style未赋值");
+    return
+  }
+  // todo: 计算表达式
+  function evalCssExpression(expression) {
+    return eval(expression.replace(/if/gi, ""));
+  }
+  if (style.type != "css" && style.type != "less") {
+    console.warn("addComponentStyleToHead|画布名称未指定不存在");
+    return
+  }
+  if (!style.css) {
+    console.warn("addComponentStyleToHead|style.css未赋值");
+    return
+  }
+  if (!style.cssData) {
+    console.warn("addComponentStyleToHead|style.cssData未赋值");
+    return
+  }
+  // 样式会添加到页面的head标签内
+  let css = ""
+  if (style.selector === "~") {
+    css = style.css
+  } else {
+    css = parseCssExpressions(style.css, evalCssExpression, style.cssData);
+  }
+  const id = generateStyleId(style.styleId, componentId);
+  let selector = ""
+  if (style.selector.includes(",")) {
+    const selectorArr = style.selector.split(",")
+    selectorArr.forEach(str => {
+      str = str.trim()
+      if (/^body(\s+|>)/i.test(str)) {
+        selector += str + ','
+      } else if (str) {
+        selector += "#component" + componentId + " " + str + ","
+      }
+    })
+    selector = selector.substring(0, selector.length - 1)
+  } else {
+    const str = style.selector.trim()
+    if (/^body(\s+|>)/i.test(str)) {
+      selector = str
+    } else if (str) {
+      selector = "#component" + componentId + " " + str
+    }
+  }
+  if (style.selector === "~") {
+    let placeholders = css.match(/@~[^ \t]+/gi)
+    if (placeholders !== null && placeholders.length > 0) {
+      placeholders.forEach(key => {
+        if (key.toLocaleLowerCase() === "@~component") {
+          css = css.replaceAll(key, "#component" + componentId)
+        }
+      });
+    }
+    // 正则匹配@开头的字符串但是不配@~开头的,遇到空格或tab或;停止
+    placeholders = css.match(/@(?!~)[^ \t;]+/g)
+    if (placeholders !== null && placeholders.length > 0) {
+      placeholders.forEach(key => {
+        css = css.replaceAll(key, style.cssData[key.substring(1)])
+      });
+    }
+  } else {
+    css = selector + css
+  }
+  if (isStyleExist(id)) {
+    // 获取样式的选择器
+    // let selectorStr = getStyleSelectorStrById(id);
+    // if (!selectorStr.includes(selector))
+    //   !selectorStr.trim().endsWith(",")
+    //     ? (selectorStr = selectorStr + "," + selector)
+    //     : (selectorStr = selectorStr + selector);
+    updateStyle(id, css); // 更新样式和选择器
+  } else {
+    addStyleToHead(id, css, canvasName);
+  }
+}
+
+export function addStyleListToHead(component, canvasName) {
   if (component.component === "Group") {
     component.propValue.forEach(child => {
       if (child.component.startsWith("v-"))
@@ -608,15 +694,16 @@ export function addStyleListToHead(component, canvasName) {
     return
   }
   removeAllStyleNotOfCanvasName(canvasName)
-
   // todo: 计算表达式
   function evalCssExpression(expression) {
     return eval(expression.replace(/if/gi, ""));
   }
-
-  const styleList = component.styleList.filter(s => s.type === "css")
-
+  const styleList = component.styleList.filter(s => s.type === "css" || s.type === "less")
   styleList.forEach((style) => {
+    addComponentStyleToHead(style, component.id, canvasName)
+    if (true) {
+      return
+    }
 
     if (!style) {
       console.warn("addStyleListToHead|style未赋值");
@@ -630,7 +717,6 @@ export function addStyleListToHead(component, canvasName) {
       console.warn("addStyleListToHead|style.cssData未赋值");
       return
     }
-
     // 样式会添加到页面的head标签内
     let css = ""
     if (style.selector === "~") {
@@ -638,21 +724,27 @@ export function addStyleListToHead(component, canvasName) {
     } else {
       css = parseCssExpressions(style.css, evalCssExpression, style.cssData);
     }
-
     const id = generateStyleId(style.styleId, component.id);
     let selector = ""
     if (style.selector.includes(",")) {
       const selectorArr = style.selector.split(",")
       selectorArr.forEach(str => {
-        if (str.trim() !== "") {
+        str = str.trim()
+        if (/^body(\s+|>)/i.test(str)) {
+          selector += str + ','
+        } else if (str) {
           selector += "#component" + component.id + " " + str + ","
         }
       })
       selector = selector.substring(0, selector.length - 1)
     } else {
-      selector = "#component" + component.id + " " + style.selector.trim()
+      const str = style.selector.trim()
+      if (/^body(\s+|>)/i.test(str)) {
+        selector = str
+      } else if (str) {
+        selector = "#component" + component.id + " " + str
+      }
     }
-
     if (style.selector === "~") {
       let placeholders = css.match(/@~[^ \t]+/gi)
       if (placeholders !== null && placeholders.length > 0) {
@@ -672,7 +764,6 @@ export function addStyleListToHead(component, canvasName) {
     } else {
       css = selector + css
     }
-
     if (isStyleExist(id)) {
       // 获取样式的选择器
       // let selectorStr = getStyleSelectorStrById(id);
@@ -680,17 +771,20 @@ export function addStyleListToHead(component, canvasName) {
       //   !selectorStr.trim().endsWith(",")
       //     ? (selectorStr = selectorStr + "," + selector)
       //     : (selectorStr = selectorStr + selector);
-
       updateStyle(id, css); // 更新样式和选择器
     } else {
       addStyleToHead(id, css, canvasName);
     }
   });
-
 }
 
 
 
+
+export function deleteComponentStyle(componentId, styleId) {
+  const id = generateStyleId(styleId, componentId)
+  removeStyleById(id)
+}
 
 
 

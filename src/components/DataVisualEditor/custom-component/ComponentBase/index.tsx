@@ -5,7 +5,7 @@ import { Component, Prop, Emit, Watch } from 'vue-property-decorator'
 import { getRandStr } from "../../utils/utils";
 import { stringToFunction, CompileSourcecode, CompileToModule, CompileTypescriptToIIFE } from '../../utils/compiler'
 import axios from 'axios';
-
+import eventBus from "../../utils/eventBus";
 
 @Component({
   components: {},
@@ -29,6 +29,12 @@ export default class ComponentBase extends Vue {
 
       if (!event) {
         console.warn(`onEvent|组件${this.element.data.name}未定义${name}事件`);
+        return
+      }
+
+      if (typeof event == 'function') {
+        this.element.events[name] = event.toString()
+        this.onEvent(name, data);
         return
       }
 
@@ -211,6 +217,9 @@ export default class ComponentBase extends Vue {
 
   public created() {
 
+    eventBus.$on('deleteEvent', (name: string) => {
+      ComponentBase.EventMap[name] = null
+    })
 
     if (!this.element || !this.element.data) {
       return

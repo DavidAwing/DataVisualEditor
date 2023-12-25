@@ -154,12 +154,16 @@ const loadAll = async () => {
       const isUrl = (obj) => {
         let url = location.hash.includes('#') ? location.hash.split('#')[1] : location.hash.match(/\/\w+(?=\?{0,1})/)
         url = Array.isArray(url) ? url[0] : url
-
         if (!url)
           return false
         url = decodeURI(url)
-        if (!obj.urls)
+        if (!obj.urls && !obj.url)
           return false
+        if (typeof obj.url == 'string' && obj.url == url) {
+          return true
+        } else if (typeof obj.urls == 'string' && obj.urls == url) {
+          return true
+        }
         for (const item of obj.urls) {
           if (typeof item == 'string' && item == url) {
             return true
@@ -169,11 +173,9 @@ const loadAll = async () => {
         }
         return false
       }
-
       const refresh = (obj) => {
         location.reload()
       }
-
       const setState = (obj) => {
         obj.data.forEach(item => {
           let key = item.key
@@ -183,19 +185,21 @@ const loadAll = async () => {
           store.commit(key, item.value);
         })
       }
-
       const emit = (obj) => {
         eventBus.$emit(obj.name, obj.data);
       }
-
       const setFormConf = (obj) => {
         eventBus.$emit('setFormConf', obj.componentName, obj.canvasName, obj.data);
       }
-
       const getFormConf = (obj) => {
         eventBus.$emit('getFormConf', obj.componentName, obj.canvasName, obj.data);
       }
-
+      const updateEvent = (obj) => {
+        obj.data.forEach(item => {
+          bi.utils.getComponentData(item.componentName).events[item.event] = item.code
+          eventBus.$emit('deleteEvent', item.componentName + '.' + item.event)
+        })
+      }
       const msgObj = typeof event.data == 'object' ? event.data : JSONfn.parse(event.data);
       if (!isUrl(msgObj)) {
         return
@@ -206,6 +210,7 @@ const loadAll = async () => {
         case 'emitEvent': return emit(msgObj)
         case 'setFormConf': return setFormConf(msgObj)
         case 'getFormConf': return getFormConf(msgObj)
+        case 'updateEvent': return updateEvent(msgObj)
       }
     }
   }

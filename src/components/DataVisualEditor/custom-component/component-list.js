@@ -1064,6 +1064,10 @@ const list = [
     },
     eventOptions: [
       {
+        label: "点击",
+        value: "onClick"
+      },
+      {
         label: "选中值变化",
         value: "onChange"
       },
@@ -1078,6 +1082,10 @@ const list = [
       {
         label: "回车",
         value: "onEnter"
+      },
+      {
+        label: "下拉框出现/隐藏",
+        value: "onVisibleChange"
       },
     ],
     style: {
@@ -2110,16 +2118,6 @@ const list = [
           dblclick: "onEditColumns"
         }
       },
-      // {
-      //   type: "eventbus-button",
-      //   label: '',
-      //   bind: {
-      //     label: '编辑样式',
-      //     click: "onEditStyle",
-      //     dblclick: "onEditStyle"
-      //   }
-      // },
-
     ],
     eventOptions: [
       {

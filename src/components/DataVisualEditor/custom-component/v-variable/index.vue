@@ -38,7 +38,6 @@
     convertToCss,
     removeStyleById,
     parseCssExpressions,
-    addStyleListToHead,
     generateStyleId,
     removeAllStyleNotOfCanvasName,
   } from '../../utils/style';
@@ -46,17 +45,6 @@
   import { getStyle } from "../../utils/style";
 
   const JSONfn = require('jsonfn').JSONfn;
-
-
-
-
-
-
-
-
-
-
-
 
   export default {
     extends: ComponentBase,

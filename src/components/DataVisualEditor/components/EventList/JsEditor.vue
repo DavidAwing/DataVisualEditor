@@ -127,7 +127,6 @@
         }
       }
 
-
       function moveToLine(view) {
         let line = prompt("跳转到哪一行?")
         if (!/^\d+$/.test(line) || +line <= 0 || +line > view.state.doc.lines)
@@ -136,13 +135,9 @@
         view.dispatch({ selection: { anchor: pos }, userEvent: "select" })
         return true
       }
-
-      console.log('completionStatus, acceptCompletion', completionStatus, acceptCompletion);
-
       function indentLess(state, dispatch) {
         // 在这里添加减小缩进的逻辑
         console.log('Indent Less', state, dispatch);
-
         return true;
       }
 

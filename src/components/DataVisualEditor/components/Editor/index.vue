@@ -18,7 +18,6 @@
             :style="getComponentStyle(item)" :prop-value="item.propValue" :element="item" @input="handleInput" />
         </Shape>
       </component-dialog>
-
       <Shape v-else :key="item.id" :default-style="item.style" :style="getShapeStyle(item.style, item.styleUnit)"
         :active="item.id === (curComponent || {}).id || activeComponentList.includes(item.id)" :element="item"
         :index="index" :class="{ lock: item.isLock }" v-show="item.data.show">
@@ -42,7 +41,7 @@
 <script lang="js">
   import { mapState } from 'vuex';
   import Shape from './Shape';
-  import { getStyle, getComponentRotatedStyle, getCanvasStyle, addStyleListToHead } from '../../utils/style';
+  import { getStyle, getComponentRotatedStyle, getCanvasStyle } from '../../utils/style';
   import { $ as querySelector } from '../../utils/utils';
   import ContextMenu from './ContextMenu';
   import MarkLine from './MarkLine';

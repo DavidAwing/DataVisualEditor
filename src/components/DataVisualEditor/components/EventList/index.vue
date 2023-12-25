@@ -80,7 +80,6 @@
   import { stringToFunction, CompileSourcecode, CompileToModule, CompileTypescriptToIIFE } from '../../utils/compiler.ts';
   import { parse, stringify, toJSON, fromJSON } from 'flatted';
 
-
   const JSONfn = require('jsonfn').JSONfn;
 
   const jsonData = 'select 1;\n' + 'select approx_count_distinct(t2.col2_1) from default.table2 as t2;';
@@ -121,7 +120,7 @@
       };
     },
     computed: {
-      ...mapState(['curComponent']),
+      ...mapState(['curComponent', 'canvasName']),
       eventOptions() {
         return this.curComponent.eventOptions;
       },
@@ -173,7 +172,6 @@
     },
     methods: {
       async runCode() {
-
         const code = this.$refs.jsEditor.getSelectedCode()
         if (!code || !code.trim()) {
           toast('请选取需要运行的代码')
@@ -197,7 +195,6 @@
           };
           return consoleLog
         }
-
         if (location.href.includes('/editor')) {
           const log = window.log
           window.log = (...args) => {
@@ -211,7 +208,6 @@
             this.codeRunData += '\n'
           }
         }
-
         try {
           let result = null
           const list = code.split('\n').filter(line => line.trim()).map(line => line.includes('//') ? line.substring(0, line.indexOf('//')) : line)
@@ -242,7 +238,6 @@
             window.log = log
           }, 300);
         }
-
       },
 
       addEvent(event, param) {
@@ -268,6 +263,13 @@
           this.curComponent.events[this.selectedEvent] = code;
           bi.debug('脚本编译发生错误: ' + error.message + '\n' + error.stack)
         }
+
+        const obj = {
+          action: 'updateEvent',
+          urls: `/viewer?name=${this.canvasName}`,
+          data: [{ componentName: this.curComponent.data.name, event: this.selectedEvent, code: code }]
+        }
+        bi.sharedWorker.postMessage(obj)
       },
 
       showEventDialog(event) {

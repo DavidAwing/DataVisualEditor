@@ -86,11 +86,11 @@
       this.id = this.$route.query.id;
       this.env = this.$route.query.env; // prod/dev
 
-      if (this.env === "dev" && this.id === undefined)
+      if (/dev/i.test(this.env) && this.id == null)
         this.$router.push({ query: { ...this.$route.query, id: getRandStr() } });
 
       // todo: id不为空的时候连接后台,远程调试
-      if (this.id !== undefined) {
+      if (this.id != null) {
       }
     },
     mounted() {

@@ -47,14 +47,12 @@ Vue.component('component-dialog', {
   },
   beforeMount() { },
   created() {
-
     const setDialog = () => {
       if (this.element.data.show && this.element.data.isModal) {
         this.$nextTick(() => {
           this.showing()
         })
       } else {
-
       }
     }
 
@@ -65,17 +63,11 @@ Vue.component('component-dialog', {
     }, { immediate: false, deep: false })
 
     this.$watch(() => this.element.data.isModal, (val) => {
-
       setDialog()
-
       // if (!val && location.hash.includes('/editor')) {
       //   document.getElementById('editor').appendChild(this.$el);
       // }
-
-
     }, { immediate: true, deep: false })
-
-
   },
   mounted() {
 
@@ -101,9 +93,7 @@ Vue.component('component-dialog', {
     //   // event.stopPropagation()
     //   // event.preventDefault()
 
-    //   this.$nextTick(() => {
-    //     // this.showing()
-    //   })
+
 
 
     //   // setTimeout(() => {
@@ -115,13 +105,13 @@ Vue.component('component-dialog', {
   },
   methods: {
     showing() {
-
       $(this.$el).find('.el-dialog').css('position', 'absolute');
+      $(this.$el).find('.el-dialog').css('width', '0');
+      $(this.$el).find('.el-dialog').css('height', '0');
+      $(this.$el).find('.el-dialog').css('margin-top', '0');
       const component = this.element.component === 'Group' ? $(this.$el).find('.group.component') : $(this.$el).find('.el-dialog>.el-dialog__body>div>.component')
       component.css('width', '100%');
       component.css('height', '100%');
-
-
       const align = this.element.data.dialogAlign || 'center'
       let left = 0
       let top = 0
@@ -131,23 +121,19 @@ Vue.component('component-dialog', {
         top = '0px'
       left = left.trim()
       top = top.trim()
-
       function isNumeric(str) {
         return /^(\d|\.)+$/.test(str);
       }
-
       if (isNumeric(left))
         left += 'px'
       if (isNumeric(top))
         top += 'px'
-
       const clientWidth = document.body.clientWidth
       const clientHeight = document.body.clientHeight
       const shape = $(this.$el).find('.shape')
       const shapeHeight = shape.height()
       const shapeWidth = shape.width()
       const rotate = this.element.style.rotate;
-
       if (!align.includes('|') && align.includes('center')) {
         // 居中
         const leftMove = ((clientWidth - shapeWidth) / 2) - parseFloat(shape.css('left'));
@@ -166,9 +152,6 @@ Vue.component('component-dialog', {
       } else {
         shape.css('transform', `translateX(${0}px) translateY(${0}px) rotate(${rotate}deg)`)
       }
-
-      console.log('足迹的', shape.css('transform'));
-
       if (location.href.includes('/editor')) {
 
       } else if (location.href.includes('/viewer')) {

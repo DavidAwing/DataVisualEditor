@@ -109,20 +109,18 @@
                     <el-color-picker v-model="curStyle.attrList[index].value" :showAlpha="options.showAlpha">
                     </el-color-picker>
                   </div>
-
                   <div v-else-if="type == 'string'" style="display: flex; width: 100%; position: relative">
                     <el-input v-model="curStyle.attrList[index].value" type="string" />
                   </div>
-
                   <div v-else-if="type == 'number'" style="display: flex; width: 100%; position: relative">
-                    <el-input v-model.number="curStyle.attrList[index].value" type="number" :step="(options && options.step) || 1" />
+                    <el-input v-model.number="curStyle.attrList[index].value" type="number"
+                      :step="(options && options.step) || 1" />
                     <el-select v-if="curStyle.attrList[index].options.units"
                       v-model="curStyle.attrList[index].options.unit" style="width: 100px; margin-left: 6px">
                       <el-option v-for="(item) in curStyle.attrList[index].options.units" :key="item.value"
                         :label="item.label" :value="item.value"></el-option>
                     </el-select>
                   </div>
-
                   <div v-else-if="type == 'select'">
                     <el-select v-model="curStyle.attrList[index].value" placeholder="">
                       <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
@@ -188,6 +186,7 @@
   import deepClone from 'deep-clone';
   import axios from 'axios';
   import StyleBase from '../StyleBase';
+  import * as _ from 'lodash'
 
   export default {
     components: {},
@@ -201,6 +200,7 @@
         inputVisible: false,
         inputValue: '',
         cssActiveCollapses: ['1', '2'],
+        newAttrList: []
       };
     },
     computed: {
@@ -230,7 +230,7 @@
       },
       attrList: {
         handler: function (val, old) {
-          debounce(this.addStyle, 300, 'addStyle-2a9258bb')
+          debounce(this.addStyle, 200, val, this)
         },
         deep: true
       },
@@ -238,8 +238,7 @@
     methods: {
       generateStyleId,
 
-      addStyle() {
-
+      addStyle(attrList = null) {
         // 检验并规范css
         // let css = this.curStyle.css.trim()
         // if (!css.startsWith("{") && !css.endsWith("}")) {
@@ -262,20 +261,19 @@
           console.warn('请选择样式');
           return;
         }
-
         if (this.curSelector == null || this.curSelector.trim().length === 0) {
           console.warn('请选择选择器');
           return;
         }
-
         const originalStyle = this.curSelector.startsWith('~') ? this.curStyle.css : convertToCss(this.curStyle.css);
         const cssData = {};
-        this.curStyle.attrList.forEach(attr => {
 
-          if (attr.value == null || attr.value == '') {
+        if (attrList == null)
+          attrList = this.curStyle.attrList
+        attrList.forEach(attr => {
+          if (attr.value == null || attr.value.trim() == '') {
             return
           }
-
           let attrKey = '';
           const variable = attr.variable.trim();
           !variable.startsWith('@') ? (attrKey = variable) : (attrKey = variable.substring(1));
@@ -367,7 +365,6 @@
         this.curComponent.styleList.splice(index, 1);
 
         removeStyleById(this.generateStyleId(style.styleId, this.curComponent.id));
-
         // this.addedStyleTags.splice(this.addedStyleTags.indexOf(tag), 1);
       },
 

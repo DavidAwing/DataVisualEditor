@@ -48,7 +48,6 @@ import {
   getStyle,
   getComponentRotatedStyle,
   getCanvasStyle,
-  addStyleListToHead,
 } from '../../components/DataVisualEditor/utils/style';
 
 import {

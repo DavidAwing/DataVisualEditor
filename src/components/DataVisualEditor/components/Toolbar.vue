@@ -249,7 +249,6 @@
                       timeout: 1000 * 60 * 30,
                     })
                     .then(({ data }) => {
-                      debugger
                       if (data.state !== 200) {
                         console.warn('currentCanvasName|GetCanvasTemplate发生错误', data);
                         return;

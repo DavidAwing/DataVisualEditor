@@ -15,7 +15,7 @@
 
     <el-pagination background layout="prev, pager, next" :total="10" v-if="false"> </el-pagination>
 
-    <top-el-dialog title="编辑表头" :visible.sync="element.data.editColumnsDialog" width="23%" v-el-drag-dialog center>
+    <top-el-dialog title="编辑表头" :visible.sync="element.data.editColumnsDialog" width="28%" v-el-drag-dialog center>
       <el-form :inline="true" label-width="auto" class="test">
 
         <el-form-item label="列表" class="full-width" :style="{ width: '100%'}">
@@ -59,6 +59,8 @@
               :style="{ marginLeft: '1%', scale: 0.8, margin: '0 8px' }" @click="addColumn"></el-button>
             <el-button type="primary" icon="el-icon-minus" circle
               :style="{ marginLeft: '1%', scale: 0.8, margin: '0 8px' }" @click="removeColumn"></el-button>
+            <el-button type="primary" icon="el-icon-delete" circle
+              :style="{ marginLeft: '1%', scale: 0.8, margin: '0 8px' }" @click="clearData"></el-button>
           </div>
         </el-form-item>
       </el-form>
@@ -120,7 +122,6 @@
     convertToCss,
     removeStyleById,
     parseCssExpressions,
-    addStyleListToHead,
     generateStyleId,
     removeAllStyleNotOfCanvasName,
   } from '../../utils/style';
@@ -267,19 +268,14 @@
           this.maxRows = maxRows
         }
       }
-
       setMaxRows()
-
       if (this.element.data.showMode === "roll")
         this.rollTable()
-
       this.$refs.table.doLayout()
     },
     updated() {
       this.$refs.table.doLayout()
-
       if (this.isFixedHead) {
-
         // const tableContainer = document.querySelectorAll(".table-container")[1]
         // const table = document.querySelectorAll(".table")[0]
 
@@ -287,24 +283,21 @@
         // todo 获取滚动条宽度
         // console.log("组件更新");
 
-
         // const tdList = document.querySelectorAll(`#component${this.element.id} div .el-table__body-wrapper table tbody tr`)
         // const tdList = document.getElementsByClassName(`#component${this.element.id} div .el-table__body-wrapper table tbody tr`)
-
-
       }
     },
     methods: {
-
+      clearData() {
+        this.element.data.tableData = []
+      },
       test(row) {
       },
-
       cellStyle() {
 
         // return {color: "red", "padding-left": "0px", "padding-right": "0px" }
         return {}
       },
-
       // 不用了
       addStyle() {
         this.element.data.editStyleDialog = false
@@ -314,58 +307,44 @@
         removeStyleById(styleId)
         addStyleToHead(styleId, css, canvasName)
       },
-
       removeStyle() {
         const canvasName = bi.store.state.canvasName
         const styleId = canvasName + "-" + this.element.data.name + "-style"
         removeStyleById(styleId)
         this.element.data.editStyleDialog = false
       },
-
       rollTable() {
-
         const data = this.element.data
         if (data.tableData === undefined || data.tableData === null) {
           setTimeout(this.rollTable.bind(this), 300);
           return
         }
         try {
-
           // this.dom = this.$refs.table.$el.children[2].children[0].children[1]
           this.dom = document.querySelector(`#component${this.element.id} .vc-table .el-table__body-wrapper table`)
           this.dom.style.transform = "translate3d(0px, 0px, 0px)"
-
           // this.dom.style.transform = "translateY(0px)"
         } catch (error) {
           setTimeout(this.rollTable.bind(this), 300);
           return
         }
-
         const tableHeight = this.$refs.table.$el.clientHeight  // 表格高度
-
         const rollingSpeed = data.rollingSpeed
         let fps = 60
         let fpsInterval = 1000 / fps
         let last = new Date().getTime() //上次执行的时刻
-
-
-
         let roll = () => {
           try {
-
             if (/*this.maxRows === Infinity || Number.isNaN(this.maxRows) || */ this.element.data.tableData.length <= this.maxRows) {
               setTimeout(() => {
                 window.requestAnimationFrame(roll);
               }, 2000);
               return
             }
-
             let now = new Date().getTime()
             let elapsed = now - last;
             if (elapsed > fpsInterval) {
-
               let offsetHeight = -this.dom.offsetHeight + this.dom.offsetHeight / 5
-
               last = now - (elapsed % fpsInterval); //校正当前时间
               // translate3d的性能会更好,参考https://stackoverflow.com/questions/22111256/translate3d-vs-translate-performance
               // let domTop = this.dom.style.transform.match(/translateY\(([-+.\d]+)px\)/)[1]
@@ -386,27 +365,20 @@
           }
         }
         window.requestAnimationFrame(roll);
-
       },
-
       handleInput(event) {
         this.$emit("input", this.element);
       },
-
       tableScroll(event) {
       },
-
       getRandStr,
-
       addColumn(event) {
         let value = event.target.value
         if (!value) {
-          value = '[未定义]'
+          value = 'unnamed'
         }
-
         const hasLabel = this.element.data.columns.some(obj => obj.label === value);
         if (!hasLabel) {
-
           const columns = this.element.data.columns
           columns.push({ prop: value, label: value, width: 10, align: 'center' })
           Vue.set(this.element.data, "columns", columns)
@@ -416,7 +388,6 @@
           this.selected = this.element.data.columns[i].prop
         }
       },
-
       removeColumn() {
         const columns = this.element.data.columns
         for (let i = 0; i < columns.length; i++) {

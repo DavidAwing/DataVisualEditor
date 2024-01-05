@@ -45,6 +45,10 @@
         type: Object,
         default: () => ({ width: '100%', height: '100%' }),
       },
+      onEditCode: {
+        type: Function,
+        default: () => { }
+      }
     },
     data() {
       return {
@@ -57,10 +61,11 @@
       docText() {
         if (!this.view || !this.view.state || !this.view.state.doc || !this.view.state.doc.text) return null;
         return this.view.state.doc.text;
-      },
+      }
     },
     watch: {
-      docText(val) {
+      code(val) {
+        this.onEditCode(this.code)
       },
     },
     mounted() {
@@ -85,7 +90,8 @@
             { label: 'match', type: 'keyword' },
             { label: 'hello', type: 'variable', info: '(World)' },
             { label: 'magic', type: 'text', apply: '// ⠁⭒*.✩.*⭒⠁', detail: '星星符号' },
-            { label: 'log', type: 'text', apply: 'console.log(\'\')', detail: 'log' },
+            { label: 'log', type: 'text', apply: 'console.log(\'\')', detail: 'console.log' },
+            { label: 'debugger', type: 'text', apply: 'debugger', detail: '调试断点' },
           ],
         };
       }
@@ -192,28 +198,27 @@
       });
 
       // 点击行号事件
-      document.querySelector(".event-list .cm-lineNumbers").addEventListener('mousedown', function (event) {
-
-        if (event.target.className.includes('cm-lineNumbers'))
+      if (document.querySelector(".event-list .cm-lineNumbers") == null) {
+        // 点击行号事件需要外层div添加event-list
+      } else {
+        document.querySelector(".event-list .cm-lineNumbers").addEventListener('mousedown', function (event) {
+          if (event.target.className.includes('cm-lineNumbers'))
+            return
           return
-
-        return
-
-        const lineNumber = parseInt(event.target.offsetTop / parseFloat(event.target.style.height))
-        // 处理你的逻辑
-        console.log('Clicked on line number:', event.target.textContent);
-        if (event.target.style.cssText.includes('red')) {
-          event.target.style.cssText = 'height: 19.6px; cursor: pointer;'
-        } else {
-          event.target.style.cssText = 'height: 19.6px; cursor: pointer; background: red'
-        }
-      })
-
-      // 鼠标在行号上显示为手型
-      document.querySelector(".event-list .cm-lineNumbers").addEventListener('mouseover', function (event) {
-        event.target.style.cursor = 'pointer'
-      })
-
+          const lineNumber = parseInt(event.target.offsetTop / parseFloat(event.target.style.height))
+          // 处理你的逻辑
+          console.log('Clicked on line number:', event.target.textContent);
+          if (event.target.style.cssText.includes('red')) {
+            event.target.style.cssText = 'height: 19.6px; cursor: pointer;'
+          } else {
+            event.target.style.cssText = 'height: 19.6px; cursor: pointer; background: red'
+          }
+        })
+        // 鼠标在行号上显示为手型
+        document.querySelector(".event-list .cm-lineNumbers").addEventListener('mouseover', function (event) {
+          event.target.style.cursor = 'pointer'
+        })
+      }
     },
     beforeDestroy() {
       this.view.destroy();

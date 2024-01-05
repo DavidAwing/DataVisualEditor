@@ -40,10 +40,15 @@ function extractFunctionBody(str: string) {
 
 export function stringToFunction(soundCode: string): any {
 
-  if (/^\s*async\s+/.test(soundCode) || /^\s*\(\s*async\s+(.|\s)+\)$/.test(soundCode)) {
-    // eslint-disable-next-line no-eval
-    return eval(soundCode)
-    // soundCode.match(/async\s+function\s+(\w+)\s*\(/)![1]
+  try {
+    if (/^\s*async\s+/.test(soundCode) || /^\s*\(\s*async\s+(.|\s)+\)$/.test(soundCode)) {
+      // eslint-disable-next-line no-eval
+      return eval(soundCode)
+      // soundCode.match(/async\s+function\s+(\w+)\s*\(/)![1]
+    }
+  } catch (error) {
+    console.error("stringToFunction|eval异常", error, soundCode);
+    throw error
   }
 
   if ((soundCode.startsWith("\"") && soundCode.endsWith("\"")) || (soundCode.startsWith("'") && soundCode.endsWith("'")))
@@ -90,6 +95,11 @@ export function stringToFunction(soundCode: string): any {
 
   if (funcBody === null || funcBody === undefined)
     throw new Error("没有函数体")
+    // this.$nextTick
+    if (funcBody.includes('this.$nextTick')) {
+      // funcBody = funcBody.replaceAll('this.$nextTick', 'bi.App.$nextTick')
+      // funcBody = funcBody.replaceAll(/this\.\$nextTick\s*\(/g, 'bi.App.$nextTick(')
+    }
 
   // @ts-ignore
   const func = new Function(funcArguments, funcBody);

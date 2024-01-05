@@ -14,13 +14,34 @@
 .top-intelligent-menu-item {
     transition: filter 0.3s;
     filter: brightness(0);
+
     &:hover {
         filter: drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.3)) invert(35%);
     }
+
     padding: 3px 10px;
     background-color: transparent;
 }
 
 .top-intelligent-menu-item-mirror {
     transform: rotateY(180deg);
+}
+@keyframes scaleText {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+.add-global-event:hover {
+    cursor: pointer;
+    -webkit-animation-name: scaleText;
+    -webkit-animation-timing-function: ease-in-out;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-duration: 0.6s;
+    animation-iteration-count: 1;
 }

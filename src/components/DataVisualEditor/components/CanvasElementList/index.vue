@@ -12,16 +12,13 @@
 
       <!-- 群组 -->
       <div class="group-element" v-else-if="!item.data.name.endsWith('_$copy$')">
-
         <div @click="selectElement('g', item)" style="width: 100%;text-align: left;padding: 8px 8px;"
           :class="selectComponentName === item.data.name ? 'selected' : 'unselected'"> {{ item.data.name }}
         </div>
-
         <div style="width: 100%;text-align: left;padding: 3px 32px;" v-for="(child,index) in item.propValue"
           :class="selectComponentName === child.data.name ? 'selected' : 'unselected'"
           @click="selectElement('gc', child, item, $event)">
           {{ child.data.name}}</div>
-
       </div>
 
       <!-- <div class="group-element" style="margin-left: 8px;" v-else>
@@ -85,15 +82,12 @@
     },
     methods: {
       selectElement(type, item) {
-
-        console.log('点击了', type, item);
-
+        console.log('selectElement', type, item);
         if (this.selectComponentName === item.data.name) {
           this.selectComponentName = ''
         } else {
           this.selectComponentName = item.data.name;
         }
-
         if (this.curComponent === item) {
           this.$store.commit('setCurComponent', {
             component: null,
@@ -101,7 +95,6 @@
           });
           return
         }
-
         if (type === 'c' || type === 'g') {
           this.$store.commit('setCurComponent', {
             component: item,

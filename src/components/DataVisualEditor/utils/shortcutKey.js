@@ -207,12 +207,12 @@ export function listenGlobalKeyDown() {
     if (!store.state.isInEdiotr && !globalShortcutKey.includes(keyCode)) return
     const { curComponent } = store.state
 
-    if (keyCode === ctrlKey || keyCode === commandKey) {
+    if (keyCode == ctrlKey || keyCode == commandKey) {
       isCtrlOrCommandDown = true
     } else if (keyCode == deleteKey && curComponent) {
       store.commit('deleteComponent')
       store.commit('recordSnapshot')
-    } else if (e.keyCode === tabKey) {
+    } else if (e.keyCode == tabKey) {
       e.preventDefault()
     } else if (e.ctrlKey) {
       if (unlockMap[keyCode] && (!curComponent || !curComponent.isLock)) {
@@ -227,11 +227,7 @@ export function listenGlobalKeyDown() {
 
   window.onkeyup = (e) => {
     const { keyCode } = e
-
-    console.log('keyCode', keyCode);
-
     // KeyboardManager.delete(keyCode)
-
     if (keyCode == escKey) {
       store.commit("setCurComponent", { component: null, index: null });
     }
@@ -242,8 +238,13 @@ export function listenGlobalKeyDown() {
     }
     // Tab切换激活的组件
     if (keyCode === tabKey) {
-      e.preventDefault()
-      eventBus.$emit("SwitchNextComponent", e)
+      console.log('window.bi.data.isShowEvent', window.bi.data.isShowEvent);
+      if (window.bi.data.isShowEvent) {
+        e.preventDefault()
+      } else {
+        e.preventDefault()
+        eventBus.$emit("SwitchNextComponent", e)
+      }
     }
   }
 

@@ -16,32 +16,35 @@ export default class ComponentBase extends Vue {
 
   static EventMap: any = {}
 
+  /**
+   * @todo 代码修改需要与setGlobalEvent方法同步更新
+   * @param name
+   * @param data
+   * @returns
+   */
   public async onEvent(name: string, data = {}) {
 
+    if (location.hash.includes('/editor'))
+      return
     if (!this.element || !this.element.data) {
       console.warn(`onEvent|数据未定义,name:${name}, data: ${data}`);
       return
     }
-
     let func = ComponentBase.EventMap[this.element.data.name + '.' + name];
     if (!func) {
       const event = this.element.events[name];
-
       if (!event) {
         console.warn(`onEvent|组件${this.element.data.name}未定义${name}事件`);
         return
       }
-
       if (typeof event == 'function') {
         this.element.events[name] = event.toString()
         this.onEvent(name, data);
         return
       }
-
       let lines = null
       const AIIndex: number[] = []
       const isAI = (index: number) => {
-
         if (AIIndex.length === 1) {
           if (index > AIIndex[0]) {
             return true
@@ -49,7 +52,6 @@ export default class ComponentBase extends Vue {
             return false
           }
         }
-
         for (let i = 0; i < AIIndex.length; i += 2) {
           if (index > AIIndex[i] && index < AIIndex[i + 1]) {
             return true
@@ -57,13 +59,11 @@ export default class ComponentBase extends Vue {
         }
         return false
       }
-
       if (/@AI/i.test(event)) {
         const parts = event.split(/(@AI)+/) as string[];
         lines = parts.filter(part => part.trim() !== '').flatMap(text => {
           return text.split(/\r\n|\r|\n/).filter(str => str)
         });
-
         lines.forEach((str, i) => {
           // 单个语句
           if (/^@AI\s+\w+/i.test(str)) {
@@ -74,19 +74,14 @@ export default class ComponentBase extends Vue {
             AIIndex.push(i)
           }
         })
-
         lines.filter(str => str.toUpperCase() !== '@AI')
       } else {
         lines = event.split(/\r\n|\r|\n/)
       }
-
       const conversionCode = async (lines: string[]) => {
-
         const resolvedArr = await Promise.all(lines.map(async (line: string, index: number) => {
-
           if (line.includes('//'))
             line = line.substring(0, line.indexOf('//'))
-
           line = line.trim();
           if (line.toUpperCase() === '@AI' || !line || line.startsWith('//')) {
             return null;
@@ -97,25 +92,20 @@ export default class ComponentBase extends Vue {
               return line
             }
           }
-
           const { state, data } = (await axios.post(`/BI-API/AI/ConversionCode`, { code: line, component: this.element.component, userId: localStorage.getItem('UserId'), canvasName: (window as any).bi.store.state.canvasName }, {
             headers: {
               'Content-Type': 'application/json',
             },
           })).data
-
           if (state !== 200) {
             throw new Error(`onEvent|转换代码异常|code: ${line},component: ${this.element.component}`);
           }
-
           switch (data.type) {
             case 'link':
-
               break;
             case 'script':
-              return data.code
+              return data.value
             case 'function': {
-
               const arr = line.split(/\s+/).splice(1).map((s: any) => {
                 if (s.toLowerCase() === 'false') {
                   return false
@@ -124,10 +114,8 @@ export default class ComponentBase extends Vue {
                 }
                 return isNaN(s) ? s : Number(s)
               })
-
-              const func = await Promise.resolve(stringToFunction(data.code))
+              const func = await Promise.resolve(stringToFunction(data.value))
               // const func = stringToFunction(data.code)
-
               let parameters = ""
               arr.forEach(item => {
                 if (typeof item === 'boolean' || typeof item === 'number') {
@@ -138,14 +126,12 @@ export default class ComponentBase extends Vue {
                   parameters += item + ","
                 }
               })
-
               return '(' + func.toString() + ')' + `(${parameters.substring(0, parameters.length - 1)})`;
             }
             default:
               console.error('onEvent|AI编译|无法识别的输入', line);
               return line;
           }
-
         }))
 
         return (resolvedArr.map((statement: any) => {
@@ -216,18 +202,15 @@ export default class ComponentBase extends Vue {
   // }
 
   public created() {
-
     eventBus.$on('deleteEvent', (name: string) => {
-      ComponentBase.EventMap[name] = null
+      delete ComponentBase.EventMap[name]
     })
 
     if (!this.element || !this.element.data) {
       return
     }
-
     // this.element.data.p = "父组件挂载的数据"
     this.onEvent('onCreated')
-
     Vue.set(this.element, '_', this)
     Object.defineProperty(this.element, "_", { enumerable: false })
 

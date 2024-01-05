@@ -3,6 +3,28 @@ import toast from '../utils/toast'
 import generateID from '../utils/generateID'
 import { deepCopy, getRandStr } from '../utils/utils'
 
+// 恢复上一次剪切的数据
+function restorePreCutData(state) {
+
+  if (state.isCut && state.copyData) {
+    const data = deepCopy(state.copyData.data)
+    const index = state.copyData.index
+    data.id = generateID()
+    store.commit('addComponent', { component: data, index })
+    if (state.curComponentIndex >= index) {
+      // 如果当前组件索引大于等于插入索引，需要加一，因为当前组件往后移了一位
+      state.curComponentIndex++
+    }
+  }
+}
+
+function copyData(state) {
+  state.copyData = {
+    data: deepCopy(state.curComponent),
+    index: state.curComponentIndex,
+  }
+}
+
 export default {
   state: {
     copyData: null, // 复制粘贴剪切
@@ -71,24 +93,4 @@ export default {
   },
 }
 
-// 恢复上一次剪切的数据
-function restorePreCutData(state) {
 
-  if (state.isCut && state.copyData) {
-    const data = deepCopy(state.copyData.data)
-    const index = state.copyData.index
-    data.id = generateID()
-    store.commit('addComponent', { component: data, index })
-    if (state.curComponentIndex >= index) {
-      // 如果当前组件索引大于等于插入索引，需要加一，因为当前组件往后移了一位
-      state.curComponentIndex++
-    }
-  }
-}
-
-function copyData(state) {
-  state.copyData = {
-    data: deepCopy(state.curComponent),
-    index: state.curComponentIndex,
-  }
-}

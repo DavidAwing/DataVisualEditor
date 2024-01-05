@@ -87,7 +87,7 @@
             class="group-title">业务插件</span>
         </template>
         <div>
-          <el-button type="primary" plain @click="null">编辑业务组件</el-button>
+          <el-button type="primary" plain @click="()=>{}">编辑业务组件</el-button>
         </div>
       </el-collapse-item>
     </el-collapse>

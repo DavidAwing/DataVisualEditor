@@ -28,7 +28,7 @@
   // import store from '@/store';
   import * as ElementUI from 'element-ui';
   import * as xlsx from 'xlsx-js-style';
-
+  import { mapState } from "vuex";
   import bi from '@/bi.js';
 
   // import eventBus from './components/DataVisualEditor/utils/eventBus';
@@ -65,13 +65,32 @@
     name: 'App',
     data() {
       return {
+        globalData: {
+          set: (key, value) => {
+            Vue.set(bi.data, key, value)
+          }
+        }
       };
     },
     components: {},
     props: {},
-    computed: {},
+    computed: {
+      ...mapState([
+        // "canvasComponentData",
+        "canvasData",
+        // "listData",
+        // "curComponent",
+        // "isClickComponent",
+        // "editor",
+        // "editorHint",
+        // "activeComponentList",
+        // "topIntelligentMenu"
+      ]),
+    },
+    watch: {
+    },
     async beforeCreate() {
-
+      bi.globalEvent.beforeCreate();
       const userId = 'admin';
       const { data } = await axios.post(`/BI-API/DataSource/FindDatabaseByUserId?userId=${userId}`, { timeout: 6000 })
       if (data.state === 200 && data.data.length > 0) {
@@ -79,9 +98,10 @@
       } else {
         localStorage.setItem('UserDatabaseList', '[]');
       }
-
     },
     created() {
+
+      bi.globalEvent.created()
 
       const lessCode = `
         @primary-color: #007bff;
@@ -94,8 +114,8 @@
         console.log('在线编译less', output.css);
       });
 
-      bi.addProperty([['App', this],['$watch', this.$watch], ['$route', this.$route]])
-
+      bi.addProperty([['App', this], ['$watch', this.$watch], ['$route', this.$route]])
+      bi.addProperty([['data', this.$data.globalData]])
 
       axios
         .get('/BI-API/Component/GetGlobalModuleScript', { timeout: 10000 })
@@ -881,8 +901,141 @@ export default function addAxisData(extraData) {
 
     },
     mounted() {
+      if (location.href.includes('/viewer')) {
+        const urlParams = new URLSearchParams(location.hash.split('?')[1]);
+        const canvasName = urlParams.get('name')
+        axios.get(`/BI-API/Component/GetCanvasTemplateGlobalEvent?name=${canvasName}`).then(async ({ data }) => {
+          if (data.state != 200)
+            return
+          (await this.buildEvent('AppMounted', data.data)).bind(this)({
+            component: this
+          });
+        })
+      }
     },
-    methods: {},
+    methods: {
+      /**
+       *  @param {string} event - event code
+       * */
+      async buildEvent(name, event) {
+
+        let lines = null
+        const AIIndex = []
+        const isAI = (index) => {
+          if (AIIndex.length === 1) {
+            if (index > AIIndex[0]) {
+              return true
+            } else {
+              return false
+            }
+          }
+          for (let i = 0; i < AIIndex.length; i += 2) {
+            if (index > AIIndex[i] && index < AIIndex[i + 1]) {
+              return true
+            }
+          }
+          return false
+        }
+
+        if (/@AI/i.test(event)) {
+          const parts = event.split(/(@AI)+/);
+          lines = parts.filter(part => part.trim() !== '').flatMap(text => {
+            return text.split(/\r\n|\r|\n/).filter(str => str)
+          });
+          lines.forEach((str, i) => {
+            // 单个语句
+            if (/^@AI\s+\w+/i.test(str)) {
+              return null
+            }
+            // 多个语句
+            else if (/^@AI/i.test(str)) {
+              AIIndex.push(i)
+            }
+          })
+          lines.filter(str => str.toUpperCase() !== '@AI')
+        } else {
+          lines = event.split(/\r\n|\r|\n/)
+        }
+        const conversionCode = async (lines) => {
+          const resolvedArr = await Promise.all(lines.map(async (line, index) => {
+            if (line.includes('//'))
+              line = line.substring(0, line.indexOf('//'))
+            line = line.trim();
+            if (line.toUpperCase() === '@AI' || !line || line.startsWith('//')) {
+              return null;
+            } else if (/^@AI\s+\w+/i.test(line)) {
+              line = line.substring(4).trim()
+            } else {
+              if (!isAI(index)) {
+                return line
+              }
+            }
+            const { state, data } = (await axios.post(`/BI-API/AI/ConversionCode`, { code: line, component: null, userId: localStorage.getItem('UserId'), canvasName: window.bi.store.state.canvasName }, {
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            })).data
+            if (state !== 200) {
+              throw new Error(`setGlobalEvent|转换代码异常|code: ${line}`);
+            }
+            switch (data.type) {
+              case 'link':
+                break;
+              case 'script':
+                return data.value
+              case 'function': {
+                const arr = line.split(/\s+/).splice(1).map((s) => {
+                  if (s.toLowerCase() === 'false') {
+                    return false
+                  } else if (s.toLowerCase() === 'true') {
+                    return true
+                  }
+                  return isNaN(s) ? s : Number(s)
+                })
+                const func = await Promise.resolve(stringToFunction(data.value))
+                let parameters = ""
+                arr.forEach(item => {
+                  if (typeof item === 'boolean' || typeof item === 'number') {
+                    parameters += item + ","
+                  } else if (typeof item === 'string') {
+                    parameters += '"' + item + "\","
+                  } else {
+                    parameters += item + ","
+                  }
+                })
+                return '(' + func.toString() + ')' + `(${parameters.substring(0, parameters.length - 1)})`;
+              }
+              default:
+                console.error('onEvent|AI编译|无法识别的输入', line);
+                return line;
+            }
+          }))
+
+          return (resolvedArr.map((statement) => {
+            switch (typeof statement) {
+              case 'string':
+                return statement
+              case 'function': {
+                return '(' + statement.toString() + ')' + '()'
+              }
+              default:
+                return null;
+            }
+          }).filter((item) => item).join('\n'))
+        }
+
+        const codeStatements = await conversionCode(lines)
+
+        let isAsync = false
+        if (/await\s+/.test(codeStatements)) {
+          isAsync = true
+        } else {
+          isAsync = false
+        }
+        let func = stringToFunction(!isAsync ? `function ${name}(param) {${codeStatements}}` : `(async function (param) {${codeStatements}})`)
+        return func
+      }
+    },
   };
 </script>
 

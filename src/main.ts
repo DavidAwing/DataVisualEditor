@@ -21,6 +21,17 @@ import Antd from 'ant-design-vue';
 import 'ant-design-vue/dist/antd.css';
 
 import highlightPlugin from "@highlightjs/vue-plugin";
+import bi from '@/bi.js';
+
+
+(bi as any).globalEvent = {
+  beforeCreate: () => { },
+  created: () => { },
+  mounted: () => { },
+  windowOnload: () => { }
+}
+
+
 
 // require('@/compiler');
 // const babel = require.context('./compiler', true, "babel.min@7.15.4.js");
@@ -40,13 +51,20 @@ require('./components/DataVisualEditor/utils/vue-component.js')
 
 
 Vue.config.warnHandler = (msg: string, vm: Vue, trace: string) => {
-  console.log("vue全局警告", msg, vm, trace);
+  if (msg == `Error in nextTick: "NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node."`) {
+  }
+  console.log("vue全局警告msg", msg);
+  console.log("vue全局警告vm", vm);
+  console.log("vue全局警告trace", trace);
 }
 
 
 localStorage.setItem('UserId', 'admin')
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
+
+
+
 
 new Vue({
   router,

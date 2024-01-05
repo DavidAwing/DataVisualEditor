@@ -61,11 +61,14 @@ bi.utils = {}
 window.f = bi.utils
 window.bi = bi
 
-
 bi.uid = 'admin'
+bi.sys = {
+  NewLine: '\n',
+  ReturnNewLine: '\r\n',
+}
+window.sys = bi.sys
 
 bi.addProperty = (...params) => {
-
   if (Array.isArray(params) && params.length === 2 && typeof params[0] === 'string') {
     bi[params[0]] = params[1]
   } else if (Array.isArray(params) && params.length === 1 && Array.isArray(params[0]) && Array.isArray(params[0][0])) {
@@ -73,12 +76,13 @@ bi.addProperty = (...params) => {
       bi.addProperty(...param)
     })
   }
-
 }
 
 const loadAll = async () => {
 
-  bi.version = 'z0.2.1'
+  window.BI_DEBUG = false
+
+  bi.version = 'z0.2.2'
   bi.Vue = Vue;
   bi.axios = axios;
   bi.moment = moment;
@@ -149,9 +153,10 @@ const loadAll = async () => {
       bi.sharedWorker.worker.port.postMessage(msg)
     },
     onmessage: (event) => {
-      console.log('SharedWorker|onmessage', event);
-
+      window.log('SharedWorker|onmessage', event);
       const isUrl = (obj) => {
+        if (obj.url == 'any' || obj.url == 'all' || obj.urls == 'any' || obj.urls == 'all')
+          return true
         let url = location.hash.includes('#') ? location.hash.split('#')[1] : location.hash.match(/\/\w+(?=\?{0,1})/)
         url = Array.isArray(url) ? url[0] : url
         if (!url)
@@ -195,11 +200,20 @@ const loadAll = async () => {
         eventBus.$emit('getFormConf', obj.componentName, obj.canvasName, obj.data);
       }
       const updateEvent = (obj) => {
+        if (!Array.isArray(obj.data)) {
+          obj.data = [obj.data]
+        }
         obj.data.forEach(item => {
           bi.utils.getComponentData(item.componentName).events[item.event] = item.code
           eventBus.$emit('deleteEvent', item.componentName + '.' + item.event)
         })
       }
+      const updateGlobalEvent = (obj) => {
+        console.log('保存全局事件', obj);
+
+      }
+
+
       const msgObj = typeof event.data == 'object' ? event.data : JSONfn.parse(event.data);
       if (!isUrl(msgObj)) {
         return
@@ -211,6 +225,7 @@ const loadAll = async () => {
         case 'setFormConf': return setFormConf(msgObj)
         case 'getFormConf': return getFormConf(msgObj)
         case 'updateEvent': return updateEvent(msgObj)
+        case 'updateGlobalEvent': return updateGlobalEvent(msgObj)
       }
     }
   }
@@ -225,13 +240,31 @@ const loadAll = async () => {
   bi.utils.CompileTypescriptToIIFE = CompileTypescriptToIIFE
   bi.utils.CompileToModule = CompileToModule
   bi.utils.setComponentShow = (name, isShow) => {
-
     const data = bi.utils.getComponentData(name).data
-    if (isShow === undefined) {
+    if (isShow == null || typeof isShow != 'boolean') {
       data.show = !data.show
     } else {
       data.show = isShow
     }
+    const showed = (resolve) => {
+      const c = window.f.getComponent(name);
+      if (c == null) {
+        setTimeout(() => {
+          showed(resolve)
+        }, 20);
+      } else {
+        resolve(c);
+      }
+    }
+    return new Promise((resolve, reject) => {
+      if (data.show) {
+        setTimeout(() => {
+          showed(resolve)
+        }, 20);
+      } else {
+        resolve(null);
+      }
+    });
   }
 
   bi.utils.getURLParam = () => {

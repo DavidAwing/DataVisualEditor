@@ -720,7 +720,6 @@
       },
 
       async save() {
-
         const componentNameList = [];
         for (const component of this.canvasComponentData) {
           if (!component.data || !component.data.name || !component.data.name.trim()) continue;
@@ -736,7 +735,6 @@
           }
           componentNameList.push(componentName);
         }
-
         if (!saveCanvas(this.canvasName, this.canvasComponentData, this.canvasData))
           return
         toast('保存成功', 'success');

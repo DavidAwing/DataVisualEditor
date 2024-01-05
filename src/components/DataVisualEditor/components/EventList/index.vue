@@ -28,14 +28,15 @@
               <el-option :label="item.label" :value="item.value" :key="item.value"></el-option>
             </template>
           </el-select>
-          <!-- <el-button type="primary" plain @click="curComponent.events[selectedEvent] = $refs.jsEditor.jsBeautify()">格式化</el-button> -->
-          <el-button type="primary" plain @click="runCode">运行</el-button>
+          <el-button type="primary" plain
+            @click="curComponent.events[selectedEvent] = $refs.jsEditor.jsBeautify()">格式化</el-button>
+          <el-button type="primary" plain @click="runCode($refs.jsEditor.getSelectedCode())">运行</el-button>
           <el-button type="primary" plain>搜索</el-button>
         </div>
 
         <div style="margin: 8px 8px;  flex: 1; overflow-y: hidden">
           <!-- <button @click="changeDb">修改数据库</button> -->
-          <js-editor ref="jsEditor" />
+          <js-editor ref="jsEditor" :onEditCode="onEditCode" />
           <!-- <json-editor ref="jsonEditor" v-model="jsonValue" /> -->
           <!-- <highlightjs language="javascript" :code="selectedEventCode"></highlightjs> -->
           <!-- <el-input v-model="selectedEventCode" type="textarea" placeholder="请输入事件代码" rows="30" @keydown.native.stop /> -->
@@ -160,7 +161,7 @@
         } else {
           this.setEvent()
         }
-
+        bi.data.set('isShowEvent', this.isShowEvent)
       },
     },
     created() {
@@ -171,8 +172,7 @@
     mounted() {
     },
     methods: {
-      async runCode() {
-        const code = this.$refs.jsEditor.getSelectedCode()
+      async runCode(code) {
         if (!code || !code.trim()) {
           toast('请选取需要运行的代码')
           return
@@ -230,7 +230,8 @@
           } else {
             result = eval(list.join('\n'));
           }
-          this.codeRunData += JSONfn.stringify(result) + '\n'
+          if (result)
+            this.codeRunData += JSONfn.stringify(result) + '\n'
         } catch (error) {
           this.codeRunData += `\n⭒----------⭒*.✩.*⭒ 代码解析异常 ⭒*.✩.*⭒----------👇\nname: ${error.name}\nmessage: ${error.message}\nstack: ${error.stack}\n\n`
         } finally {
@@ -254,7 +255,6 @@
           console.log('没有选择事件');
           return;
         }
-
         const code = this.$refs.jsEditor.getCode();
         try {
           const func = stringToFunction(code);
@@ -263,20 +263,21 @@
           this.curComponent.events[this.selectedEvent] = code;
           bi.debug('脚本编译发生错误: ' + error.message + '\n' + error.stack)
         }
-
+      },
+      showEventDialog(event) {
+        this.isShowEvent = true;
+        this.$nextTick().then(() => {
+          this.selectedEvent = event.target.textContent
+        })
+      },
+      onEditCode() {
+        const code = this.$refs.jsEditor.getCode();
         const obj = {
           action: 'updateEvent',
           urls: `/viewer?name=${this.canvasName}`,
           data: [{ componentName: this.curComponent.data.name, event: this.selectedEvent, code: code }]
         }
         bi.sharedWorker.postMessage(obj)
-      },
-
-      showEventDialog(event) {
-        this.isShowEvent = true;
-        this.$nextTick().then(() => {
-          this.selectedEvent = event.target.textContent
-        })
       }
     },
   };

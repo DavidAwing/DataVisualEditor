@@ -1,11 +1,11 @@
 <template>
   <!-- <input class="v-input" :value="element.data.text" :placeholder="element.data.placeholder"></input> -->
-
-  <el-input v-model="element.data.text" :type="element.data.type" :placeholder="element.data.placeholder"
-    @focus="onEvent('onFocus', { $event })" @input="onEvent('onInput', { $event })"
-    @clear="onEvent('onClear', { $event })" @change="onEvent('onChange', $event)" @blur="onEvent('onBlur', { $event })"
-    @keyup.native="onEvent('onKeyup', { $event })" @keydown.native="onEvent('onKeydown', { $event })"
-    @keypress.native="onEvent('onKeypress', { $event })" />
+  <el-input v-model="element.data.text" :type="element.data.type"
+  :placeholder="element.data.placeholder" @focus="onEvent('onFocus', { $event })"
+  @input="onEvent('onInput', { $event })" @clear="onEvent('onClear', { $event })"
+  @change="onEvent('onChange', $event)" @blur="onEvent('onBlur', { $event })"
+  @keyup.native="onEvent('onKeyup', { $event })" @keydown.native="onEvent('onKeydown', { $event })"
+  @keypress.native="onEvent('onKeypress', { $event })" :step="1" />
 </template>
 
 <script>

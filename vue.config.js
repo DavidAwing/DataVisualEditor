@@ -40,7 +40,7 @@ module.exports = defineConfig({
   outputDir: 'dist',
   assetsDir: 'static',
   lintOnSave: process.env.NODE_ENV === 'development',
-  productionSourceMap: false,
+  productionSourceMap: !IS_PROD,
   configureWebpack: {
     // provide the app's title in webpack's name field, so that
     // it can be accessed in index.html to inject the correct title.
@@ -85,8 +85,8 @@ module.exports = defineConfig({
         schedule: 'node-schedule'
       })
     ],
-    // devtool: "source-map",
     mode: "development",
+    // devtool: "source-map",
     devtool: IS_PROD ? 'nosources-source-map' : 'eval-cheap-module-source-map',//'cheap-source-map'
     externals: {
       './cptable': 'var cptable'

@@ -25,7 +25,6 @@
           <img class="canvas-iocn" src="../../assets/maximize.png" @click="maximize"></img>
           <img class="canvas-iocn" src="../../assets/publish.png" @click="openPublishingPage"></img>
         </div>
-
         <div style="position: relative; margin-top: 8px;width: 80%;left: 10%;display: flex;justify-content: center;">
           <div style="display: flex;flex-flow: row nowrap; justify-content: center;align-items: center;
           background-color:  rgba(0, 0, 0, 0.3);  width: fit-content; padding: 0px 22px;border-radius: 5px;">
@@ -60,7 +59,12 @@
           </el-tab-pane>
           <el-tab-pane label="事件" name="events">
             <EventList v-if="curComponent" />
-            <p v-else class="placeholder">请选择组件</p>
+            <div v-else style="overflow-y: hidden;overflow-x: hidden;">
+              <p class="placeholder add-global-event"
+                @click="if(!canvasName) return;globalEventDialogVisible = true;setGlobalEventDialog()">
+                点我添加全局事件
+              </p>
+            </div>
           </el-tab-pane>
         </el-tabs>
       </section>
@@ -68,6 +72,24 @@
 
     <img draggable="false" style="position: absolute;left: 0;right: 0;" id="EmbeddedComponentModeDiv" width="30"
       height="auto" src="http://127.0.0.1/files/drag.png" alt="" srcset="">
+
+    <top-el-dialog title="编辑全局事件" :visible.sync="globalEventDialogVisible" width="65vw" v-el-drag-dialog top="3vh"
+      class="global-event-dialog">
+      <div class="block event-list" style="height: 75vh;">
+        <js-editor ref="jsEditor" :onEditCode="onEditCode" />
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <!-- <el-button @click="globalEventDialogVisible = false">关 闭</el-button> -->
+        <el-button type="primary" @click="runCode($refs.jsEditor.getSelectedCode())">运 行</el-button>
+      </span>
+    </top-el-dialog>
+
+    <el-dialog title="代码运行控制台" :visible.sync="runCodeDialogVisible">
+      <div>
+        <el-input type="textarea" :rows="30" placeholder="" v-model="codeRunData">
+        </el-input>
+      </div>
+    </el-dialog>
 
   </div>
 </template>
@@ -108,6 +130,8 @@
   import axios from 'axios';
   import { saveCanvas } from '../../components/DataVisualEditor/components/MenuHandler';
 
+  import JsEditor from '../../components/DataVisualEditor/components/EventList/JsEditor';
+
   // http://127.0.0.1:9538/#/DataVisualEditor?type=print&max=100&labelName=SN&labelPath=C%3A%5CMES_upload_file%5CLabel%5CSN.label&sqlPath=N%2FA&printData=%22C%3A%5C%5CMES_upload_file%5C%5CLabel%5C%5CTemp%5C%5C445bdeab-85e3-4f29-aa07-ae453078f177.tmp%22&id=0000&name=undefined&language=undefined&siteid=2035&userno=0000&sitename=HS1&cardid=undefined&address=undefined&authorization=undefined&userid=20000063
 
   export default {
@@ -123,7 +147,8 @@
       ChartStyleList,
       MobilePreview,
       GroupAttrList,
-      CanvasElementList
+      CanvasElementList,
+      JsEditor
     },
     data() {
       return {
@@ -131,7 +156,11 @@
         activeLeft: "ComponentList",
         reSelectAnimateIndex: undefined,
         saveConfig: {},
-        showCanvasIocn: false
+        showCanvasIocn: false,
+        globalEventDialogVisible: false,
+        updateGlobalEventCode: '',
+        runCodeDialogVisible: false,
+        codeRunData: ``
       };
     },
     computed: mapState([
@@ -163,6 +192,19 @@
       },
       canvasName: function (val) {
         this.loadMobileUrl();
+      },
+      globalEventDialogVisible: function (val) {
+        if (!val) {
+          this.updateGlobalEvent()
+        } else {
+          axios.get(`/BI-API/Component/GetCanvasTemplateGlobalEvent?name=${this.canvasName}`).then(({ data }) => {
+            if (data.state != 200)
+              return
+            this.updateGlobalEventCode = data.data
+            this.$refs.jsEditor.updateDoc(this.updateGlobalEventCode);
+          })
+        }
+        bi.data.set('isShowEvent', val)
       }
     },
     beforeCreate() {
@@ -177,21 +219,121 @@
     },
     mounted() {
       console.log("document.body.offsetwidth", document.body.offsetwidth);
-
       const ele = document.getElementById("editor");
       this.$store.commit(
         "setEditorHint",
         `${ele.clientWidth} * ${ele.clientHeight} px`
       );
-
       var demo1_w = window.getComputedStyle(ele).getPropertyValue("width");
       var demo1_h = window.getComputedStyle(ele).getPropertyValue("height");
-
       $('#EmbeddedComponentModeDiv').css('display', 'none')
-
-
     },
     methods: {
+
+      async runCode(code) {
+        if (!code || !code.trim()) {
+          toast('请选取需要运行的代码')
+          return
+        }
+        this.runCodeDialogVisible = true
+        this.codeRunData = ''
+        const overrideConsoleLog = () => {
+          const consoleLog = console.log;
+          console.log = (...args) => {
+            // const logOutput = args.map(arg => stringify(arg)).join(' ');
+            args.forEach(arg => {
+              try {
+                this.codeRunData += JSONfn.stringify(arg) + '  '
+              } catch (error) {
+                this.codeRunData += `---------- 异常 ----------\nname: ${error.name}\nmessage: ${error.message}\nmessage: ${error.stack}\narg:${arg}\n\n`
+              }
+            })
+            this.codeRunData += '\n'
+            consoleLog.apply(console, args);
+          };
+          return consoleLog
+        }
+        if (location.href.includes('/editor')) {
+          const log = window.log
+          window.log = (...args) => {
+            args.forEach(arg => {
+              try {
+                this.codeRunData += JSONfn.stringify(arg) + '  '
+              } catch (error) {
+                this.codeRunData += `\n⭒----------⭒*.✩.*⭒ log异常 ⭒*.✩.*⭒----------👇\nname: ${error.name}\nmessage: ${error.message}\nstack: ${error.stack}\n\n`
+              }
+            })
+            this.codeRunData += '\n'
+          }
+        }
+        try {
+          let result = null
+          const list = code.split('\n').filter(line => line.trim()).map(line => line.includes('//') ? line.substring(0, line.indexOf('//')) : line)
+          if (code.includes('await ')) {
+            const lastLine = list[list.length - 1].trim()
+            list[list.length - 1] = (lastLine.startsWith('return ')
+              || lastLine.startsWith('var')
+              || lastLine.startsWith('const')
+              || lastLine.startsWith('let')
+              || lastLine.startsWith(')')
+              || lastLine.startsWith('(')
+              || lastLine.startsWith('}')
+              || lastLine.startsWith('{')
+              || lastLine.startsWith('||')
+              || lastLine.startsWith('&&')
+              || lastLine.startsWith('=')
+              || lastLine.startsWith('!=')
+            ) ? lastLine : 'return ' + lastLine
+            result = await eval(`(async () => { ${list.join('\n')} })()`);
+          } else {
+            result = eval(list.join('\n'));
+          }
+          if (result)
+            this.codeRunData += JSONfn.stringify(result) + '\n'
+        } catch (error) {
+          this.codeRunData += `\n⭒----------⭒*.✩.*⭒ 代码解析异常 ⭒*.✩.*⭒----------👇\nname: ${error.name}\nmessage: ${error.message}\nstack: ${error.stack}\n\n`
+        } finally {
+          setTimeout(() => {
+            window.log = log
+          }, 300);
+        }
+      },
+
+      updateGlobalEvent() {
+        axios.post(`/BI-API/Component/SaveCanvasTemplateGlobalEvent?name=${this.canvasName}`,
+          this.updateGlobalEventCode,
+          {
+            headers: {
+              'Content-Type': 'text/plain',
+            },
+          }).then(({ data }) => {
+            if (data.state != 200) {
+              toast('全局事件保存失败: ' + data.message)
+              return
+            }
+            const obj = {
+              action: 'updateGlobalEvent',
+              urls: `any`,
+              data: { canvasName: this.canvasName }
+            }
+            bi.sharedWorker.postMessage(obj)
+          }).catch(error => {
+            console.warn('保存全局事件异常', error);
+          });
+      },
+
+      onEditCode() {
+        this.updateGlobalEventCode = this.$refs.jsEditor.getCode();
+      },
+
+      setGlobalEventDialog() {
+        this.$nextTick(() => {
+          const dialogBody = document.querySelector('.global-event-dialog .el-dialog__body')
+          if (dialogBody == null)
+            return
+          $(dialogBody).css('padding', '10px 15px')
+        })
+      },
 
       handleTopMenu(name) {
         eventBus.$emit('TopMenu.' + name)

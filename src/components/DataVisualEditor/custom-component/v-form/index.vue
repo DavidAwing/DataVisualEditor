@@ -1,7 +1,7 @@
 <template>
   <div class="v-form" :style="getShapeStyle(element.style, element.styleUnit)">
     <div v-if="element.data.formConf.fields.length == 0" class="empty-info">
-      请打开表单设计器进行编辑
+      <a @click="openDesigner">请打开表单设计器进行编辑</a>
     </div>
 
     <div v-else style="width: 100%;height: 100%;">
@@ -47,8 +47,7 @@
     created() {
       eventBus.$on('onFormDesigner', (name, event) => {
         if (name !== this.element.data.name) return
-        const canvasName = bi.store.state.canvasName
-        f.openWindow(`/FormDesigner/#/home?canvasName=${canvasName}&componentName=${name}`, `表单设计器-${canvasName}-${name}`)
+        this.openDesigner()
       });
 
       eventBus.$on('getFormConf', (name, canvasName, data) => {
@@ -120,6 +119,12 @@
     },
     methods: {
 
+      openDesigner() {
+        const name = this.element.data.name
+        const canvasName = bi.store.state.canvasName
+        f.openWindow(`/FormDesigner/#/home?canvasName=${canvasName}&componentName=${name}`, `表单设计器-${canvasName}-${name}`)
+      },
+
       getAllComponents(c, list = []) {
         if (Array.isArray(c)) {
           c.forEach(item => this.getAllComponents(item, list))
@@ -137,6 +142,8 @@
       repair() {
 
         const addListener = (list) => {
+
+          console.log('追踪警告');
 
           list.forEach(c => {
             if (c.$el.tagName === 'BUTTON' || c.$el.tagName === 'LABEL') {
@@ -168,7 +175,6 @@
             }
 
             if (c._vnode.tag === "vue-component-162-ElUpload") {
-
               console.log('点击了文件1', c);
               const _props = c.$children[0]._props
               _props.onPreview = (file) => {
@@ -189,9 +195,24 @@
         const field = this.element.data.formConf.fields.find(item => item.__vModel__ === key)
         if (field) {
           field.__config__.defaultValue = value
+        } else {
+          // 可能在row里
+          const findFiels = this.element.data.formConf.fields.filter(item => item.__config__ && item.__config__.tagIcon == 'row' && item.__config__.children && item.__config__.children.length > 0)
+          if (!findFiels) {
+            console.warn('未找到字段: ' + key);
+            return
+          }
+          findFiels.forEach(row => {
+            row.__config__.children.forEach(field => {
+              if (field.__vModel__ === key) {
+                field.__config__.defaultValue = value
+              }
+            })
+          });
         }
         this.formKey = +new Date()
       },
+
       fillFormData(form, data) {
         form.fields.forEach(item => {
           const val = data[item.__vModel__]
@@ -200,6 +221,7 @@
           }
         })
       },
+
       sumbitForm(formData) {
         const files = []
         this.form.$el.querySelectorAll('.el-upload__input').forEach(input => {
@@ -209,6 +231,7 @@
         })
         this.onEvent('onSubmitForm', { formData, files })
       },
+
       getShapeStyle(style, styleUnit) {
         const result = {};
         ['padding', 'paddingLeft', 'paddingRight', 'paddingBottom', 'paddingTop'].forEach(attr => {

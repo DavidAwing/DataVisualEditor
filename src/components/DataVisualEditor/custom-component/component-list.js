@@ -939,7 +939,8 @@ const list = [
       show: true,
       isAlign: false,
       isModal: false,
-      type: "text"
+      type: "text",
+      rows: 1
     },
     style: {
       width: 200,
@@ -1026,23 +1027,32 @@ const list = [
         bind: 'data',
         options: [
           {
-            label: 'text',
+            label: '文本',
             value: 'text'
           },
           {
-            label: 'textarea ',
-            value: 'textarea ',
+            label: '文本域',
+            value: 'textarea',
           },
           {
-            label: 'number',
+            label: '数字',
             value: 'number',
           },
           {
-            label: 'password',
+            label: '密码',
             value: 'password',
           }
         ]
       },
+      // {
+      //   key: "rows",
+      //   type: "number",
+      //   label: '高度',
+      //   bind: "data",
+      //   options: {
+      //     step: 1
+      //   }
+      // },
     ]
   },
   // 选择器
